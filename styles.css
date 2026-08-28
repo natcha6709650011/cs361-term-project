@@ -1,0 +1,586 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+
+/* สีหลักที่ใช้ซ้ำทั้งหน้า Home */
+:root {
+  --red: #a5002b;
+  --pink: #d10a3a;
+  --gold: #d89f16;
+  --ink: #1e293a;
+  --muted: #697586;
+  --line: #e7e7e7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: #161616;
+  font: 15px/1.55 'Noto Sans Thai', Arial, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Header: มีซ้ำบางส่วนกับ component เพื่อให้หน้า Home แสดงผลได้เสมอ */
+.site-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 102px;
+  padding: 18px clamp(24px, 4vw, 60px);
+  background: #fff;
+  box-shadow: 0 2px 5px #0004;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.brand img {
+  display: block;
+  width: 108px;
+  height: auto;
+}
+
+.brand-divider {
+  height: 42px;
+  border-left: 1px solid #d8d8d8;
+}
+
+.brand-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: bold 22px/1.05 Arial;
+  letter-spacing: 0.1px;
+}
+
+.brand-name b {
+  color: var(--red);
+  font-size: 36px;
+}
+
+.brand-name span {
+  font-size: 21px;
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 4vw, 68px);
+  font-weight: 600;
+}
+
+.main-nav a {
+  white-space: nowrap;
+}
+
+.main-nav .active {
+  color: var(--pink);
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.dropdown-toggle svg {
+  width: 12px;
+  height: 8px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s;
+}
+
+.nav-dropdown.open .dropdown-toggle {
+  color: var(--pink);
+}
+
+.nav-dropdown.open .dropdown-toggle svg {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 14px);
+  left: -18px;
+  display: none;
+  min-width: 230px;
+  padding: 8px 0;
+  border-radius: 9px;
+  background: #f1f1f1;
+  box-shadow: 0 4px 12px #0002;
+}
+
+.nav-dropdown.open .dropdown-menu {
+  display: grid;
+}
+
+.dropdown-menu a {
+  position: relative;
+  padding: 6px 38px;
+  color: #777;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.dropdown-menu a::after {
+  position: absolute;
+  right: 38px;
+  bottom: 0;
+  left: 38px;
+  height: 3px;
+  border-radius: 2px;
+  background: #f6c320;
+  content: '';
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s ease-out;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu a:focus-visible {
+  color: #f6c320;
+}
+
+.dropdown-menu a:hover::after,
+.dropdown-menu a:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.user-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  place-items: center;
+  background: #e1e1e1;
+  color: #fff;
+}
+
+.user-icon svg {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.menu-toggle {
+  display: none;
+  border: 0;
+  background: transparent;
+  font-size: 26px;
+}
+
+/* Hero และช่องค้นหาห้อง */
+.hero {
+  display: grid;
+  grid-template-columns: 47% 53%;
+  min-height: 380px;
+}
+
+.hero-content {
+  align-self: center;
+  padding: 42px clamp(36px, 8.5vw, 130px);
+}
+
+.eyebrow {
+  margin: 0 0 3px;
+  color: var(--red);
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.hero h1 {
+  margin: 0 0 20px;
+  color: var(--gold);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.hero-copy {
+  margin: 0 0 12px;
+  color: #666;
+}
+
+.search-form {
+  display: flex;
+  gap: 10px;
+}
+
+.search-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 16px;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  box-shadow: 0 3px 3px #0002;
+  font: inherit;
+}
+
+.search-form button {
+  display: grid;
+  width: 62px;
+  border: 0;
+  border-radius: 7px;
+  place-items: center;
+  background: var(--red);
+  color: #fff;
+  cursor: pointer;
+}
+
+.search-form button svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.3;
+  stroke-linecap: round;
+}
+
+.search-message {
+  min-height: 23px;
+  margin: 6px 0 0;
+  color: var(--red);
+  font-size: 13px;
+}
+
+.hero-image {
+  min-height: 380px;
+  background: url('assets/faculty-building.jpg') center / cover no-repeat;
+}
+
+/* ส่วนประเภทห้อง */
+.content-section {
+  padding: 38px clamp(24px, 4.2vw, 60px) 0;
+}
+
+.content-section h2 {
+  display: inline-block;
+  margin: 0 0 33px;
+  padding-bottom: 1px;
+  border-bottom: 2px solid var(--pink);
+  font-size: 18px;
+}
+
+#room-types {
+  border-top: 1px solid #d8d8d8;
+}
+
+.type-grid {
+  display: grid;
+  max-width: 1146px;
+  margin: auto;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(18px, 4.8vw, 68px);
+}
+
+.type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 166px;
+  gap: 3px;
+  border-right: 1px solid var(--line);
+  border-bottom: 2px solid #d0d0d0;
+  border-left: 1px solid var(--line);
+  border-radius: 0 0 7px 7px;
+  transition: 0.2s;
+}
+
+.type-card:hover {
+  box-shadow: 0 6px 13px #0002;
+  transform: translateY(-3px);
+}
+
+.type-icon {
+  width: 42px;
+  height: 38px;
+  margin-bottom: 12px;
+  color: var(--pink);
+}
+
+.type-icon svg,
+.type-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.type-icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.type-card strong {
+  font-size: 15px;
+}
+
+.type-card small {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ห้องแนะนำ: มีข้อมูล fallback ใน HTML และข้อมูลจริงจาก API ใน script.js */
+.recommended {
+  padding-top: 36px;
+  padding-bottom: 105px;
+}
+
+.recommended h2 {
+  margin-bottom: 28px;
+}
+
+.room-grid {
+  display: grid;
+  max-width: 1184px;
+  margin: auto;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(22px, 4.5vw, 66px);
+}
+
+.room-card {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 2px 2px #0004;
+}
+
+.room-image {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  height: 130px;
+  padding: 7px;
+}
+
+.room-image-fallback {
+  background: linear-gradient(135deg, #edf0f2, #d7dde1);
+}
+
+.room-photo-bor2-308 { background: url('assets/bor2-308.jpg') center 58% / cover no-repeat; }
+.room-photo-bor2-107 { background: url('assets/bor2-107.jpg') center 58% / cover no-repeat; }
+.room-photo-bor2-214 { background: url('assets/bor2-214.jpg') center 58% / cover no-repeat; }
+.room-photo-bor2-106 { background: url('assets/bor2-106.jpg') center 58% / cover no-repeat; }
+
+.room-image b {
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  padding: 2px 12px;
+  border-radius: 4px;
+  background: var(--pink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.room-detail {
+  padding: 8px 15px 9px;
+}
+
+.room-detail h3 {
+  margin: 0 0 3px;
+  font: 700 15px/1.2 Arial;
+}
+
+.room-detail p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.tags span {
+  padding: 0 5px;
+  border-radius: 2px;
+  background: #f4c629;
+  font-size: 11px;
+}
+
+.room-detail footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.room-detail footer a {
+  text-align: right;
+}
+
+.capacity {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.capacity svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* Footer ที่ใช้ร่วมกัน */
+.site-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 62px;
+  padding: 28px max(24px, 14vw);
+  background: #a5a5a5;
+  color: #fff;
+}
+
+.footer-brand {
+  padding: 10px 58px 15px 0;
+  border-right: 2px solid #171717;
+}
+
+.footer-logo {
+  display: block;
+  width: 205px;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+.site-footer p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.footer-contact h2 {
+  margin: 4px 0 9px;
+  font-size: 15px;
+}
+
+.footer-contact p {
+  margin: 0 0 22px;
+}
+
+.footer-contact a {
+  text-decoration: underline;
+}
+
+.facebook-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.facebook-link svg {
+  width: 18px;
+  height: 18px;
+  fill: #1877f2;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+@media (max-width: 950px) {
+  .site-header { min-height: 76px; }
+  .brand { gap: 8px; }
+  .brand img { width: 82px; }
+  .brand-divider { height: 34px; }
+  .brand-name b { font-size: 27px; }
+  .brand-name span { font-size: 16px; }
+  .main-nav { gap: 20px; font-size: 13px; }
+  .hero-content { padding-right: 5vw; padding-left: 6vw; }
+  .room-grid { gap: 22px; }
+  .site-footer { padding-inline: 8vw; }
+}
+
+@media (max-width: 700px) {
+  .site-header { padding: 13px 20px; }
+  .brand img { width: 74px; }
+  .brand-divider { height: 30px; }
+  .brand-name { gap: 5px; }
+  .brand-name b { font-size: 24px; }
+  .brand-name span { font-size: 13px; }
+  .menu-toggle { display: block; }
+  .main-nav { position: absolute; top: 100%; left: 0; display: none; width: 100%; padding: 15px 24px 22px; flex-direction: column; align-items: flex-start; gap: 14px; background: #fff; box-shadow: 0 4px 5px #0002; }
+  .main-nav.open { display: flex; }
+  .dropdown-menu { position: static; min-width: 260px; margin-top: 8px; }
+  .dropdown-menu a { padding: 6px 38px; }
+  .hero { grid-template-columns: 1fr; }
+  .hero-content { padding: 45px 24px 28px; }
+  .hero-image { min-height: 220px; }
+  .type-grid { grid-template-columns: repeat(2, 1fr); }
+  .type-card:nth-child(5) { border-top: 1px solid var(--line); }
+  .room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .site-footer { grid-template-columns: 1fr; gap: 15px; }
+  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #555; }
+}
+
+@media (max-width: 430px) {
+  .brand img { width: 54px; }
+  .brand-divider { display: none; }
+  .brand-name b { font-size: 22px; }
+  .brand-name span { font-size: 11px; }
+  .eyebrow { font-size: 27px; }
+  .hero h1 { font-size: 17px; }
+  .type-card { min-height: 140px; }
+  .room-grid { grid-template-columns: 1fr; }
+  .site-footer { padding: 28px 24px; }
+}

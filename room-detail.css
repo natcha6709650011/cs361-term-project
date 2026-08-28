@@ -1,0 +1,400 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --red:#d10a3a;
+  --ink:#1e293a;
+  --yellow:#f7ca32;
+  --green:#20c675;
+  }
+
+* {
+  box-sizing:border-box;
+  }
+
+body {
+  margin:0;
+  color:#111;
+  font:15px/1.5 "Noto Sans Thai",Arial,sans-serif;
+  }
+
+.detail-page {
+  max-width:1290px;
+  margin:auto;
+  padding:29px 0 50px;
+  }
+
+.breadcrumb {
+  margin:0 0 31px;
+  font-weight:700;
+  }
+
+.breadcrumb a {
+  color:#111;
+  text-decoration:none;
+  }
+
+.breadcrumb strong {
+  color:var(--red);
+  }
+
+.room-panel {
+  display:grid;
+  grid-template-columns:615px 1fr;
+  column-gap:24px;
+  row-gap:27px;
+  padding:0 35px 73px;
+  background:#f7f7f7;
+  }
+
+.room-photo {
+  padding-top:0;
+  }
+
+.room-photo img {
+  display:block;
+  width:100%;
+  height:462px;
+  object-fit:cover;
+  object-position:center 58%;
+  border-radius:10px;
+  }
+
+.room-info {
+  padding-top:24px;
+  }
+
+.room-kind {
+  display:inline-block;
+  padding:2px 14px;
+  border-radius:5px;
+  background:var(--red);
+  color:#fff;
+  }
+
+.room-info h1 {
+  margin:7px 0 0;
+  font-size:29px;
+  line-height:1;
+  }
+
+.room-location {
+  margin:8px 0 17px;
+  color:#6e7a8a;
+  font-size:18px;
+  font-weight:700;
+  }
+
+.room-info dl {
+  margin:0;
+  }
+
+.room-info dl div {
+  display:grid;
+  grid-template-columns:180px 1fr;
+  gap:0;
+  margin:18px 0;
+  font-size:18px;
+  }
+
+.room-info dt,.room-info dd {
+  margin:0;
+  font-weight:600;
+  }
+
+.room-info dd {
+  font-weight:700;
+  }
+
+.room-info h2,.room-meta h2 {
+  margin:27px 0 8px;
+  font-size:18px;
+  }
+
+.description {
+  max-width:570px;
+  margin:0;
+  font-weight:500;
+  }
+
+.room-meta {
+  grid-column:1/-1;
+  margin-left:117px;
+  }
+
+.room-meta h2 {
+  margin:0 0 6px;
+  }
+
+.room-meta h2:not(:first-child) {
+  margin-top:25px;
+  }
+
+.tag-row,.slot-row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:15px;
+  margin:0;
+  }
+
+.tag-row span {
+  min-width:78px;
+  padding:3px 11px;
+  border-radius:3px;
+  background:var(--yellow);
+  text-align:center;
+  }
+
+.slot-row {
+  gap:14px;
+  }
+
+.slot-row span {
+  padding:4px 14px;
+  border-radius:3px;
+  background:var(--green);
+  }
+
+.site-footer {
+  background:#a5a5a5;
+  color:#fff;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  padding:28px max(24px,14vw);
+  gap:62px;
+  }
+
+.footer-brand {
+  border-right:2px solid #171717;
+  padding:10px 58px 15px 0;
+  }
+
+.footer-logo {
+  display:block;
+  width:205px;
+  height:auto;
+  mix-blend-mode:multiply;
+  }
+
+.site-footer p {
+  font-size:15px;
+  line-height:1.6;
+  }
+
+.footer-contact h2 {
+  font-size:15px;
+  margin:4px 0 9px;
+  }
+
+.footer-contact p {
+  margin:0 0 22px;
+  }
+
+.footer-contact a {
+  color:#fff;
+  text-decoration:underline;
+  }
+
+.facebook-link {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  }
+
+.facebook-link svg {
+  width:18px;
+  height:18px;
+  fill:#1877f2;
+  }
+
+@media(max-width:900px){
+  .detail-page{
+  padding-inline:24px}
+
+.room-panel{
+  grid-template-columns:1fr;
+  padding:0 24px 40px}
+
+.room-photo img{
+  height:400px}
+
+.room-meta{
+  grid-column:auto;
+  margin:0}
+
+.site-footer{
+  padding-inline:8vw}
+
+}
+
+@media(max-width:600px){
+  .detail-page{
+  padding-inline:18px}
+
+.breadcrumb{
+  font-size:13px}
+
+.room-panel{
+  padding-inline:16px}
+
+.room-photo img{
+  height:260px}
+
+.room-info dl div{
+  grid-template-columns:135px 1fr;
+  font-size:15px}
+
+.room-meta{
+  padding-bottom:0}
+
+.tag-row,.slot-row{
+  gap:7px}
+
+.site-footer{
+  grid-template-columns:1fr;
+  gap:15px}
+
+.footer-brand{
+  border:0;
+  border-bottom:1px solid #555;
+  padding:0 0 18px}
+
+}
+
+/* Compact desktop layout: จบข้อมูลการจองภายในมุมมองแรก */
+@media (min-width:901px) {
+  .room-panel {
+  row-gap:18px;
+  padding-bottom:42px;
+  }
+
+.room-photo img {
+  height:365px;
+  }
+
+.room-info {
+  padding-top:20px;
+  }
+
+.room-location {
+  margin-bottom:10px;
+  }
+
+.room-info dl div {
+  margin:12px 0;
+  font-size:16px;
+  }
+
+.room-info h2 {
+  margin-top:17px;
+  }
+
+.room-meta h2:not(:first-child) {
+  margin-top:17px;
+  }
+
+.tag-row,.slot-row {
+  gap:10px;
+  }
+
+.slot-row span {
+  padding:3px 11px;
+  }
+
+}
+
+/* ป้องกันคอลัมน์รูปภาพล้น เมื่อหน้าต่างถูกย่อหรือซูม */
+.room-panel {
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  }
+
+.room-photo,.room-info {
+  min-width:0;
+  }
+
+.room-photo img {
+  max-width:100%;
+  }
+
+.room-info dl div {
+  grid-template-columns:minmax(120px,180px) minmax(0,1fr);
+  }
+
+@media (max-width:1000px) {
+  .room-panel {
+  grid-template-columns:1fr;
+  }
+
+.room-photo img {
+  height:360px;
+  }
+
+.room-meta {
+  grid-column:auto;
+  margin-left:0;
+  }
+
+}
+
+@media (max-width:600px) {
+  .room-photo img {
+  height:260px;
+  }
+
+}
+
+.room-info dt {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  }
+
+.room-info dt svg {
+  flex:0 0 auto;
+  width:18px;
+  height:18px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  }
+
+/* รูปชิดขอบกล่องเทา และมุมกล่องภายนอกโค้ง */
+@media (min-width:1001px) {
+  .room-panel {
+  padding:0;
+  border-radius:10px;
+  overflow:hidden;
+  }
+
+.room-info {
+  padding:20px 32px 0 0;
+  }
+
+.room-meta {
+  margin-left:0;
+  padding:0 0 42px 117px;
+  }
+
+}
+
+@media (max-width:1000px) {
+  .room-panel {
+  padding:0;
+  border-radius:10px;
+  overflow:hidden;
+  }
+
+.room-info,.room-meta {
+  padding:24px;
+  }
+
+.room-meta {
+  margin:0;
+  }
+
+.room-photo img {
+  border-radius:0;
+  }
+
+}

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="ระบบข้อมูลห้อง สาขาวิชาวิทยาการคอมพิวเตอร์ มหาวิทยาลัยธรรมศาสตร์"
+    />
+    <title>ระบบจองห้อง | CS Thammasat</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Header จะถูกสร้างจาก components/header-component.js เพื่อใช้ร่วมกันทุกหน้า -->
+    <div data-site-header></div>
+
+    <main id="home">
+      <section class="hero">
+        <div class="hero-content">
+          <p class="eyebrow">ระบบจองห้อง</p>
+          <h1>
+            คณะวิทยาศาสตร์และเทคโนโลยี<br />
+            สาขาวิชาวิทยาการคอมพิวเตอร์ มหาวิทยาลัยธรรมศาสตร์
+          </h1>
+          <p class="hero-copy">
+            ค้นหาข้อมูลห้องเรียน ห้องประชุม ห้องปฏิบัติการ และพื้นที่ต่าง ๆ<br />
+            ในสาขาวิชาวิทยาการคอมพิวเตอร์
+          </p>
+
+          <form class="search-form" id="search-form">
+            <label class="sr-only" for="room-search">ค้นหาห้อง</label>
+            <input
+              id="room-search"
+              type="search"
+              placeholder="ค้นหาหมายเลขห้อง เช่น 301, ห้องประชุม, ห้องแลป"
+            />
+            <button type="submit" aria-label="ค้นหา">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m15.5 15.5 5 5" />
+              </svg>
+            </button>
+          </form>
+          <p class="search-message" id="search-message" aria-live="polite"></p>
+        </div>
+        <div
+          class="hero-image"
+          role="img"
+          aria-label="อาคารคณะวิทยาศาสตร์และเทคโนโลยี"
+        ></div>
+      </section>
+
+      <section class="content-section" id="room-types">
+        <h2>ประเภทห้อง</h2>
+        <div class="type-grid">
+          <a class="type-card" href="#recommended">
+            <span class="type-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 42">
+                <rect x="4" y="4" width="40" height="30" rx="2" />
+                <path d="M10 38h28M14 34v4M34 34v4" />
+                <circle cx="16" cy="18" r="2" />
+                <circle cx="24" cy="18" r="2" />
+                <circle cx="32" cy="18" r="2" />
+                <path d="M11 27c1-4 9-4 10 0M19 27c1-4 9-4 10 0M27 27c1-4 9-4 10 0" />
+              </svg>
+            </span>
+            <strong>ห้องเรียน</strong>
+            <small>6 ห้อง</small>
+          </a>
+
+          <a class="type-card" href="#recommended">
+            <span class="type-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 42">
+                <rect x="8" y="13" width="32" height="16" rx="2" />
+                <path d="M12 13V8a3 3 0 0 1 3-3h18a3 3 0 0 1 3 3v5M8 18H4v12h4M40 18h4v12h-4M14 29v7M34 29v7" />
+              </svg>
+            </span>
+            <strong>ห้องประชุม</strong>
+            <small>10 ห้อง</small>
+          </a>
+
+          <a class="type-card" href="#recommended">
+            <span class="type-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 42">
+                <circle cx="13" cy="13" r="4" />
+                <circle cx="24" cy="10" r="4" />
+                <circle cx="35" cy="13" r="4" />
+                <path d="M5 30c0-6 5-9 8-9s8 3 8 9M15 30c0-7 5-11 9-11s9 4 9 11M27 30c0-6 5-9 8-9s8 3 8 9M3 34h42" />
+              </svg>
+            </span>
+            <strong>ห้องกิจกรรม</strong>
+            <small>1 ห้อง</small>
+          </a>
+
+          <a class="type-card" href="#recommended">
+            <span class="type-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 42">
+                <rect x="6" y="5" width="36" height="25" />
+                <path d="M9 9h30M24 30v8M15 38h18" />
+              </svg>
+            </span>
+            <strong>ห้องปฏิบัติการ</strong>
+            <small>3 ห้อง</small>
+          </a>
+
+          <a class="type-card" href="#recommended">
+            <span class="type-icon" aria-hidden="true">
+              <img src="assets/coworking-icon.png" alt="" />
+            </span>
+            <strong>Co-Working Space</strong>
+            <small>2 ห้อง</small>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section recommended" id="recommended">
+        <h2>ห้องแนะนำ</h2>
+        <!-- JavaScript จะเปลี่ยนการ์ด fallback ด้านล่างเป็นข้อมูลจาก GET /v1/rooms เมื่อเรียก API ได้ -->
+        <div class="room-grid" id="rooms-grid" aria-live="polite">
+          <article class="room-card">
+            <div class="room-image room-photo-bor2-308"><b>ห้องเรียน</b></div>
+            <div class="room-detail">
+              <h3>บร2-308</h3>
+              <p>ห้องเรียน 308 ชั้น 2</p>
+              <div class="tags"><span>โต๊ะ</span><span>เก้าอี้</span><span>คอมพิวเตอร์ 1</span><span>โปรเจคเตอร์</span></div>
+              <footer>
+                <span class="capacity"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg>70 ที่นั่ง</span>
+                <a class="room-detail-link" href="room-bor2-308.html">ดูรายละเอียดเพิ่มเติม</a>
+              </footer>
+            </div>
+          </article>
+
+          <article class="room-card">
+            <div class="room-image room-photo-bor2-107"><b>ห้องปฏิบัติการ</b></div>
+            <div class="room-detail">
+              <h3>บร2-107</h3>
+              <p>ห้องเรียน 107 ชั้น 1</p>
+              <div class="tags"><span>โต๊ะ</span><span>เก้าอี้</span><span>คอมพิวเตอร์ 1</span><span>โปรเจคเตอร์</span></div>
+              <footer>
+                <span class="capacity"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg>84 ที่นั่ง</span>
+                <a href="#details">ดูรายละเอียดเพิ่มเติม</a>
+              </footer>
+            </div>
+          </article>
+
+          <article class="room-card">
+            <div class="room-image room-photo-bor2-214"><b>ห้องประชุม</b></div>
+            <div class="room-detail">
+              <h3>บร2-214</h3>
+              <p>ห้องเรียน 214 ชั้น 2</p>
+              <div class="tags"><span>โต๊ะ</span><span>เก้าอี้</span><span>คอมพิวเตอร์ 1</span><span>ทีวี</span></div>
+              <footer>
+                <span class="capacity"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg>8 ที่นั่ง</span>
+                <a href="#details">ดูรายละเอียดเพิ่มเติม</a>
+              </footer>
+            </div>
+          </article>
+
+          <article class="room-card">
+            <div class="room-image room-photo-bor2-106"><b>ห้องกิจกรรม</b></div>
+            <div class="room-detail">
+              <h3>บร2-106</h3>
+              <p>ห้องเรียน 106 ชั้น 1</p>
+              <div class="tags"><span>โต๊ะ</span><span>เก้าอี้</span></div>
+              <footer>
+                <span class="capacity"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg>- ที่นั่ง</span>
+                <a href="#details">ดูรายละเอียดเพิ่มเติม</a>
+              </footer>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-brand">
+        <img class="footer-logo" src="assets/cstu-logo.png" alt="Computer Science Thammasat University" />
+        <p>สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต<br />อาคารบรรยายรวม 2 คณะวิทยาศาสตร์และเทคโนโลยี<br />มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต ปทุมธานี 12120</p>
+      </div>
+      <div class="footer-contact">
+        <h2>โทรศัพท์</h2>
+        <p>0-2986-9154, 0-2986-9156, 0-2986-9138-39,<br />0-2564-4440-59 ต่อ 2157,2714</p>
+        <p>โทรสาร : 0-2986-9157</p>
+        <p>Email : <a href="mailto:scitu_cs@sci.tu.ac.th">scitu_cs@sci.tu.ac.th</a></p>
+        <h2>ช่องทางการติดตาม</h2>
+        <p><a class="facebook-link" href="#facebook"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 0-10.4 8.9v-6.3H8.3V12h2.3v-2c0-2.3 1.4-3.6 3.5-3.6 1 0 2 .2 2 .2v2.2h-1.2c-1.2 0-1.6.8-1.6 1.5V12H16l-.5 2.6h-2.3v6.3A9 9 0 0 0 21 12Z" /></svg>CSTUadmissioncenter</a></p>
+      </div>
+    </footer>
+
+    <script src="components/header-component.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

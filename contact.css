@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --red: #d10a3a;
+  --gold: #f3bd22;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  color: #171717;
+  font: 15px/1.55 'Noto Sans Thai', Arial, sans-serif;
+}
+
+/* เนื้อหาหลักของหน้าติดต่อ */
+.contact-page {
+  width: min(1174px, calc(100% - 48px));
+  min-height: 334px;
+  margin: 0 auto;
+  padding-top: 66px;
+}
+
+.contact-intro {
+  margin: 0 0 25px 5px;
+  color: var(--gold);
+  font-size: 17px;
+}
+
+.contact-card {
+  width: 572px;
+  min-height: 146px;
+  padding: 27px 55px;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+}
+
+.contact-card h1 {
+  margin: 0 0 10px;
+  color: var(--red);
+  font-size: 19px;
+}
+
+.contact-card a {
+  color: #171717;
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Footer ดันไปชิดด้านล่างเมื่อหน้าเนื้อหาสั้น */
+.site-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 62px;
+  margin-top: auto;
+  padding: 28px max(24px, 14vw);
+  background: #a5a5a5;
+  color: #fff;
+}
+
+.footer-brand { padding: 10px 58px 15px 0; border-right: 2px solid #171717; }
+.footer-logo { display: block; width: 205px; height: auto; mix-blend-mode: multiply; }
+.site-footer p { font-size: 15px; line-height: 1.6; }
+.footer-contact h2 { margin: 4px 0 9px; font-size: 15px; }
+.footer-contact p { margin: 0 0 22px; }
+.footer-contact a { color: #fff; text-decoration: underline; }
+.facebook-link { display: inline-flex; align-items: center; gap: 5px; }
+.facebook-link svg { width: 18px; height: 18px; fill: #1877f2; }
+
+@media (max-width: 650px) {
+  .contact-page { min-height: 300px; padding-top: 40px; }
+  .contact-card { width: 100%; padding: 24px; }
+  .site-footer { grid-template-columns: 1fr; gap: 15px; }
+  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #555; }
+}

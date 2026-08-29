@@ -27,10 +27,10 @@
           <button class="dropdown-toggle" type="button" aria-expanded="false" aria-controls="room-type-menu">ประเภทห้อง <svg aria-hidden="true" viewBox="0 0 16 10"><path d="m2 2 6 6 6-6" /></svg></button>
           <div class="dropdown-menu" id="room-type-menu">
             <a href="room-types.html?type=classroom">ห้องเรียน</a>
-            <a href="room-types.html?type=meeting">ห้องประชุม</a>
-            <a href="room-types.html?type=activity">ห้องกิจกรรม</a>
-            <a href="room-types.html?type=lab">ห้องปฏิบัติการ</a>
-            <a href="room-types.html?type=coworking">Co-Working Space</a>
+            <a href="room-meeting.html">ห้องประชุม</a>
+            <a href="room-activity.html">ห้องกิจกรรม</a>
+            <a href="room-lab.html">ห้องปฏิบัติการ</a>
+            <a href="room-coworking.html">Co-Working Space</a>
           </div>
         </div>
         <a href="guidelines.html">ข้อปฏิบัติ</a>
@@ -49,7 +49,9 @@
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   const activeLink = header.querySelector(`.main-nav a[href="${currentPage}"]`);
   if (activeLink) activeLink.classList.add('active');
-  if (currentPage === 'room-types.html') dropdownButton.classList.add('active');
+  if (['room-types.html', 'room-meeting.html', 'room-lab.html', 'room-activity.html', 'room-coworking.html'].includes(currentPage)) {
+    dropdownButton.classList.add('active');
+  }
 
   menuButton.addEventListener('click', () => {
     const isOpen = navigation.classList.toggle('open');

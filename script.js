@@ -104,12 +104,8 @@ function createRoomCard(room) {
   capacityText.className = 'capacity';
   capacityText.innerHTML = `${personIcon}${capacity === null ? 'ไม่ระบุความจุ' : `${capacity} ที่นั่ง`}`;
   const detailLink = document.createElement('a');
-  if (numberKey === '308') {
-    detailLink.className = 'room-detail-link';
-    detailLink.href = 'room-bor2-308.html';
-  } else {
-    detailLink.href = '#';
-  }
+  detailLink.className = 'room-detail-link';
+  detailLink.href = `room-detail.html?room=${encodeURIComponent(numberKey)}`;
   detailLink.textContent = 'ดูรายละเอียดเพิ่มเติม';
   footer.append(capacityText, detailLink);
   detail.append(title, location, tags, footer);

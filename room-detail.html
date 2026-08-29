@@ -3,34 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="รายละเอียดห้อง บร2-308" />
-    <title>บร2-308 | CS Thammasat</title>
+    <meta name="description" content="รายละเอียดห้อง" />
+    <title>รายละเอียดห้อง | CS Thammasat</title>
     <link rel="stylesheet" href="room-detail.css" />
   </head>
   <body>
     <div data-site-header></div>
     <main class="detail-page">
-      <p class="breadcrumb"><a href="index.html">หน้าแรก</a> &gt; <a href="index.html#room-types">ประเภทห้อง</a> &gt; <strong>บร2-308</strong></p>
+      <p class="breadcrumb"><a href="index.html">หน้าแรก</a> &gt; <a href="index.html#room-types">ประเภทห้อง</a> &gt; <strong id="room-breadcrumb">บร2-308</strong></p>
       <section class="room-panel">
-        <div class="room-photo"><img src="assets/bor2-308.jpg" alt="ห้อง บร2-308" /></div>
+        <div class="room-photo"><img id="room-image" src="assets/bor2-308.jpg" alt="ห้อง บร2-308" /></div>
         <div class="room-info">
-          <span class="room-kind">ห้องเรียน</span>
-          <h1>บร2-308</h1>
-          <p class="room-location">ห้องเรียน 308 ชั้น 3</p>
+          <span class="room-kind" id="room-type">ห้องเรียน</span>
+          <h1 id="room-name">บร2-308</h1>
+          <p class="room-location" id="room-location">ห้อง 308 ชั้น 3</p>
           <dl>
-            <div><dt><i data-lucide="user-round"></i>ความจุ</dt><dd>70 ที่นั่ง</dd></div>
-            <div><dt><i data-lucide="building-2"></i>อาคาร</dt><dd>อาคารบรรยายรวม 2 (บร2)</dd></div>
-            <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19h5v-5h5V9h5V4h3"/></svg>ชั้น</dt><dd>ชั้น 2</dd></div>
-            <div><dt><i data-lucide="maximize"></i>ขนาดห้อง</dt><dd>9.5 x 11.5 เมตร <em>*ไม่รู้ใส่ไว้ก่อน*</em></dd></div>
+            <div><dt><i data-lucide="user-round"></i>ความจุ</dt><dd id="room-capacity">70 ที่นั่ง</dd></div>
+            <div><dt><i data-lucide="building-2"></i>อาคาร</dt><dd id="room-building">อาคารบรรยายรวม 2 (บร.2)</dd></div>
+            <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19h5v-5h5V9h5V4h3"/></svg>ชั้น</dt><dd id="room-floor">ชั้น 3</dd></div>
+            <div><dt><i data-lucide="maximize"></i>ขนาดห้อง</dt><dd>9.5 x 11.5 เมตร</dd></div>
           </dl>
           <h2>รายละเอียดห้อง</h2>
           <p class="description">ห้องเรียนมาตรฐาน สำหรับการเรียนการสอน รองรับการใช้งานที่หลากหลายเหมาะสำหรับการบรรยาย การประชุมขนาดกลาง และกิจกรรมต่าง ๆ</p>
         </div>
         <div class="room-meta">
           <h2>อุปกรณ์และสิ่งอำนวยความสะดวก</h2>
-          <p class="tag-row"><span>โต๊ะ</span><span>เก้าอี้</span><span>โปรเจคเตอร์</span><span>คอมพิวเตอร์ 1</span></p>
+          <p class="tag-row" id="room-amenities"></p>
           <h2>สิทธิ์การใช้งาน</h2>
-          <p class="tag-row"><span>อาจารย์</span><span>บุคลากร</span></p>
+          <p class="tag-row" id="room-roles"></p>
           <h2>ข้อมูลการจอง</h2>
           <p class="slot-row"><span>8.00 - 9.30</span><span>9.30 - 11.00</span><span>11.00 - 12.30</span><span>13.30 - 15.00</span><span>15.00 - 16.30</span><span>16.30 - 18.00</span></p>
         </div>
@@ -43,5 +43,6 @@
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <script>lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });</script>
     <script src="components/header-component.js"></script>
+    <script src="room-detail.js"></script>
   </body>
 </html>

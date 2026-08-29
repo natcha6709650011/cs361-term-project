@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="รายการห้องประชุม สาขาวิชาวิทยาการคอมพิวเตอร์ มหาวิทยาลัยธรรมศาสตร์" />
+    <title>ห้องประชุม | CS Thammasat</title>
+    <link rel="stylesheet" href="room-types.css" />
+  </head>
+  <body data-room-type="meeting">
+    <div data-site-header></div>
+
+    <main>
+      <section class="type-hero">
+        <div class="type-hero__content">
+          <h1>ห้องประชุม</h1>
+          <p class="type-hero__subtitle">คณะวิทยาศาสตร์และเทคโนโลยี<br />สาขาวิชาวิทยาการคอมพิวเตอร์ มหาวิทยาลัยธรรมศาสตร์</p>
+          <p class="type-hero__description">ค้นหาข้อมูลห้องเรียน ห้องประชุม ห้องปฏิบัติการ และพื้นที่ต่าง ๆ<br />ในสาขาวิชาวิทยาการคอมพิวเตอร์</p>
+          <form class="search-form" id="search-form">
+            <label class="sr-only" for="room-search">ค้นหาห้อง</label>
+            <input id="room-search" type="search" placeholder="ค้นหาหมายเลขห้อง เช่น 301, ห้องประชุม, ห้องแลป" />
+            <button type="submit" aria-label="ค้นหา"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg></button>
+          </form>
+          <p class="search-message" id="search-message" aria-live="polite"></p>
+        </div>
+        <div class="type-hero__image" role="img" aria-label="ภาพห้องประชุม"></div>
+      </section>
+
+      <section class="room-list room-list--meeting">
+        <h2>ห้องประชุม</h2>
+        <p class="room-list__count" id="room-count">จำนวน 10 ห้อง</p>
+        <!-- JavaScript สร้างรายการห้องประชุมจากข้อมูลใน room-types.js -->
+        <div class="room-list__grid" id="room-list-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand"><img class="footer-logo" src="assets/cstu-logo.png" alt="Computer Science Thammasat University" /><p>สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต<br />อาคารบรรยายรวม 2 คณะวิทยาศาสตร์และเทคโนโลยี<br />มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต ปทุมธานี 12120</p></div>
+      <div class="footer-contact"><h2>โทรศัพท์</h2><p>0-2986-9154, 0-2986-9156, 0-2986-9138-39,<br />0-2564-4440-59 ต่อ 2157,2714</p><p>โทรสาร : 0-2986-9157</p><p>Email : <a href="mailto:scitu_cs@sci.tu.ac.th">scitu_cs@sci.tu.ac.th</a></p><h2>ช่องทางการติดตาม</h2><p><a class="facebook-link" href="#facebook">▣ CSTUadmissioncenter</a></p></div>
+    </footer>
+
+    <script src="components/header-component.js"></script>
+    <script src="room-types.js?v=4"></script>
+  </body>
+</html>

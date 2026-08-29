@@ -9,9 +9,9 @@ const RECOMMENDED_ROOM_NUMBERS = ['308', '107', '214', '106'];
 
 const personIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5"/><path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5"/></svg>';
 
-// เมนูตัวอย่างที่ยังไม่มีหน้าเชื่อม จะไม่เปลี่ยน hash หรือเลื่อนหน้าจอ
+// ปุ่มรายละเอียดที่ยังไม่มีหน้ารายละเอียดของห้องนั้น จะไม่เปลี่ยน hash หรือเลื่อนหน้าจอ
 document.addEventListener('click', (event) => {
-  const link = event.target.closest('.type-card, .room-detail footer a:not(.room-detail-link)');
+  const link = event.target.closest('.room-detail footer a:not(.room-detail-link)');
   if (link) event.preventDefault();
 });
 

@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+
+:root { --red: #a5002b; --pink: #d10a3a; --gold: #d89f16; --muted: #697586; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #161616; font: 15px/1.55 'Noto Sans Thai', Arial, sans-serif; }
+a { color: inherit; text-decoration: none; }
+
+.type-hero { display: grid; grid-template-columns: 47% 53%; min-height: 364px; }
+.type-hero__content { align-self: center; padding: 36px clamp(36px, 7.5vw, 110px); }
+.type-hero h1 { margin: 0 0 4px; color: var(--red); font-size: 30px; line-height: 1.3; }
+.type-hero__subtitle { margin: 0 0 18px; color: var(--gold); font-size: 18px; line-height: 1.55; }
+.type-hero__description { margin: 0 0 12px; color: #666; }
+.type-hero__image { min-height: 364px; background: url('assets/bor2-308.jpg') center 58% / cover no-repeat; }
+
+.search-form { display: flex; gap: 10px; }
+.search-form input { flex: 1; min-width: 0; padding: 13px 16px; border: 1px solid #e4e4e4; border-radius: 8px; box-shadow: 0 3px 3px #0002; font: inherit; }
+.search-form button { display: grid; width: 62px; border: 0; border-radius: 7px; place-items: center; background: var(--red); color: #fff; cursor: pointer; }
+.search-form svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; }
+.search-message { min-height: 20px; margin: 5px 0 0; color: var(--red); font-size: 13px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+
+.room-list { min-height: 710px; padding: 40px clamp(24px, 4.2vw, 60px) 76px; border-top: 1px solid #ddd; }
+.room-list h2 { display: inline-block; margin: 0; padding-bottom: 1px; border-bottom: 2px solid var(--pink); font-size: 18px; }
+.room-list__count { margin: 30px 0 30px; }
+.room-list__grid { display: grid; max-width: 964px; margin: auto; grid-template-columns: repeat(3, 1fr); gap: 28px 104px; }
+.room-list--meeting .room-list__grid { max-width: 1100px; grid-template-columns: repeat(4, 1fr); gap: 28px 30px; }
+.room-card { overflow: hidden; border-radius: 6px; background: #fff; box-shadow: 0 2px 2px #0004; }
+.room-card__image { position: relative; height: 130px; padding: 7px; background: url('assets/bor2-308.jpg') center 58% / cover no-repeat; }
+.room-list--meeting .room-card__image { background-image: url('assets/bor2-214.jpg'); }
+.room-list--lab .room-card__image { background-image: url('assets/bor2-107.jpg'); }
+.room-list--activity .room-card__image { background-image: url('assets/bor2-106.jpg'); }
+.room-list--coworking .room-card__image { background-image: url('assets/coworking-space.jpg'); }
+.room-list--activity .room-list__grid { max-width: 246px; grid-template-columns: 1fr; }
+.room-list--coworking .room-list__grid { max-width: 500px; grid-template-columns: repeat(2, 1fr); gap: 28px 68px; }
+.room-card__image b { position: absolute; top: 7px; left: 8px; padding: 2px 12px; border-radius: 4px; background: var(--pink); color: #fff; font-size: 11px; font-weight: 500; }
+.room-card__detail { padding: 8px 15px 9px; }
+.room-card h3 { margin: 0 0 3px; font: 700 15px/1.2 Arial; }
+.room-card p { margin: 0 0 6px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.tags span { padding: 0 5px; border-radius: 2px; background: #f4c629; font-size: 11px; }
+.room-card footer { display: flex; justify-content: space-between; gap: 6px; margin-top: 8px; font-size: 11px; }
+.capacity { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.person-icon { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+.site-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 62px; padding: 28px max(24px, 14vw); background: #a5a5a5; color: #fff; }
+.footer-brand { padding: 10px 58px 15px 0; border-right: 2px solid #171717; }
+.footer-logo { display: block; width: 205px; height: auto; mix-blend-mode: multiply; }
+.site-footer p { font-size: 15px; line-height: 1.6; }
+.footer-contact h2 { margin: 4px 0 9px; font-size: 15px; }
+.footer-contact p { margin: 0 0 22px; }
+.footer-contact a { text-decoration: underline; }
+
+@media (max-width: 800px) { .type-hero { grid-template-columns: 1fr; }.type-hero__content { padding: 42px 7vw 28px; }.type-hero__image { min-height: 250px; }.room-list__grid,.room-list--meeting .room-list__grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }.site-footer { grid-template-columns: 1fr; gap: 15px; padding-inline: 8vw; }.footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #555; } }
+@media (max-width: 500px) { .room-list__grid { grid-template-columns: 1fr; }.room-list { padding-inline: 24px; }.type-hero h1 { font-size: 27px; } }

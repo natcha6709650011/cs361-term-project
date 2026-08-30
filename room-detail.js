@@ -4,13 +4,20 @@ const API_BASE_URL =
 document.addEventListener("DOMContentLoaded", loadRoomDetail);
 
 async function loadRoomDetail() {
+  const loading = document.querySelector("#room-loading");
+  const errorBox = document.querySelector("#room-error");
+  const roomPage = document.querySelector("#room-page");
+
   try {
+    if (loading) loading.style.display = "none";
+    if (errorBox) errorBox.style.display = "none";
+    if (roomPage) roomPage.style.display = "none";
+
     const params = new URLSearchParams(window.location.search);
     const roomNumber = params.get("room");
 
     if (!roomNumber) {
-      console.error("ไม่พบเลขห้องใน URL");
-      return;
+      throw new Error("ไม่พบเลขห้องใน URL");
     }
 
     const response = await fetch(
@@ -31,19 +38,23 @@ async function loadRoomDetail() {
 
     console.log("API Room Detail:", room);
 
-    // รองรับกรณี API ส่ง { data: {...} }
     if (room?.data) {
       room = room.data;
     }
 
-    // รองรับกรณี API ส่ง { room: {...} }
     if (room?.room) {
       room = room.room;
     }
 
     displayRoomDetail(room);
+
+    if (roomPage) roomPage.style.display = "block";
   } catch (error) {
     console.error("Error loading room detail:", error);
+
+    if (loading) loading.style.display = "none";
+    if (roomPage) roomPage.style.display = "none";
+    if (errorBox) errorBox.style.display = "none";
   }
 }
 

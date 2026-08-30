@@ -9,7 +9,16 @@
   </head>
   <body>
     <div data-site-header></div>
-    <main class="detail-page">
+
+    <div id="room-loading" style="min-height:70vh;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;">
+      กำลังโหลดข้อมูลห้อง...
+    </div>
+
+    <div id="room-error" style="min-height:70vh;display:none;align-items:center;justify-content:center;font-size:20px;font-weight:600;">
+      ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง
+    </div>
+
+    <main class="detail-page" id="room-page" style="display:none;">
       <p class="breadcrumb"><a href="index.html">หน้าแรก</a> &gt; <a href="index.html#room-types">ประเภทห้อง</a> &gt; <strong id="room-breadcrumb">บร2-308</strong></p>
       <section class="room-panel">
         <div class="room-photo"><img id="room-image" src="assets/bor2-308.jpg" alt="ห้อง บร2-308" /></div>
@@ -21,10 +30,10 @@
             <div><dt><i data-lucide="user-round"></i>ความจุ</dt><dd id="room-capacity">70 ที่นั่ง</dd></div>
             <div><dt><i data-lucide="building-2"></i>อาคาร</dt><dd id="room-building">อาคารบรรยายรวม 2 (บร.2)</dd></div>
             <div><dt><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19h5v-5h5V9h5V4h3"/></svg>ชั้น</dt><dd id="room-floor">ชั้น 3</dd></div>
-            <div><dt><i data-lucide="maximize"></i>ขนาดห้อง</dt><dd>9.5 x 11.5 เมตร</dd></div>
+            <div><dt><i data-lucide="maximize"></i>ขนาดห้อง</dt><dd id="room-size">9.5 x 11.5 เมตร</dd></div>
           </dl>
           <h2>รายละเอียดห้อง</h2>
-          <p class="description">ห้องเรียนมาตรฐาน สำหรับการเรียนการสอน รองรับการใช้งานที่หลากหลายเหมาะสำหรับการบรรยาย การประชุมขนาดกลาง และกิจกรรมต่าง ๆ</p>
+          <p class="description" id="room-description">ห้องเรียนมาตรฐาน สำหรับการเรียนการสอน รองรับการใช้งานที่หลากหลายเหมาะสำหรับการบรรยาย การประชุมขนาดกลาง และกิจกรรมต่าง ๆ</p>
         </div>
         <div class="room-meta">
           <h2>อุปกรณ์และสิ่งอำนวยความสะดวก</h2>
@@ -36,10 +45,12 @@
         </div>
       </section>
     </main>
+
     <footer class="site-footer">
       <div class="footer-brand"><img class="footer-logo" src="assets/cstu-logo.png" alt="Computer Science Thammasat University" /><p>สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต<br />อาคารบรรยายรวม 2 คณะวิทยาศาสตร์และเทคโนโลยี<br />มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต ปทุมธานี 12120</p></div>
       <div class="footer-contact"><h2>โทรศัพท์</h2><p>0-2986-9154, 0-2986-9156, 0-2986-9138-39,<br />0-2564-4440-59 ต่อ 2157,2714</p><p>โทรสาร : 0-2986-9157</p><p>Email : <a href="mailto:scitu_cs@sci.tu.ac.th">scitu_cs@sci.tu.ac.th</a></p><h2>ช่องทางการติดตาม</h2><p><a class="facebook-link" href="#facebook"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 0-10.4 8.9v-6.3H8.3V12h2.3v-2c0-2.3 1.4-3.6 3.5-3.6 1 0 2 .2 2 .2v2.2h-1.2c-1.2 0-1.6.8-1.6 1.5V12H16l-.5 2.6h-2.3v6.3A9 9 0 0 0 21 12Z"/></svg>CSTUadmissioncenter</a></p></div>
     </footer>
+
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <script>lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });</script>
     <script src="components/header-component.js"></script>

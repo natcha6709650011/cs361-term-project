@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  "https://aisw93f81a.execute-api.us-east-1.amazonaws.com/v1";
+  "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1";
 
 document.addEventListener("DOMContentLoaded", loadRoomDetail);
 

@@ -2,7 +2,7 @@ USE cstu_room_db;
 
 CREATE TABLE IF NOT EXISTS rooms (
     room_id INT AUTO_INCREMENT PRIMARY KEY,
-    room_number INT NOT NULL,
+    room_number INT NOT NULL UNIQUE,
     room_type_id INT NOT NULL,
     floor INT NOT NULL,
     capacity INT DEFAULT NULL,

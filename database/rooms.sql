@@ -26,111 +26,111 @@ INSERT IGNORE INTO rooms (
 ) VALUES 
 (
     106, 5, 1, NULL, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_134938.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_134938.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     107, 2, 1, 83, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_134750.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_134750.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     111, 2, 1, NULL, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_135153.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_135153.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     213, 2, 2, 60, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_135400.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_135400.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     214, 3, 2, NULL, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     215, 3, 2, NULL, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     301, 3, 3, 8, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     302, 3, 3, 8, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     303, 3, 3, 8, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     304, 3, 3, 8, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     305, 3, 3, 4, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     306, 1, 3, 48, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     307, 4, 3, 32, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_135823.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_135823.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     308, 1, 3, 70, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     TRUE, FALSE, TRUE
 ),
 (
     309, 1, 3, 70, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     TRUE, FALSE, TRUE
 ),
 (
     310, 1, 3, 70, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     TRUE, FALSE, TRUE
 ),
 (
     311, 1, 3, 35, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     312, 1, 3, 35, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140041+(1).jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "คอมพิวเตอร์"}, {"item": "โปรเจคเตอร์"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     313, 4, 3, 54, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_135823.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_135823.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     314, 3, 3, 8, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     315, 3, 3, 8, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 ),
 (
     316, 3, 3, 8, NULL, 
-    'https://cstu-room-images.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
+    'https://cstu-room-images1.s3.us-east-1.amazonaws.com/20260826_140251.jpg', '[{"item": "โต๊ะ"}, {"item": "เก้าอี้"}, {"item": "ทีวี"}, {"item": "ปลั๊กไฟ"}]', 
     FALSE, FALSE, TRUE
 );

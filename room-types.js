@@ -13,42 +13,38 @@ const legacyTypePages = {
   meeting: "room-meeting.html",
 };
 
-// รองรับลิงก์เดิมจากเมนูเวอร์ชันแรก
-if (!document.body.dataset.roomType && legacyTypePages[typePage]) {
-  window.location.replace(legacyTypePages[typePage]);
-}
+const pageTypes = {
+  classroom: "ห้องเรียน",
+  meeting: "ห้องประชุม",
+  lab: "ห้องปฏิบัติการคอมพิวเตอร์",
+  activity: "ห้องกิจกรรมนักศึกษา",
+  coworking: "Co-Working Space",
+};
 
-const MEETING_ROOMS = [
-  ["214", 2, 8],
-  ["215", 2, 8],
-  ["301", 3, 8],
-  ["302", 3, 8],
-  ["303", 3, 8],
-  ["304", 3, 8],
-  ["305", 3, 4],
-  ["314", 3, 8],
-  ["315", 3, 8],
-  ["316", 3, 8],
-];
-
-const LAB_ROOMS = [
-  ["107", 1, 84],
-  ["111", 1, 48],
-  ["213", 2, 60],
-];
-
-const ACTIVITY_ROOMS = [
-  ["106", 1, null],
-];
-
-const COWORKING_ROOMS = [
-  ["307", 3, 32],
-  ["313", 3, 54],
-];
+const typeDestinations = {
+  "ห้องเรียน": "room-types.html",
+  "ห้องประชุม": "room-meeting.html",
+  "ห้องปฏิบัติการ": "room-lab.html",
+  "ห้องปฏิบัติการคอมพิวเตอร์": "room-lab.html",
+  "ห้องแลป": "room-lab.html",
+  "ห้องกิจกรรม": "room-activity.html",
+  "ห้องกิจกรรมนักศึกษา": "room-activity.html",
+  coworkingspace: "room-coworking.html",
+  coworking: "room-coworking.html",
+  "โคเวิร์กกิงสเปซ": "room-coworking.html",
+};
 
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#room-search");
 const searchMessage = document.querySelector("#search-message");
+const roomGrid = document.querySelector("#room-list-grid");
+const roomCount = document.querySelector("#room-count");
+let allRooms = [];
+
+// รองรับลิงก์เดิมจากเมนูเวอร์ชันแรก
+if (!document.body.dataset.roomType && legacyTypePages[typePage]) {
+  window.location.replace(legacyTypePages[typePage]);
+}
 
 function normalizeSearchText(value) {
   return String(value ?? "")
@@ -57,114 +53,26 @@ function normalizeSearchText(value) {
     .replace(/[\-–—]/g, "");
 }
 
-function filterVisibleRoomCards(keyword) {
-  const normalizedKeyword = normalizeSearchText(keyword);
-  const cards = [...document.querySelectorAll("#room-list-grid .room-card")];
-  const count = document.querySelector("#room-count");
-
-  const matchedCards = cards.filter((card) => {
-    const matches = !normalizedKeyword || normalizeSearchText(card.textContent).includes(normalizedKeyword);
-    card.hidden = !matches;
-    return matches;
-  });
-
-  if (count) {
-    count.textContent = normalizedKeyword
-      ? `พบ ${matchedCards.length} ห้อง`
-      : `จำนวน ${cards.length} ห้อง`;
-  }
-
-  searchMessage.textContent = normalizedKeyword
-    ? matchedCards.length
-      ? `พบห้องที่ตรงกับ “${keyword}” ${matchedCards.length} ห้อง`
-      : `ไม่พบห้องที่ตรงกับ “${keyword}”`
-    : "แสดงห้องทั้งหมด";
-}
-
-if (searchForm) {
-  searchForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const keyword = searchInput.value.trim();
-    const normalizedKeyword = keyword.replace(/\s+/g, "");
-    const availabilityKeywords = ["ห้องว่าง", "ค้นหาห้องว่าง", "เช็คห้องว่าง", "เช็กห้องว่าง"];
-
-    if (availabilityKeywords.includes(normalizedKeyword)) {
-      window.location.href = "room-search.html";
-      return;
-    }
-
-    const roomTypeDestinations = {
-      "ห้องเรียน": "room-types.html",
-      "ห้องประชุม": "room-meeting.html",
-      "ห้องปฏิบัติการ": "room-lab.html",
-      "ห้องปฏิบัติการคอมพิวเตอร์": "room-lab.html",
-      "ห้องแลป": "room-lab.html",
-      "ห้องกิจกรรม": "room-activity.html",
-      "ห้องกิจกรรมนักศึกษา": "room-activity.html",
-      "coworkingspace": "room-coworking.html",
-      "coworking": "room-coworking.html",
-      "โคเวิร์กกิงสเปซ": "room-coworking.html",
-    };
-    const destination = roomTypeDestinations[normalizedKeyword];
-
-    if (destination) {
-      window.location.href = destination;
-      return;
-    }
-
-    const roomNumber = keyword.match(/\d{3}/)?.[0];
-    const roomDestinations = {
-      "106": "room-activity.html",
-      "107": "room-lab.html",
-      "111": "room-lab.html",
-      "213": "room-lab.html",
-      "214": "room-meeting.html",
-      "215": "room-meeting.html",
-      "301": "room-meeting.html",
-      "302": "room-meeting.html",
-      "303": "room-meeting.html",
-      "304": "room-meeting.html",
-      "305": "room-meeting.html",
-      "306": "room-types.html",
-      "307": "room-coworking.html",
-      "308": "room-types.html",
-      "309": "room-types.html",
-      "310": "room-types.html",
-      "311": "room-types.html",
-      "312": "room-types.html",
-      "313": "room-coworking.html",
-      "314": "room-meeting.html",
-      "315": "room-meeting.html",
-      "316": "room-meeting.html",
-    };
-    const roomDestination = roomDestinations[roomNumber];
-    const currentPage = window.location.pathname.split("/").pop() || "room-types.html";
-
-    if (roomDestination && roomDestination !== currentPage) {
-      window.location.href = roomDestination;
-      return;
-    }
-
-    filterVisibleRoomCards(keyword);
-  });
-}
-
-// รองรับทั้งรูปแบบ [] และ { data: [] }
 function getRoomsList(payload) {
   if (Array.isArray(payload)) return payload;
-
   return payload?.data ?? payload?.rooms ?? payload?.items ?? [];
 }
 
 function getTypeName(room) {
-  return (
-    room?.room_type?.type_name ??
-    room?.room_type ??
-    room?.room_type_name ??
-    room?.type_name ??
-    ""
-  );
+  return room?.room_type?.type_name ?? room?.room_type ?? room?.room_type_name ?? room?.type_name ?? "";
+}
+
+function getAmenities(room) {
+  const rawAmenities = room?.amenities_json ?? room?.amenities ?? [];
+
+  try {
+    const amenities = typeof rawAmenities === "string" ? JSON.parse(rawAmenities) : rawAmenities;
+    return Array.isArray(amenities)
+      ? amenities.map((amenity) => amenity?.item ?? amenity?.name ?? amenity).filter(Boolean)
+      : [];
+  } catch {
+    return [];
+  }
 }
 
 function capacityLabel(capacity) {
@@ -173,362 +81,129 @@ function capacityLabel(capacity) {
       <circle cx="12" cy="7" r="3.25"></circle>
       <path d="M5 20c.5-3.8 3-6 7-6s6.5 2.2 7 6"></path>
     </svg>
-    ${capacity ?? "-"} ที่นั่ง
+    ${capacity ?? "ไม่ระบุ"} ${capacity ? "ที่นั่ง" : ""}
   `;
 }
 
-// ==============================
-// ห้องประชุม
-// ==============================
-
-function createMeetingCard([number, floor, capacity]) {
+function createRoomCard(room) {
+  const number = room.room_number ?? room.roomNumber;
+  const typeName = getTypeName(room);
+  const floor = room.floor ?? "-";
+  const amenities = getAmenities(room);
   const card = document.createElement("article");
+  const image = document.createElement("div");
+  const detail = document.createElement("div");
 
   card.className = "room-card";
+  image.className = "room-card__image";
+  detail.className = "room-card__detail";
 
-  card.innerHTML = `
-    <div class="room-card__image">
-      <b>ห้องประชุม</b>
-    </div>
+  if (room.image_url) image.style.backgroundImage = `url("${room.image_url}")`;
 
-    <div class="room-card__detail">
-      <h3>บร2-${number}</h3>
+  const badge = document.createElement("b");
+  badge.textContent = typeName;
+  image.append(badge);
 
-      <p>ห้องประชุม ${number} ชั้น ${floor}</p>
+  const heading = document.createElement("h3");
+  heading.textContent = `บร2-${number}`;
+  const location = document.createElement("p");
+  location.textContent = `${typeName} ${number} ชั้น ${floor}`;
+  const tags = document.createElement("div");
+  tags.className = "tags";
+  amenities.forEach((amenity) => {
+    const tag = document.createElement("span");
+    tag.textContent = amenity;
+    tags.append(tag);
+  });
 
-      <div class="tags">
-        <span>โต๊ะ</span>
-        <span>เก้าอี้</span>
-        <span>ทีวี</span>
-        <span>ปลั๊กไฟ</span>
-      </div>
-
-      <footer>
-        <span class="capacity">
-          ${capacityLabel(capacity)}
-        </span>
-
-        <a href="room-detail.html?room=${number}">
-          ดูรายละเอียดเพิ่มเติม
-        </a>
-      </footer>
-    </div>
-  `;
-
+  const footer = document.createElement("footer");
+  const capacity = document.createElement("span");
+  capacity.className = "capacity";
+  capacity.innerHTML = capacityLabel(room.capacity);
+  const link = document.createElement("a");
+  link.href = `room-detail.html?room=${encodeURIComponent(number)}`;
+  link.textContent = "ดูรายละเอียดเพิ่มเติม";
+  footer.append(capacity, link);
+  detail.append(heading, location, tags, footer);
+  card.append(image, detail);
   return card;
 }
 
-// ==============================
-// ห้องปฏิบัติการ
-// ==============================
-
-function createLabCard([number, floor, capacity]) {
-  const card = document.createElement("article");
-
-  card.className = "room-card";
-
-  card.innerHTML = `
-    <div class="room-card__image">
-      <b>ห้องปฏิบัติการ</b>
-    </div>
-
-    <div class="room-card__detail">
-      <h3>บร2-${number}</h3>
-
-      <p>ห้องปฏิบัติการ ${number} ชั้น ${floor}</p>
-
-      <div class="tags">
-        <span>โต๊ะ</span>
-        <span>เก้าอี้</span>
-        <span>คอมพิวเตอร์</span>
-        <span>โปรเจคเตอร์</span>
-      </div>
-
-      <footer>
-        <span class="capacity">
-          ${capacityLabel(capacity)}
-        </span>
-
-        <a href="room-detail.html?room=${number}">
-          ดูรายละเอียดเพิ่มเติม
-        </a>
-      </footer>
-    </div>
-  `;
-
-  return card;
+function roomsForCurrentPage() {
+  const expectedType = pageTypes[typePage] ?? pageTypes.classroom;
+  return allRooms.filter((room) => getTypeName(room) === expectedType);
 }
 
-// ==============================
-// ห้องกิจกรรม
-// ==============================
-
-function createActivityCard([number, floor, capacity]) {
-  const card = document.createElement("article");
-
-  card.className = "room-card";
-
-  card.innerHTML = `
-    <div class="room-card__image">
-      <b>ห้องกิจกรรมนักศึกษา</b>
-    </div>
-
-    <div class="room-card__detail">
-      <h3>บร2-${number}</h3>
-
-      <p>ห้องกิจกรรม ${number} ชั้น ${floor}</p>
-
-      <div class="tags">
-        <span>โต๊ะ</span>
-        <span>เก้าอี้</span>
-      </div>
-
-      <footer>
-        <span class="capacity">
-          ${capacityLabel(capacity)}
-        </span>
-
-        <a href="room-detail.html?room=${number}">
-          ดูรายละเอียดเพิ่มเติม
-        </a>
-      </footer>
-    </div>
-  `;
-
-  return card;
+function renderRooms(rooms) {
+  if (!roomGrid) return;
+  roomGrid.replaceChildren(...rooms.map(createRoomCard));
+  if (roomCount) roomCount.textContent = `จำนวน ${rooms.length} ห้อง`;
 }
 
-// ==============================
-// Co-Working Space
-// ==============================
+function filterVisibleRoomCards(keyword) {
+  const normalizedKeyword = normalizeSearchText(keyword);
+  const cards = [...document.querySelectorAll("#room-list-grid .room-card")];
+  const matchedCards = cards.filter((card) => {
+    const matches = !normalizedKeyword || normalizeSearchText(card.textContent).includes(normalizedKeyword);
+    card.hidden = !matches;
+    return matches;
+  });
 
-function createCoworkingCard([number, floor, capacity]) {
-  const card = document.createElement("article");
-
-  card.className = "room-card";
-
-  card.innerHTML = `
-    <div class="room-card__image">
-      <b>Co-Working Space</b>
-    </div>
-
-    <div class="room-card__detail">
-      <h3>บร2-${number}</h3>
-
-      <p>Co-Working Space ${number} ชั้น ${floor}</p>
-
-      <div class="tags">
-        <span>โต๊ะ</span>
-        <span>เก้าอี้</span>
-        <span>ปลั๊กไฟ</span>
-      </div>
-
-      <footer>
-        <span class="capacity">
-          ${capacityLabel(capacity)}
-        </span>
-
-        <a href="room-detail.html?room=${number}">
-          ดูรายละเอียดเพิ่มเติม
-        </a>
-      </footer>
-    </div>
-  `;
-
-  return card;
+  if (roomCount) roomCount.textContent = normalizedKeyword ? `พบ ${matchedCards.length} ห้อง` : `จำนวน ${cards.length} ห้อง`;
+  if (searchMessage) {
+    searchMessage.textContent = normalizedKeyword
+      ? matchedCards.length
+        ? `พบห้องที่ตรงกับ “${keyword}” ${matchedCards.length} ห้อง`
+        : `ไม่พบห้องที่ตรงกับ “${keyword}”`
+      : "แสดงห้องทั้งหมด";
+  }
 }
 
-// ==============================
-// หน้า Meeting
-// ==============================
+async function loadRooms() {
+  if (!roomGrid) return;
 
-function setMeetingPage() {
-  if (typePage !== "meeting") return;
-
-  document.title = "ห้องประชุม | CS Thammasat";
-
-  document.querySelector(".type-hero h1").textContent =
-    "ห้องประชุม";
-
-  document.querySelector(".type-hero__image").style.backgroundImage =
-    "url('assets/bor2-214.jpg')";
-
-  document.querySelector(".room-list h2").textContent =
-    "ห้องประชุม";
-
-  document.querySelector("#room-count").textContent =
-    `จำนวน ${MEETING_ROOMS.length} ห้อง`;
-
-  const roomList = document.querySelector(".room-list");
-  const grid = document.querySelector("#room-list-grid");
-
-  roomList.classList.add("room-list--meeting");
-
-  grid.replaceChildren(
-    ...MEETING_ROOMS.map(createMeetingCard)
-  );
-}
-
-// ==============================
-// หน้า Lab
-// ==============================
-
-function setLabPage() {
-  if (typePage !== "lab") return;
-
-  document.title =
-    "ห้องปฏิบัติการคอมพิวเตอร์ | CS Thammasat";
-
-  document.querySelector(".type-hero h1").textContent =
-    "ห้องปฏิบัติการคอมพิวเตอร์";
-
-  document.querySelector(".type-hero__image").style.backgroundImage =
-    "url('assets/bor2-107.jpg')";
-
-  document.querySelector(".room-list h2").textContent =
-    "ห้องปฏิบัติการคอมพิวเตอร์";
-
-  document.querySelector("#room-count").textContent =
-    `จำนวน ${LAB_ROOMS.length} ห้อง`;
-
-  const roomList = document.querySelector(".room-list");
-  const grid = document.querySelector("#room-list-grid");
-
-  roomList.classList.add("room-list--lab");
-
-  grid.replaceChildren(
-    ...LAB_ROOMS.map(createLabCard)
-  );
-}
-
-// ==============================
-// หน้า Activity
-// ==============================
-
-function setActivityPage() {
-  if (typePage !== "activity") return;
-
-  document.title =
-    "ห้องกิจกรรมนักศึกษา | CS Thammasat";
-
-  document.querySelector(".type-hero h1").textContent =
-    "ห้องกิจกรรมนักศึกษา";
-
-  document.querySelector(".type-hero__image").style.backgroundImage =
-    "url('assets/bor2-106.jpg')";
-
-  document.querySelector(".room-list h2").textContent =
-    "ห้องกิจกรรมนักศึกษา";
-
-  document.querySelector("#room-count").textContent =
-    `จำนวน ${ACTIVITY_ROOMS.length} ห้อง`;
-
-  const roomList = document.querySelector(".room-list");
-  const grid = document.querySelector("#room-list-grid");
-
-  roomList.classList.add("room-list--activity");
-
-  grid.replaceChildren(
-    ...ACTIVITY_ROOMS.map(createActivityCard)
-  );
-}
-
-// ==============================
-// หน้า Co-Working
-// ==============================
-
-function setCoworkingPage() {
-  if (typePage !== "coworking") return;
-
-  document.title =
-    "Co-Working Space | CS Thammasat";
-
-  document.querySelector(".type-hero h1").textContent =
-    "Co-Working Space";
-
-  document.querySelector(".type-hero__image").style.backgroundImage =
-    "url('assets/coworking-space.jpg')";
-
-  document.querySelector(".room-list h2").textContent =
-    "Co-Working Space";
-
-  document.querySelector("#room-count").textContent =
-    `จำนวน ${COWORKING_ROOMS.length} ห้อง`;
-
-  const roomList = document.querySelector(".room-list");
-  const grid = document.querySelector("#room-list-grid");
-
-  roomList.classList.add("room-list--coworking");
-
-  grid.replaceChildren(
-    ...COWORKING_ROOMS.map(createCoworkingCard)
-  );
-}
-
-// ==============================
-// โหลด API
-// ==============================
-
-async function loadClassrooms() {
   try {
-    const response = await fetch(ROOMS_API_URL, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    const response = await fetch(ROOMS_API_URL, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    allRooms = getRoomsList(await response.json());
+    renderRooms(roomsForCurrentPage());
+  } catch (error) {
+    console.warn("ไม่สามารถโหลดรายการห้องจาก API ได้", error);
+    if (searchMessage) searchMessage.textContent = "ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง";
+  }
+}
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+if (searchForm) {
+  searchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const keyword = searchInput.value.trim();
+    const normalizedKeyword = normalizeSearchText(keyword);
+    const availabilityKeywords = ["ห้องว่าง", "ค้นหาห้องว่าง", "เช็คห้องว่าง", "เช็กห้องว่าง"];
+
+    if (availabilityKeywords.includes(normalizedKeyword)) {
+      window.location.href = "room-search.html";
+      return;
     }
 
-    const selectedRooms = getRoomsList(
-      await response.json()
-    ).filter(
-      (room) =>
-        getTypeName(room) ===
-        (
-          {
-            meeting: "ห้องประชุม",
-            lab: "ห้องปฏิบัติการคอมพิวเตอร์",
-            activity: "ห้องกิจกรรมนักศึกษา",
-            coworking: "Co-Working Space",
-          }[typePage] ?? "ห้องเรียน"
-        )
-    );
+    const typeDestination = typeDestinations[normalizedKeyword];
+    if (typeDestination) {
+      window.location.href = typeDestination;
+      return;
+    }
 
-    console.info(
-      `พบข้อมูล${getTypeName(selectedRooms[0]) || "ห้อง"}จาก API`,
-      selectedRooms.length,
-      "ห้อง"
-    );
+    const roomNumber = keyword.match(/\d{3}/)?.[0];
+    const matchedRoom = allRooms.find((room) => String(room.room_number) === roomNumber);
+    if (matchedRoom) {
+      const roomDestination = typeDestinations[normalizeSearchText(getTypeName(matchedRoom))];
+      const currentPage = window.location.pathname.split("/").pop() || "room-types.html";
+      if (roomDestination && roomDestination !== currentPage) {
+        window.location.href = roomDestination;
+        return;
+      }
+    }
 
-  } catch (error) {
-    console.warn(
-      "ไม่สามารถโหลดรายการห้องเรียนจาก API ได้ จึงแสดงข้อมูลตัวอย่างแทน",
-      error
-    );
-  }
+    filterVisibleRoomCards(keyword);
+  });
 }
 
-// ==============================
-// เริ่มทำงาน
-// ==============================
-
-setMeetingPage();
-setLabPage();
-setActivityPage();
-setCoworkingPage();
-
-// เปลี่ยนสัญลักษณ์ตัวอักษรเดิมในหน้า classroom เป็นไอคอนรูปคน
-document.querySelectorAll(".capacity").forEach((capacity) => {
-  if (!capacity.querySelector(".person-icon")) {
-    const text = capacity.textContent
-      .replace("♙", "")
-      .replace("ที่นั่ง", "")
-      .trim();
-
-    capacity.innerHTML = capacityLabel(text);
-  }
-});
-
-loadClassrooms();
+loadRooms();

@@ -228,16 +228,17 @@ h1 {
   }
 
 .site-footer {
-  background:#a5a5a5;
-  color:#fff;
+  background:#e5e7eb;
+  color:#1e293a;
   display:grid;
   grid-template-columns:1fr 1fr;
   padding:28px max(24px,14vw);
-  gap:62px;
+  column-gap:62px;
+  row-gap:18px;
   }
 
 .footer-brand {
-  border-right:2px solid #171717;
+  border-right:1px solid #9ca3af;
   padding:10px 58px 15px 0;
   }
 
@@ -263,8 +264,18 @@ h1 {
   }
 
 .footer-contact a {
-  color:white;
+  color:#1e293a;
   text-decoration:underline;
+  }
+
+.footer-copyright {
+  grid-column:1 / -1;
+  margin:0;
+  padding-top:16px;
+  border-top:1px solid #9ca3af;
+  color:#4b5563;
+  font-size:13px !important;
+  text-align:center;
   }
 
 .facebook-link {

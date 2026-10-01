@@ -285,6 +285,43 @@ a {
   font-size: 13px;
 }
 
+.availability-cta {
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  min-height:50px;
+  padding:0 26px;
+  border-radius:7px;
+  background:var(--red);
+  color:#fff;
+  font-size:19px;
+  font-weight:700;
+  box-shadow:0 2px 4px #0002;
+  transition:background .18s ease,transform .18s ease;
+}
+
+.availability-cta:hover,
+.availability-cta:focus-visible {
+  background:#850020;
+  transform:translateY(-1px);
+}
+
+.availability-cta svg {
+  width:26px;
+  height:26px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.availability-hint {
+  margin:6px 0 0;
+  color:#7a8290;
+  font-size:14px;
+}
+
 .hero-image {
   min-height: 380px;
   background: url('assets/faculty-building.jpg') center / cover no-repeat;
@@ -482,15 +519,16 @@ a {
 .site-footer {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 62px;
+  column-gap: 62px;
+  row-gap: 18px;
   padding: 28px max(24px, 14vw);
-  background: #a5a5a5;
-  color: #fff;
+  background: #e5e7eb;
+  color: #1e293a;
 }
 
 .footer-brand {
   padding: 10px 58px 15px 0;
-  border-right: 2px solid #171717;
+  border-right: 1px solid #9ca3af;
 }
 
 .footer-logo {
@@ -514,8 +552,16 @@ a {
   margin: 0 0 22px;
 }
 
-.footer-contact a {
-  text-decoration: underline;
+.footer-contact a { color: #1e293a; text-decoration: underline; }
+
+.footer-copyright {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid #9ca3af;
+  color: #4b5563;
+  font-size: 13px !important;
+  text-align: center;
 }
 
 .facebook-link {
@@ -570,7 +616,7 @@ a {
   .type-card:nth-child(5) { border-top: 1px solid var(--line); }
   .room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
   .site-footer { grid-template-columns: 1fr; gap: 15px; }
-  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #555; }
+  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #9ca3af; }
 }
 
 @media (max-width: 430px) {

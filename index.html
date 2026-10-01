@@ -27,21 +27,16 @@
             ในสาขาวิชาวิทยาการคอมพิวเตอร์
           </p>
 
-          <form class="search-form" id="search-form">
-            <label class="sr-only" for="room-search">ค้นหาห้อง</label>
-            <input
-              id="room-search"
-              type="search"
-              placeholder="ค้นหาหมายเลขห้อง เช่น 301, ห้องประชุม, ห้องแลป"
-            />
-            <button type="submit" aria-label="ค้นหา">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="10.5" cy="10.5" r="6.5" />
-                <path d="m15.5 15.5 5 5" />
-              </svg>
-            </button>
-          </form>
-          <p class="search-message" id="search-message" aria-live="polite"></p>
+          <a class="availability-cta" href="room-search.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="5" width="13" height="14" rx="2" />
+              <path d="M7 3v4M12 3v4M3 10h13" />
+              <circle cx="17" cy="17" r="3.5" />
+              <path d="m19.5 19.5 2 2" />
+            </svg>
+            <span>ค้นหาห้องว่าง</span>
+          </a>
+          <p class="availability-hint">เลือกวัน เวลา ความจุ และประเภทห้อง</p>
         </div>
         <div
           class="hero-image"
@@ -188,11 +183,11 @@
         <p>โทรสาร : 0-2986-9157</p>
         <p>Email : <a href="mailto:scitu_cs@sci.tu.ac.th">scitu_cs@sci.tu.ac.th</a></p>
         <h2>ช่องทางการติดตาม</h2>
-        <p><a class="facebook-link" href="#facebook"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 0-10.4 8.9v-6.3H8.3V12h2.3v-2c0-2.3 1.4-3.6 3.5-3.6 1 0 2 .2 2 .2v2.2h-1.2c-1.2 0-1.6.8-1.6 1.5V12H16l-.5 2.6h-2.3v6.3A9 9 0 0 0 21 12Z" /></svg>CSTUadmissioncenter</a></p>
+        <p><a class="facebook-link" href="https://www.facebook.com/CSTUadmissioncenter" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 0-10.4 8.9v-6.3H8.3V12h2.3v-2c0-2.3 1.4-3.6 3.5-3.6 1 0 2 .2 2 .2v2.2h-1.2c-1.2 0-1.6.8-1.6 1.5V12H16l-.5 2.6h-2.3v6.3A9 9 0 0 0 21 12Z" /></svg>CSTUadmissioncenter</a></p>
       </div>
+      <p class="footer-copyright">© 2026 Computer Science Thammasat University. All rights reserved.</p>
     </footer>
 
     <script src="components/header-component.js"></script>
-    <script src="script.js"></script>
   </body>
 </html>

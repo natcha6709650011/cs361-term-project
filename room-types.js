@@ -50,15 +50,103 @@ const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#room-search");
 const searchMessage = document.querySelector("#search-message");
 
+function normalizeSearchText(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[\-–—]/g, "");
+}
+
+function filterVisibleRoomCards(keyword) {
+  const normalizedKeyword = normalizeSearchText(keyword);
+  const cards = [...document.querySelectorAll("#room-list-grid .room-card")];
+  const count = document.querySelector("#room-count");
+
+  const matchedCards = cards.filter((card) => {
+    const matches = !normalizedKeyword || normalizeSearchText(card.textContent).includes(normalizedKeyword);
+    card.hidden = !matches;
+    return matches;
+  });
+
+  if (count) {
+    count.textContent = normalizedKeyword
+      ? `พบ ${matchedCards.length} ห้อง`
+      : `จำนวน ${cards.length} ห้อง`;
+  }
+
+  searchMessage.textContent = normalizedKeyword
+    ? matchedCards.length
+      ? `พบห้องที่ตรงกับ “${keyword}” ${matchedCards.length} ห้อง`
+      : `ไม่พบห้องที่ตรงกับ “${keyword}”`
+    : "แสดงห้องทั้งหมด";
+}
+
 if (searchForm) {
   searchForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
     const keyword = searchInput.value.trim();
+    const normalizedKeyword = keyword.replace(/\s+/g, "");
+    const availabilityKeywords = ["ห้องว่าง", "ค้นหาห้องว่าง", "เช็คห้องว่าง", "เช็กห้องว่าง"];
 
-    searchMessage.textContent = keyword
-      ? `กำลังค้นหา “${keyword}” ในห้องเรียน`
-      : "กรุณาระบุชื่อหรือหมายเลขห้อง";
+    if (availabilityKeywords.includes(normalizedKeyword)) {
+      window.location.href = "room-search.html";
+      return;
+    }
+
+    const roomTypeDestinations = {
+      "ห้องเรียน": "room-types.html",
+      "ห้องประชุม": "room-meeting.html",
+      "ห้องปฏิบัติการ": "room-lab.html",
+      "ห้องปฏิบัติการคอมพิวเตอร์": "room-lab.html",
+      "ห้องแลป": "room-lab.html",
+      "ห้องกิจกรรม": "room-activity.html",
+      "ห้องกิจกรรมนักศึกษา": "room-activity.html",
+      "coworkingspace": "room-coworking.html",
+      "coworking": "room-coworking.html",
+      "โคเวิร์กกิงสเปซ": "room-coworking.html",
+    };
+    const destination = roomTypeDestinations[normalizedKeyword];
+
+    if (destination) {
+      window.location.href = destination;
+      return;
+    }
+
+    const roomNumber = keyword.match(/\d{3}/)?.[0];
+    const roomDestinations = {
+      "106": "room-activity.html",
+      "107": "room-lab.html",
+      "111": "room-lab.html",
+      "213": "room-lab.html",
+      "214": "room-meeting.html",
+      "215": "room-meeting.html",
+      "301": "room-meeting.html",
+      "302": "room-meeting.html",
+      "303": "room-meeting.html",
+      "304": "room-meeting.html",
+      "305": "room-meeting.html",
+      "306": "room-types.html",
+      "307": "room-coworking.html",
+      "308": "room-types.html",
+      "309": "room-types.html",
+      "310": "room-types.html",
+      "311": "room-types.html",
+      "312": "room-types.html",
+      "313": "room-coworking.html",
+      "314": "room-meeting.html",
+      "315": "room-meeting.html",
+      "316": "room-meeting.html",
+    };
+    const roomDestination = roomDestinations[roomNumber];
+    const currentPage = window.location.pathname.split("/").pop() || "room-types.html";
+
+    if (roomDestination && roomDestination !== currentPage) {
+      window.location.href = roomDestination;
+      return;
+    }
+
+    filterVisibleRoomCards(keyword);
   });
 }
 

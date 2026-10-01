@@ -9,7 +9,7 @@ async function loadRoomDetail() {
   const roomPage = document.querySelector("#room-page");
 
   try {
-    if (loading) loading.style.display = "none";
+    if (loading) loading.style.display = "flex";
     if (errorBox) errorBox.style.display = "none";
     if (roomPage) roomPage.style.display = "none";
 
@@ -48,13 +48,14 @@ async function loadRoomDetail() {
 
     displayRoomDetail(room);
 
+    if (loading) loading.style.display = "none";
     if (roomPage) roomPage.style.display = "block";
   } catch (error) {
     console.error("Error loading room detail:", error);
 
     if (loading) loading.style.display = "none";
     if (roomPage) roomPage.style.display = "none";
-    if (errorBox) errorBox.style.display = "none";
+    if (errorBox) errorBox.style.display = "flex";
   }
 }
 

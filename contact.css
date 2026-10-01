@@ -55,19 +55,21 @@ body {
 .site-footer {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 62px;
+  column-gap: 62px;
+  row-gap: 18px;
   margin-top: auto;
   padding: 28px max(24px, 14vw);
-  background: #a5a5a5;
-  color: #fff;
+  background: #e5e7eb;
+  color: #1e293a;
 }
 
-.footer-brand { padding: 10px 58px 15px 0; border-right: 2px solid #171717; }
+.footer-brand { padding: 10px 58px 15px 0; border-right: 1px solid #9ca3af; }
 .footer-logo { display: block; width: 205px; height: auto; mix-blend-mode: multiply; }
 .site-footer p { font-size: 15px; line-height: 1.6; }
 .footer-contact h2 { margin: 4px 0 9px; font-size: 15px; }
 .footer-contact p { margin: 0 0 22px; }
-.footer-contact a { color: #fff; text-decoration: underline; }
+.footer-contact a { color: #1e293a; text-decoration: underline; }
+.footer-copyright { grid-column: 1 / -1; margin: 0; padding-top: 16px; border-top: 1px solid #9ca3af; color: #4b5563; font-size: 13px !important; text-align: center; }
 .facebook-link { display: inline-flex; align-items: center; gap: 5px; }
 .facebook-link svg { width: 18px; height: 18px; fill: #1877f2; }
 
@@ -75,5 +77,5 @@ body {
   .contact-page { min-height: 300px; padding-top: 40px; }
   .contact-card { width: 100%; padding: 24px; }
   .site-footer { grid-template-columns: 1fr; gap: 15px; }
-  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #555; }
+  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #9ca3af; }
 }

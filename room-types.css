@@ -11,6 +11,10 @@ a { color: inherit; text-decoration: none; }
 .type-hero__subtitle { margin: 0 0 18px; color: var(--gold); font-size: 18px; line-height: 1.55; }
 .type-hero__description { margin: 0 0 12px; color: #666; }
 .type-hero__image { min-height: 364px; background: url('assets/bor2-308.jpg') center 58% / cover no-repeat; }
+body[data-room-type="meeting"] .type-hero__image { background-image: url('assets/bor2-214.jpg'); }
+body[data-room-type="lab"] .type-hero__image { background-image: url('assets/bor2-107.jpg'); }
+body[data-room-type="activity"] .type-hero__image { background-image: url('assets/bor2-106.jpg'); }
+body[data-room-type="coworking"] .type-hero__image { background-image: url('assets/coworking-space.jpg'); }
 
 .search-form { display: flex; gap: 10px; }
 .search-form input { flex: 1; min-width: 0; padding: 13px 16px; border: 1px solid #e4e4e4; border-radius: 8px; box-shadow: 0 3px 3px #0002; font: inherit; }

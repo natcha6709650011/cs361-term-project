@@ -1,11 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap");
 
 :root {
   --red: #d10a3a;
   --gold: #f3bd22;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   display: flex;
@@ -13,7 +15,10 @@ body {
   min-height: 100vh;
   margin: 0;
   color: #171717;
-  font: 15px/1.55 'Noto Sans Thai', Arial, sans-serif;
+  font:
+    15px/1.55 "Noto Sans Thai",
+    Arial,
+    sans-serif;
 }
 
 /* เนื้อหาหลักของหน้าติดต่อ */
@@ -63,19 +68,67 @@ body {
   color: #1e293a;
 }
 
-.footer-brand { padding: 10px 58px 15px 0; border-right: 1px solid #9ca3af; }
-.footer-logo { display: block; width: 205px; height: auto; mix-blend-mode: multiply; }
-.site-footer p { font-size: 15px; line-height: 1.6; }
-.footer-contact h2 { margin: 4px 0 9px; font-size: 15px; }
-.footer-contact p { margin: 0 0 22px; }
-.footer-contact a { color: #1e293a; text-decoration: underline; }
-.footer-copyright { grid-column: 1 / -1; margin: 0; padding-top: 16px; border-top: 1px solid #9ca3af; color: #4b5563; font-size: 13px !important; text-align: center; }
-.facebook-link { display: inline-flex; align-items: center; gap: 5px; }
-.facebook-link svg { width: 18px; height: 18px; fill: #1877f2; }
+.footer-brand {
+  padding: 10px 58px 15px 0;
+  border-right: 1px solid #9ca3af;
+}
+.footer-logo {
+  display: block;
+  width: 205px;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+.site-footer p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+.footer-contact h2 {
+  margin: 4px 0 9px;
+  font-size: 15px;
+}
+.footer-contact p {
+  margin: 0 0 22px;
+}
+.footer-contact a {
+  color: #1e293a;
+  text-decoration: underline;
+}
+.footer-copyright {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid #9ca3af;
+  color: #4b5563;
+  font-size: 13px !important;
+  text-align: center;
+}
+.facebook-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.facebook-link svg {
+  width: 18px;
+  height: 18px;
+  fill: #1877f2;
+}
 
 @media (max-width: 650px) {
-  .contact-page { min-height: 300px; padding-top: 40px; }
-  .contact-card { width: 100%; padding: 24px; }
-  .site-footer { grid-template-columns: 1fr; gap: 15px; }
-  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #9ca3af; }
+  .contact-page {
+    min-height: 300px;
+    padding-top: 40px;
+  }
+  .contact-card {
+    width: 100%;
+    padding: 24px;
+  }
+  .site-footer {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .footer-brand {
+    padding: 0 0 18px;
+    border: 0;
+    border-bottom: 1px solid #9ca3af;
+  }
 }

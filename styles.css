@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap");
 
 /* สีหลักที่ใช้ซ้ำทั้งหน้า Home */
 :root {
@@ -21,7 +21,10 @@ html {
 body {
   margin: 0;
   color: #161616;
-  font: 15px/1.55 'Noto Sans Thai', Arial, sans-serif;
+  font:
+    15px/1.55 "Noto Sans Thai",
+    Arial,
+    sans-serif;
 }
 
 a {
@@ -163,7 +166,7 @@ a {
   height: 3px;
   border-radius: 2px;
   background: #f6c320;
-  content: '';
+  content: "";
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.18s ease-out;
@@ -286,45 +289,47 @@ a {
 }
 
 .availability-cta {
-  display:inline-flex;
-  align-items:center;
-  gap:12px;
-  min-height:50px;
-  padding:0 26px;
-  border-radius:7px;
-  background:var(--red);
-  color:#fff;
-  font-size:19px;
-  font-weight:700;
-  box-shadow:0 2px 4px #0002;
-  transition:background .18s ease,transform .18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 0 26px;
+  border-radius: 7px;
+  background: var(--red);
+  color: #fff;
+  font-size: 19px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px #0002;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .availability-cta:hover,
 .availability-cta:focus-visible {
-  background:#850020;
-  transform:translateY(-1px);
+  background: #850020;
+  transform: translateY(-1px);
 }
 
 .availability-cta svg {
-  width:26px;
-  height:26px;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .availability-hint {
-  margin:6px 0 0;
-  color:#7a8290;
-  font-size:14px;
+  margin: 6px 0 0;
+  color: #7a8290;
+  font-size: 14px;
 }
 
 .hero-image {
   min-height: 380px;
-  background: url('assets/faculty-building.jpg') center / cover no-repeat;
+  background: url("assets/faculty-building.jpg") center / cover no-repeat;
 }
 
 /* ส่วนประเภทห้อง */
@@ -441,10 +446,18 @@ a {
   background: linear-gradient(135deg, #edf0f2, #d7dde1);
 }
 
-.room-photo-bor2-308 { background: url('assets/bor2-308.jpg') center 58% / cover no-repeat; }
-.room-photo-bor2-107 { background: url('assets/bor2-107.jpg') center 58% / cover no-repeat; }
-.room-photo-bor2-214 { background: url('assets/bor2-214.jpg') center 58% / cover no-repeat; }
-.room-photo-bor2-106 { background: url('assets/bor2-106.jpg') center 58% / cover no-repeat; }
+.room-photo-bor2-308 {
+  background: url("assets/bor2-308.jpg") center 58% / cover no-repeat;
+}
+.room-photo-bor2-107 {
+  background: url("assets/bor2-107.jpg") center 58% / cover no-repeat;
+}
+.room-photo-bor2-214 {
+  background: url("assets/bor2-214.jpg") center 58% / cover no-repeat;
+}
+.room-photo-bor2-106 {
+  background: url("assets/bor2-106.jpg") center 58% / cover no-repeat;
+}
 
 .room-image b {
   position: absolute;
@@ -552,7 +565,10 @@ a {
   margin: 0 0 22px;
 }
 
-.footer-contact a { color: #1e293a; text-decoration: underline; }
+.footer-contact a {
+  color: #1e293a;
+  text-decoration: underline;
+}
 
 .footer-copyright {
   grid-column: 1 / -1;
@@ -585,48 +601,142 @@ a {
 }
 
 @media (max-width: 950px) {
-  .site-header { min-height: 76px; }
-  .brand { gap: 8px; }
-  .brand img { width: 82px; }
-  .brand-divider { height: 34px; }
-  .brand-name b { font-size: 27px; }
-  .brand-name span { font-size: 16px; }
-  .main-nav { gap: 20px; font-size: 13px; }
-  .hero-content { padding-right: 5vw; padding-left: 6vw; }
-  .room-grid { gap: 22px; }
-  .site-footer { padding-inline: 8vw; }
+  .site-header {
+    min-height: 76px;
+  }
+  .brand {
+    gap: 8px;
+  }
+  .brand img {
+    width: 82px;
+  }
+  .brand-divider {
+    height: 34px;
+  }
+  .brand-name b {
+    font-size: 27px;
+  }
+  .brand-name span {
+    font-size: 16px;
+  }
+  .main-nav {
+    gap: 20px;
+    font-size: 13px;
+  }
+  .hero-content {
+    padding-right: 5vw;
+    padding-left: 6vw;
+  }
+  .room-grid {
+    gap: 22px;
+  }
+  .site-footer {
+    padding-inline: 8vw;
+  }
 }
 
 @media (max-width: 700px) {
-  .site-header { padding: 13px 20px; }
-  .brand img { width: 74px; }
-  .brand-divider { height: 30px; }
-  .brand-name { gap: 5px; }
-  .brand-name b { font-size: 24px; }
-  .brand-name span { font-size: 13px; }
-  .menu-toggle { display: block; }
-  .main-nav { position: absolute; top: 100%; left: 0; display: none; width: 100%; padding: 15px 24px 22px; flex-direction: column; align-items: flex-start; gap: 14px; background: #fff; box-shadow: 0 4px 5px #0002; }
-  .main-nav.open { display: flex; }
-  .dropdown-menu { position: static; min-width: 260px; margin-top: 8px; }
-  .dropdown-menu a { padding: 6px 38px; }
-  .hero { grid-template-columns: 1fr; }
-  .hero-content { padding: 45px 24px 28px; }
-  .hero-image { min-height: 220px; }
-  .type-grid { grid-template-columns: repeat(2, 1fr); }
-  .type-card:nth-child(5) { border-top: 1px solid var(--line); }
-  .room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-  .site-footer { grid-template-columns: 1fr; gap: 15px; }
-  .footer-brand { padding: 0 0 18px; border: 0; border-bottom: 1px solid #9ca3af; }
+  .site-header {
+    padding: 13px 20px;
+  }
+  .brand img {
+    width: 74px;
+  }
+  .brand-divider {
+    height: 30px;
+  }
+  .brand-name {
+    gap: 5px;
+  }
+  .brand-name b {
+    font-size: 24px;
+  }
+  .brand-name span {
+    font-size: 13px;
+  }
+  .menu-toggle {
+    display: block;
+  }
+  .main-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    display: none;
+    width: 100%;
+    padding: 15px 24px 22px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    background: #fff;
+    box-shadow: 0 4px 5px #0002;
+  }
+  .main-nav.open {
+    display: flex;
+  }
+  .dropdown-menu {
+    position: static;
+    min-width: 260px;
+    margin-top: 8px;
+  }
+  .dropdown-menu a {
+    padding: 6px 38px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .hero-content {
+    padding: 45px 24px 28px;
+  }
+  .hero-image {
+    min-height: 220px;
+  }
+  .type-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .type-card:nth-child(5) {
+    border-top: 1px solid var(--line);
+  }
+  .room-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .site-footer {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .footer-brand {
+    padding: 0 0 18px;
+    border: 0;
+    border-bottom: 1px solid #9ca3af;
+  }
 }
 
 @media (max-width: 430px) {
-  .brand img { width: 54px; }
-  .brand-divider { display: none; }
-  .brand-name b { font-size: 22px; }
-  .brand-name span { font-size: 11px; }
-  .eyebrow { font-size: 27px; }
-  .hero h1 { font-size: 17px; }
-  .type-card { min-height: 140px; }
-  .room-grid { grid-template-columns: 1fr; }
-  .site-footer { padding: 28px 24px; }
+  .brand img {
+    width: 54px;
+  }
+  .brand-divider {
+    display: none;
+  }
+  .brand-name b {
+    font-size: 22px;
+  }
+  .brand-name span {
+    font-size: 11px;
+  }
+  .eyebrow {
+    font-size: 27px;
+  }
+  .hero h1 {
+    font-size: 17px;
+  }
+  .type-card {
+    min-height: 140px;
+  }
+  .room-grid {
+    grid-template-columns: 1fr;
+  }
+  .site-footer {
+    padding: 28px 24px;
+  }
 }

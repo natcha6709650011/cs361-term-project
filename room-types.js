@@ -22,16 +22,16 @@ const pageTypes = {
 };
 
 const typeDestinations = {
-  "ห้องเรียน": "room-types.html",
-  "ห้องประชุม": "room-meeting.html",
-  "ห้องปฏิบัติการ": "room-lab.html",
-  "ห้องปฏิบัติการคอมพิวเตอร์": "room-lab.html",
-  "ห้องแลป": "room-lab.html",
-  "ห้องกิจกรรม": "room-activity.html",
-  "ห้องกิจกรรมนักศึกษา": "room-activity.html",
+  ห้องเรียน: "room-types.html",
+  ห้องประชุม: "room-meeting.html",
+  ห้องปฏิบัติการ: "room-lab.html",
+  ห้องปฏิบัติการคอมพิวเตอร์: "room-lab.html",
+  ห้องแลป: "room-lab.html",
+  ห้องกิจกรรม: "room-activity.html",
+  ห้องกิจกรรมนักศึกษา: "room-activity.html",
   coworkingspace: "room-coworking.html",
   coworking: "room-coworking.html",
-  "โคเวิร์กกิงสเปซ": "room-coworking.html",
+  โคเวิร์กกิงสเปซ: "room-coworking.html",
 };
 
 const searchForm = document.querySelector("#search-form");
@@ -59,16 +59,27 @@ function getRoomsList(payload) {
 }
 
 function getTypeName(room) {
-  return room?.room_type?.type_name ?? room?.room_type ?? room?.room_type_name ?? room?.type_name ?? "";
+  return (
+    room?.room_type?.type_name ??
+    room?.room_type ??
+    room?.room_type_name ??
+    room?.type_name ??
+    ""
+  );
 }
 
 function getAmenities(room) {
   const rawAmenities = room?.amenities_json ?? room?.amenities ?? [];
 
   try {
-    const amenities = typeof rawAmenities === "string" ? JSON.parse(rawAmenities) : rawAmenities;
+    const amenities =
+      typeof rawAmenities === "string"
+        ? JSON.parse(rawAmenities)
+        : rawAmenities;
     return Array.isArray(amenities)
-      ? amenities.map((amenity) => amenity?.item ?? amenity?.name ?? amenity).filter(Boolean)
+      ? amenities
+          .map((amenity) => amenity?.item ?? amenity?.name ?? amenity)
+          .filter(Boolean)
       : [];
   } catch {
     return [];
@@ -144,12 +155,17 @@ function filterVisibleRoomCards(keyword) {
   const normalizedKeyword = normalizeSearchText(keyword);
   const cards = [...document.querySelectorAll("#room-list-grid .room-card")];
   const matchedCards = cards.filter((card) => {
-    const matches = !normalizedKeyword || normalizeSearchText(card.textContent).includes(normalizedKeyword);
+    const matches =
+      !normalizedKeyword ||
+      normalizeSearchText(card.textContent).includes(normalizedKeyword);
     card.hidden = !matches;
     return matches;
   });
 
-  if (roomCount) roomCount.textContent = normalizedKeyword ? `พบ ${matchedCards.length} ห้อง` : `จำนวน ${cards.length} ห้อง`;
+  if (roomCount)
+    roomCount.textContent = normalizedKeyword
+      ? `พบ ${matchedCards.length} ห้อง`
+      : `จำนวน ${cards.length} ห้อง`;
   if (searchMessage) {
     searchMessage.textContent = normalizedKeyword
       ? matchedCards.length
@@ -163,13 +179,17 @@ async function loadRooms() {
   if (!roomGrid) return;
 
   try {
-    const response = await fetch(ROOMS_API_URL, { headers: { Accept: "application/json" } });
+    const response = await fetch(ROOMS_API_URL, {
+      headers: { Accept: "application/json" },
+    });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     allRooms = getRoomsList(await response.json());
     renderRooms(roomsForCurrentPage());
   } catch (error) {
     console.warn("ไม่สามารถโหลดรายการห้องจาก API ได้", error);
-    if (searchMessage) searchMessage.textContent = "ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง";
+    if (searchMessage)
+      searchMessage.textContent =
+        "ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง";
   }
 }
 
@@ -178,7 +198,12 @@ if (searchForm) {
     event.preventDefault();
     const keyword = searchInput.value.trim();
     const normalizedKeyword = normalizeSearchText(keyword);
-    const availabilityKeywords = ["ห้องว่าง", "ค้นหาห้องว่าง", "เช็คห้องว่าง", "เช็กห้องว่าง"];
+    const availabilityKeywords = [
+      "ห้องว่าง",
+      "ค้นหาห้องว่าง",
+      "เช็คห้องว่าง",
+      "เช็กห้องว่าง",
+    ];
 
     if (availabilityKeywords.includes(normalizedKeyword)) {
       window.location.href = "room-search.html";
@@ -192,10 +217,14 @@ if (searchForm) {
     }
 
     const roomNumber = keyword.match(/\d{3}/)?.[0];
-    const matchedRoom = allRooms.find((room) => String(room.room_number) === roomNumber);
+    const matchedRoom = allRooms.find(
+      (room) => String(room.room_number) === roomNumber,
+    );
     if (matchedRoom) {
-      const roomDestination = typeDestinations[normalizeSearchText(getTypeName(matchedRoom))];
-      const currentPage = window.location.pathname.split("/").pop() || "room-types.html";
+      const roomDestination =
+        typeDestinations[normalizeSearchText(getTypeName(matchedRoom))];
+      const currentPage =
+        window.location.pathname.split("/").pop() || "room-types.html";
       if (roomDestination && roomDestination !== currentPage) {
         window.location.href = roomDestination;
         return;

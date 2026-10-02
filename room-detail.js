@@ -27,7 +27,7 @@ async function loadRoomDetail() {
         headers: {
           Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -59,7 +59,6 @@ async function loadRoomDetail() {
   }
 }
 
-
 // ==============================
 // helper
 // ==============================
@@ -67,13 +66,12 @@ async function loadRoomDetail() {
 function getRoomNumber(room) {
   return String(
     room?.room_number ??
-    room?.roomNumber ??
-    room?.number ??
-    room?.room_no ??
-    ""
+      room?.roomNumber ??
+      room?.number ??
+      room?.room_no ??
+      "",
   );
 }
-
 
 function getRoomType(room) {
   if (typeof room?.room_type === "string") {
@@ -95,12 +93,8 @@ function getRoomType(room) {
   return "ห้อง";
 }
 
-
 function getAmenities(room) {
-  let value =
-    room?.amenities ??
-    room?.amenities_json ??
-    [];
+  let value = room?.amenities ?? room?.amenities_json ?? [];
 
   if (typeof value === "string") {
     try {
@@ -121,22 +115,14 @@ function getAmenities(room) {
       }
 
       return (
-        item?.item ??
-        item?.name ??
-        item?.label ??
-        item?.amenity_name ??
-        ""
+        item?.item ?? item?.name ?? item?.label ?? item?.amenity_name ?? ""
       );
     })
     .filter(Boolean);
 }
 
-
 function getRoles(room) {
-  let value =
-    room?.allowed_roles ??
-    room?.allowed_roles_json ??
-    [];
+  let value = room?.allowed_roles ?? room?.allowed_roles_json ?? [];
 
   if (typeof value === "string") {
     try {
@@ -159,20 +145,16 @@ function getRoles(room) {
     phd: "นักศึกษาปริญญาเอก",
   };
 
-  return value.map((role) => {
-    if (typeof role === "string") {
-      return roleNames[role] || role;
-    }
+  return value
+    .map((role) => {
+      if (typeof role === "string") {
+        return roleNames[role] || role;
+      }
 
-    return (
-      role?.name ??
-      role?.label ??
-      role?.role_name ??
-      ""
-    );
-  }).filter(Boolean);
+      return role?.name ?? role?.label ?? role?.role_name ?? "";
+    })
+    .filter(Boolean);
 }
-
 
 function getDescription(room) {
   return (
@@ -185,55 +167,30 @@ function getDescription(room) {
   );
 }
 
-
 function getBuilding(room) {
-  return (
-    room?.building ??
-    room?.building_name ??
-    room?.buildingName ??
-    ""
-  );
+  return room?.building ?? room?.building_name ?? room?.buildingName ?? "";
 }
-
 
 function getRoomSize(room) {
-  return (
-    room?.room_size ??
-    room?.roomSize ??
-    room?.size ??
-    room?.size_m ??
-    ""
-  );
+  return room?.room_size ?? room?.roomSize ?? room?.size ?? room?.size_m ?? "";
 }
-
 
 // ==============================
 // display
 // ==============================
 
 function displayRoomDetail(room) {
-
   console.log("ข้อมูลที่จะนำมาแสดง:", room);
 
   const number = getRoomNumber(room);
 
-  const displayName = number
-    ? `บร2-${number}`
-    : "ไม่ระบุห้อง";
+  const displayName = number ? `บร2-${number}` : "ไม่ระบุห้อง";
 
   const type = getRoomType(room);
 
-  const floor =
-    room?.floor ??
-    room?.floor_number ??
-    room?.floorNumber ??
-    null;
+  const floor = room?.floor ?? room?.floor_number ?? room?.floorNumber ?? null;
 
-  const capacity =
-    room?.capacity ??
-    room?.seat_capacity ??
-    room?.seats ??
-    null;
+  const capacity = room?.capacity ?? room?.seat_capacity ?? room?.seats ?? null;
 
   const building = getBuilding(room);
 
@@ -255,7 +212,6 @@ function displayRoomDetail(room) {
     roomName.textContent = displayName;
   }
 
-
   // =========================
   // breadcrumb
   // =========================
@@ -265,7 +221,6 @@ function displayRoomDetail(room) {
   if (breadcrumb) {
     breadcrumb.textContent = displayName;
   }
-
 
   // =========================
   // ประเภทห้อง
@@ -277,7 +232,6 @@ function displayRoomDetail(room) {
     roomType.textContent = type;
   }
 
-
   // =========================
   // ตำแหน่ง
   // =========================
@@ -285,89 +239,62 @@ function displayRoomDetail(room) {
   const roomLocation = document.querySelector("#room-location");
 
   if (roomLocation) {
-
     if (floor !== null && floor !== "") {
-      roomLocation.textContent =
-        `ห้อง ${number} ชั้น ${floor}`;
+      roomLocation.textContent = `ห้อง ${number} ชั้น ${floor}`;
     } else {
-      roomLocation.textContent =
-        `ห้อง ${number}`;
+      roomLocation.textContent = `ห้อง ${number}`;
     }
   }
-
 
   // =========================
   // ความจุ
   // =========================
 
-  const capacityElement =
-    document.querySelector("#room-capacity");
+  const capacityElement = document.querySelector("#room-capacity");
 
   if (capacityElement) {
-
     capacityElement.textContent =
-      capacity !== null && capacity !== ""
-        ? `${capacity} ที่นั่ง`
-        : "ไม่ระบุ";
+      capacity !== null && capacity !== "" ? `${capacity} ที่นั่ง` : "ไม่ระบุ";
   }
-
 
   // =========================
   // ชั้น
   // =========================
 
-  const floorElement =
-    document.querySelector("#room-floor");
+  const floorElement = document.querySelector("#room-floor");
 
   if (floorElement) {
-
     floorElement.textContent =
-      floor !== null && floor !== ""
-        ? `ชั้น ${floor}`
-        : "ไม่ระบุ";
+      floor !== null && floor !== "" ? `ชั้น ${floor}` : "ไม่ระบุ";
   }
-
-
-
-
 
   // =========================
   // ขนาดห้อง
   // =========================
 
-  const sizeElement =
-    document.querySelector("#room-size");
+  const sizeElement = document.querySelector("#room-size");
 
   if (sizeElement) {
-
-    sizeElement.textContent =
-      roomSize || "ไม่ระบุ";
+    sizeElement.textContent = roomSize || "ไม่ระบุ";
   }
-
 
   // =========================
   // รายละเอียดห้อง
   // =========================
 
-  const descriptionElement =
-    document.querySelector("#room-description");
+  const descriptionElement = document.querySelector("#room-description");
 
   if (descriptionElement) {
-
-    descriptionElement.textContent =
-      description || "ไม่มีรายละเอียดห้อง";
+    descriptionElement.textContent = description || "ไม่มีรายละเอียดห้อง";
   }
-
 
   // =========================
   // รูปภาพ
   // =========================
 
-  const roomImage =
-    document.querySelector("#room-image");
+  const roomImage = document.querySelector("#room-image");
 
   if (roomImage) {
-
     const imageUrl =
       room?.image_url ??
       room?.imageUrl ??
@@ -381,30 +308,22 @@ function displayRoomDetail(room) {
     }
   }
 
-
   // =========================
   // อุปกรณ์
   // =========================
 
-  const amenitiesContainer =
-    document.querySelector("#room-amenities");
+  const amenitiesContainer = document.querySelector("#room-amenities");
 
   if (amenitiesContainer) {
-
     amenitiesContainer.replaceChildren();
 
     if (amenities.length === 0) {
-
       const span = document.createElement("span");
       span.textContent = "ไม่มีข้อมูล";
       amenitiesContainer.appendChild(span);
-
     } else {
-
       amenities.forEach((amenity) => {
-
-        const span =
-          document.createElement("span");
+        const span = document.createElement("span");
 
         span.textContent = amenity;
 
@@ -413,32 +332,24 @@ function displayRoomDetail(room) {
     }
   }
 
-
   // =========================
   // สิทธิ์การใช้งาน
   // =========================
 
-  const rolesContainer =
-    document.querySelector("#room-roles");
+  const rolesContainer = document.querySelector("#room-roles");
 
   if (rolesContainer) {
-
     rolesContainer.replaceChildren();
 
     if (roles.length === 0) {
-
       const span = document.createElement("span");
 
       span.textContent = "ไม่มีข้อมูล";
 
       rolesContainer.appendChild(span);
-
     } else {
-
       roles.forEach((role) => {
-
-        const span =
-          document.createElement("span");
+        const span = document.createElement("span");
 
         span.textContent = role;
 
@@ -447,11 +358,9 @@ function displayRoomDetail(room) {
     }
   }
 
-
   // =========================
   // title browser
   // =========================
 
-  document.title =
-    `${displayName} | CS Thammasat`;
+  document.title = `${displayName} | CS Thammasat`;
 }

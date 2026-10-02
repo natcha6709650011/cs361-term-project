@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="ค้นหาห้องว่างตามวัน เวลา ความจุ และประเภทห้อง" />
+    <meta
+      name="description"
+      content="ค้นหาห้องว่างตามวัน เวลา ความจุ และประเภทห้อง"
+    />
     <title>ค้นหาห้องว่าง | CS Thammasat</title>
     <link rel="stylesheet" href="room-search.css" />
   </head>
@@ -11,26 +14,71 @@
     <div data-site-header></div>
 
     <main class="search-page">
-      <p class="breadcrumb"><a href="index.html">หน้าแรก</a> <span aria-hidden="true">&gt;</span> <strong>ค้นหาห้องว่าง</strong></p>
+      <p class="breadcrumb">
+        <a href="index.html">หน้าแรก</a> <span aria-hidden="true">&gt;</span>
+        <strong>ค้นหาห้องว่าง</strong>
+      </p>
       <h1>ค้นหาห้องว่าง</h1>
-      <p class="page-intro">เลือกวัน เวลา และเงื่อนไข เพื่อดูห้องที่พร้อมใช้งาน</p>
+      <p class="page-intro">
+        เลือกวัน เวลา และเงื่อนไข เพื่อดูห้องที่พร้อมใช้งาน
+      </p>
 
-      <form class="availability-form" id="availability-search-form" novalidate autocomplete="off">
+      <form
+        class="availability-form"
+        id="availability-search-form"
+        novalidate
+        autocomplete="off"
+      >
         <div class="form-field">
           <label for="search-date">วันที่</label>
           <div class="field-control date-picker" data-date-picker>
-            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></svg>
-            <input class="date-source" id="search-date" name="date" type="date" required tabindex="-1" />
-            <button class="date-trigger is-placeholder" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="เลือกวันที่"><span>เลือกวันที่</span></button>
-            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
-            <div class="date-menu" role="dialog" aria-label="เลือกวันที่" hidden></div>
+            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M7 3v4M17 3v4M3 10h18" />
+            </svg>
+            <input
+              class="date-source"
+              id="search-date"
+              name="date"
+              type="date"
+              required
+              tabindex="-1"
+            />
+            <button
+              class="date-trigger is-placeholder"
+              type="button"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-label="เลือกวันที่"
+            >
+              <span>เลือกวันที่</span>
+            </button>
+            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true">
+              <path d="m2 2 6 6 6-6" />
+            </svg>
+            <div
+              class="date-menu"
+              role="dialog"
+              aria-label="เลือกวันที่"
+              hidden
+            ></div>
           </div>
         </div>
         <div class="form-field">
           <label for="start-time">เวลาเริ่ม</label>
           <div class="field-control time-picker" data-time-picker>
-            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-            <select class="time-source" id="start-time" name="startTime" aria-label="เวลาเริ่ม" required tabindex="-1">
+            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            <select
+              class="time-source"
+              id="start-time"
+              name="startTime"
+              aria-label="เวลาเริ่ม"
+              required
+              tabindex="-1"
+            >
               <option value="" selected disabled>เลือกเวลา</option>
               <option value="08:00">08:00</option>
               <option value="09:30">09:30</option>
@@ -40,16 +88,36 @@
               <option value="15:00">15:00</option>
               <option value="16:30">16:30</option>
             </select>
-            <button class="time-trigger is-placeholder" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="เลือกเวลาเริ่ม"><span>เลือกเวลา</span></button>
-            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+            <button
+              class="time-trigger is-placeholder"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-label="เลือกเวลาเริ่ม"
+            >
+              <span>เลือกเวลา</span>
+            </button>
+            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true">
+              <path d="m2 2 6 6 6-6" />
+            </svg>
             <div class="time-menu" role="listbox" hidden></div>
           </div>
         </div>
         <div class="form-field">
           <label for="end-time">เวลาสิ้นสุด</label>
           <div class="field-control time-picker" data-time-picker>
-            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-            <select class="time-source" id="end-time" name="endTime" aria-label="เวลาสิ้นสุด" required tabindex="-1">
+            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            <select
+              class="time-source"
+              id="end-time"
+              name="endTime"
+              aria-label="เวลาสิ้นสุด"
+              required
+              tabindex="-1"
+            >
               <option value="" selected disabled>เลือกเวลา</option>
               <option value="08:00">08:00</option>
               <option value="09:30">09:30</option>
@@ -60,16 +128,42 @@
               <option value="16:30">16:30</option>
               <option value="18:00">18:00</option>
             </select>
-            <button class="time-trigger is-placeholder" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="เลือกเวลาสิ้นสุด"><span>เลือกเวลา</span></button>
-            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+            <button
+              class="time-trigger is-placeholder"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-label="เลือกเวลาสิ้นสุด"
+            >
+              <span>เลือกเวลา</span>
+            </button>
+            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true">
+              <path d="m2 2 6 6 6-6" />
+            </svg>
             <div class="time-menu" role="listbox" hidden></div>
           </div>
         </div>
         <div class="form-field">
           <label for="min-capacity">ความจุขั้นต่ำ</label>
           <div class="field-control capacity-picker" data-capacity-picker>
-            <svg class="field-icon capacity-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-            <select class="capacity-source" id="min-capacity" name="capacity" aria-label="ความจุขั้นต่ำ" required tabindex="-1">
+            <svg
+              class="field-icon capacity-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <select
+              class="capacity-source"
+              id="min-capacity"
+              name="capacity"
+              aria-label="ความจุขั้นต่ำ"
+              required
+              tabindex="-1"
+            >
               <option value="" selected disabled>เลือกความจุ</option>
               <option value="20">20 คน</option>
               <option value="40">40 คน</option>
@@ -77,35 +171,82 @@
               <option value="80">80 คน</option>
               <option value="custom">ระบุเอง</option>
             </select>
-            <button class="capacity-trigger is-placeholder" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="เลือกความจุ"><span>เลือกความจุ</span></button>
-            <input class="capacity-custom-input" type="number" min="1" inputmode="numeric" placeholder="ระบุจำนวนคน" aria-label="ระบุจำนวนคน" hidden />
-            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+            <button
+              class="capacity-trigger is-placeholder"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-label="เลือกความจุ"
+            >
+              <span>เลือกความจุ</span>
+            </button>
+            <input
+              class="capacity-custom-input"
+              type="number"
+              min="1"
+              inputmode="numeric"
+              placeholder="ระบุจำนวนคน"
+              aria-label="ระบุจำนวนคน"
+              hidden
+            />
+            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true">
+              <path d="m2 2 6 6 6-6" />
+            </svg>
             <div class="capacity-menu" role="listbox" hidden></div>
           </div>
         </div>
         <div class="form-field">
           <label for="room-type">ประเภทห้อง</label>
           <div class="field-control room-type-picker" data-room-type-picker>
-            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
-            <select class="room-type-source" id="room-type" name="roomType" aria-label="ประเภทห้อง" tabindex="-1">
-            <option value="" selected>ทุกประเภท</option>
-            <option value="1">ห้องเรียน</option>
-            <option value="2">ห้องปฏิบัติการคอมพิวเตอร์</option>
-            <option value="3">ห้องประชุม</option>
-            <option value="4">Co-Working Space</option>
-            <option value="5">ห้องกิจกรรม</option>
+            <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            <select
+              class="room-type-source"
+              id="room-type"
+              name="roomType"
+              aria-label="ประเภทห้อง"
+              tabindex="-1"
+            >
+              <option value="" selected>ทุกประเภท</option>
+              <option value="1">ห้องเรียน</option>
+              <option value="2">ห้องปฏิบัติการคอมพิวเตอร์</option>
+              <option value="3">ห้องประชุม</option>
+              <option value="4">Co-Working Space</option>
+              <option value="5">ห้องกิจกรรม</option>
             </select>
-            <button class="room-type-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="เลือกประเภทห้อง"><span>ทุกประเภท</span></button>
-            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+            <button
+              class="room-type-trigger"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-label="เลือกประเภทห้อง"
+            >
+              <span>ทุกประเภท</span>
+            </button>
+            <svg class="field-chevron" viewBox="0 0 16 10" aria-hidden="true">
+              <path d="m2 2 6 6 6-6" />
+            </svg>
             <div class="room-type-menu" role="listbox" hidden></div>
           </div>
         </div>
         <button id="search-submit" type="submit">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m15.5 15.5 5 5" />
+          </svg>
           ค้นหาห้องว่าง
         </button>
       </form>
-      <p class="form-message" id="search-validation" aria-live="polite" hidden></p>
+      <p
+        class="form-message"
+        id="search-validation"
+        aria-live="polite"
+        hidden
+      ></p>
 
       <section class="results-section" aria-labelledby="results-heading">
         <div class="results-heading">
@@ -119,12 +260,21 @@
         </div>
 
         <div id="search-empty" class="search-state" hidden>
-          <span class="state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.25"></circle><path d="m15.25 15.25 4.5 4.5"></path></svg></span>
+          <span class="state-icon" aria-hidden="true"
+            ><svg viewBox="0 0 24 24">
+              <circle cx="10.5" cy="10.5" r="6.25"></circle>
+              <path d="m15.25 15.25 4.5 4.5"></path></svg
+          ></span>
           <h3>ไม่พบห้องว่าง</h3>
           <p>ลองเปลี่ยนวันที่ เวลา ความจุ หรือประเภทห้อง</p>
         </div>
 
-        <div id="search-error" class="search-state state-error" hidden role="alert">
+        <div
+          id="search-error"
+          class="search-state state-error"
+          hidden
+          role="alert"
+        >
           <h3>ไม่สามารถค้นหาห้องได้</h3>
           <p>กรุณาลองใหม่อีกครั้ง</p>
         </div>
@@ -135,35 +285,93 @@
         <template id="room-card-template">
           <article class="search-room-card">
             <div class="search-room-card__image-wrap">
-              <img class="search-room-card__image" data-room-image src="assets/faculty-building.jpg" alt="" />
+              <img
+                class="search-room-card__image"
+                data-room-image
+                src="assets/faculty-building.jpg"
+                alt=""
+              />
               <span class="search-room-card__type" data-room-type></span>
-              <span class="search-room-card__status" data-room-status>ว่าง</span>
+              <span class="search-room-card__status" data-room-status
+                >ว่าง</span
+              >
             </div>
             <div class="search-room-card__body">
               <h3 data-room-number></h3>
               <p class="search-room-card__location" data-room-location></p>
-              <ul class="search-room-card__facilities" data-room-facilities aria-label="อุปกรณ์ภายในห้อง"></ul>
+              <ul
+                class="search-room-card__facilities"
+                data-room-facilities
+                aria-label="อุปกรณ์ภายในห้อง"
+              ></ul>
               <div class="search-room-card__footer">
                 <span class="search-room-card__capacity">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.4-3 2.4-5 5.5-5s5.1 2 5.5 5M16.5 5.5a3 3 0 0 1 0 5.7M16 14.3c2.5.3 4.1 1.9 4.5 4.7"></path></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="9" cy="8" r="3"></circle>
+                    <path
+                      d="M3.5 19c.4-3 2.4-5 5.5-5s5.1 2 5.5 5M16.5 5.5a3 3 0 0 1 0 5.7M16 14.3c2.5.3 4.1 1.9 4.5 4.7"
+                    ></path>
+                  </svg>
                   <span data-room-capacity></span>
                 </span>
-                <a class="search-room-card__detail-link" data-room-link href="#">ดูรายละเอียดเพิ่มเติม</a>
+                <a class="search-room-card__detail-link" data-room-link href="#"
+                  >ดูรายละเอียดเพิ่มเติม</a
+                >
               </div>
             </div>
           </article>
         </template>
 
         <div class="show-more-wrap" id="show-more-wrap" hidden>
-          <button class="show-more-button" id="show-more-rooms" type="button">ดูห้องว่างเพิ่มเติม</button>
+          <button class="show-more-button" id="show-more-rooms" type="button">
+            ดูห้องว่างเพิ่มเติม
+          </button>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <div class="footer-brand"><img class="footer-logo" src="assets/cstu-logo.png" alt="Computer Science Thammasat University" /><p>สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต<br />อาคารบรรยายรวม 2 คณะวิทยาศาสตร์และเทคโนโลยี<br />มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต ปทุมธานี 12120</p></div>
-      <div class="footer-contact"><h2>โทรศัพท์</h2><p>0-2986-9154, 0-2986-9156, 0-2986-9138-39,<br />0-2564-4440-59 ต่อ 2157,2714</p><p>โทรสาร : 0-2986-9157</p><p>Email : <a href="mailto:scitu_cs@sci.tu.ac.th">scitu_cs@sci.tu.ac.th</a></p><h2>ช่องทางการติดตาม</h2><p><a class="facebook-link" href="https://www.facebook.com/CSTUadmissioncenter" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 0-10.4 8.9v-6.3H8.3V12h2.3v-2c0-2.3 1.4-3.6 3.5-3.6 1 0 2 .2 2 .2v2.2h-1.2c-1.2 0-1.6.8-1.6 1.5V12H16l-.5 2.6h-2.3v6.3A9 9 0 0 0 21 12Z"/></svg>CSTUadmissioncenter</a></p></div>
-      <p class="footer-copyright">© 2026 Computer Science Thammasat University. All rights reserved.</p>
+      <div class="footer-brand">
+        <img
+          class="footer-logo"
+          src="assets/cstu-logo.png"
+          alt="Computer Science Thammasat University"
+        />
+        <p>
+          สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต<br />อาคารบรรยายรวม 2
+          คณะวิทยาศาสตร์และเทคโนโลยี<br />มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต
+          ปทุมธานี 12120
+        </p>
+      </div>
+      <div class="footer-contact">
+        <h2>โทรศัพท์</h2>
+        <p>
+          0-2986-9154, 0-2986-9156, 0-2986-9138-39,<br />0-2564-4440-59 ต่อ
+          2157,2714
+        </p>
+        <p>โทรสาร : 0-2986-9157</p>
+        <p>
+          Email :
+          <a href="mailto:scitu_cs@sci.tu.ac.th">scitu_cs@sci.tu.ac.th</a>
+        </p>
+        <h2>ช่องทางการติดตาม</h2>
+        <p>
+          <a
+            class="facebook-link"
+            href="https://www.facebook.com/CSTUadmissioncenter"
+            target="_blank"
+            rel="noopener noreferrer"
+            ><svg aria-hidden="true" viewBox="0 0 24 24">
+              <path
+                d="M21 12a9 9 0 1 0-10.4 8.9v-6.3H8.3V12h2.3v-2c0-2.3 1.4-3.6 3.5-3.6 1 0 2 .2 2 .2v2.2h-1.2c-1.2 0-1.6.8-1.6 1.5V12H16l-.5 2.6h-2.3v6.3A9 9 0 0 0 21 12Z"
+              /></svg
+            >CSTUadmissioncenter</a
+          >
+        </p>
+      </div>
+      <p class="footer-copyright">
+        © 2026 Computer Science Thammasat University. All rights reserved.
+      </p>
     </footer>
 
     <script src="components/header-component.js"></script>

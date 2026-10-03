@@ -1,13 +1,10 @@
-const form = document.querySelector('#room-search-form');
-
+const form = document.querySelector('#availability-search-form');
 const searchDate = document.querySelector('#search-date');
-const searchTime = document.querySelector('#search-time');
+const searchTime = document.querySelector('#start-time');
 const endTime = document.querySelector('#end-time');
 const minCapacity = document.querySelector('#min-capacity');
 const roomType = document.querySelector('#room-type');
-
-const validationMessage = document.querySelector('#search-validation-message');
-
+const validationMessage = document.querySelector('#search-validation');
 const searchLoading = document.querySelector('#search-loading');
 const searchEmpty = document.querySelector('#search-empty');
 const searchError = document.querySelector('#search-error');
@@ -38,23 +35,23 @@ function validateSearchForm(){
     clearValidation();
 
     if(!searchDate.value){
-        showValidation("กรุณาเลือกวันที่");
+        showValidationMessage("กรุณาเลือกวันที่");
         return false;
     }
     if(!searchTime.value){
-        showValidation("กรุณาเลือกเวลาเริ่มต้น");
+        showValidationMessage("กรุณาเลือกเวลาเริ่มต้น");
         return false;
     }
     if(!endTime.value){
-        showValidation("กรุณาเลือกเวลาสิ้นสุด");
+        showValidationMessage("กรุณาเลือกเวลาสิ้นสุด");
         return false;
     }
     if(!minCapacity.value){
-        showValidation("กรุณาเลือกความจุขั้นต่ำ");
+        showValidationMessage("กรุณาเลือกความจุขั้นต่ำ");
         return false;
     }
-    if(startTime.value >= endTime.value){
-        showValidation("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
+    if(searchTime.value >= endTime.value){
+        showValidationMessage("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
         return false;
     }
     return true;

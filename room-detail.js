@@ -48,6 +48,8 @@ async function loadRoomDetail() {
 
     displayRoomDetail(room);
 
+    setupRoomSchedule(roomNumber);
+
     if (loading) loading.style.display = "none";
     if (roomPage) roomPage.style.display = "block";
   } catch (error) {
@@ -176,6 +178,123 @@ function getRoomSize(room) {
 }
 
 // ==============================
+// schedule
+// ==============================
+
+async function loadRoomSchedule(roomNumber, selectedDate) {
+  const scheduleDate = document.querySelector("#schedule-date");
+
+  if (!roomNumber || !selectedDate) {
+    return;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/${encodeURIComponent(roomNumber)}/schedule?date=${encodeURIComponent(selectedDate)}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Schedule API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  console.log("API Room Schedule:", data);
+
+  renderRoomSchedule(data.bookings || []);
+}
+
+function renderRoomSchedule(bookings) {
+  const slots = document.querySelectorAll("[data-time-slot]");
+
+  slots.forEach((slot) => {
+    const slotStart = slot.dataset.start;
+    const slotEnd = slot.dataset.end;
+
+    const booking = bookings.find((item) => {
+      const bookingStart = item.start_time.substring(11, 16);
+      const bookingEnd = item.end_time.substring(11, 16);
+
+      return (
+        bookingStart < slotEnd &&
+        bookingEnd > slotStart
+      );
+    });
+
+    let status = "free";
+
+    if (booking) {
+      if (booking.status === "approved") {
+        status = "booked";
+      } else if (booking.status === "pending") {
+        status = "pending";
+      } else if (booking.status === "cancelled") {
+        status = "free";
+      }
+    }
+
+    updateScheduleSlot(slot, status);
+  });
+}
+
+function updateScheduleSlot(slot, status) {
+  slot.classList.remove(
+    "is-booked",
+    "is-pending",
+    "is-free",
+  );
+
+  slot.classList.add(`is-${status}`);
+
+  const statusTitle = slot.querySelector("b");
+  const statusDescription = slot.querySelector("small");
+
+  if (status === "booked") {
+    if (statusTitle) statusTitle.textContent = "จองแล้ว";
+    if (statusDescription) {
+      statusDescription.textContent = "มีการใช้งาน";
+    }
+  } else if (status === "pending") {
+    if (statusTitle) statusTitle.textContent = "รออนุมัติ";
+    if (statusDescription) {
+      statusDescription.textContent = "มีคำขอจองรอการอนุมัติ";
+    }
+  } else {
+    if (statusTitle) statusTitle.textContent = "ว่าง";
+    if (statusDescription) {
+      statusDescription.textContent = "สามารถใช้งานได้";
+    }
+  }
+}
+
+function setupRoomSchedule(roomNumber) {
+  const scheduleDate = document.querySelector("#schedule-date");
+
+  if (!scheduleDate) {
+    return;
+  }
+
+  scheduleDate.addEventListener("change", async () => {
+    try {
+      await loadRoomSchedule(roomNumber, scheduleDate.value);
+    } catch (error) {
+      console.error("Error loading room schedule:", error);
+    }
+  });
+
+  if (scheduleDate.value) {
+    loadRoomSchedule(roomNumber, scheduleDate.value).catch((error) => {
+      console.error("Error loading initial room schedule:", error);
+    });
+  }
+}
+
+// ==============================
 // display
 // ==============================
 
@@ -267,10 +386,6 @@ function displayRoomDetail(room) {
     floorElement.textContent =
       floor !== null && floor !== "" ? `ชั้น ${floor}` : "ไม่ระบุ";
   }
-
-
-
-
 
   // =========================
   // ขนาดห้อง

@@ -14,7 +14,7 @@ async function loadRoomDetail() {
     if (roomPage) roomPage.style.display = "none";
 
     const params = new URLSearchParams(window.location.search);
-    const roomNumber = params.get("room");
+    const roomNumber = params.get("roomId");
 
     if (!roomNumber) {
       throw new Error("ไม่พบเลขห้องใน URL");
@@ -267,6 +267,10 @@ function displayRoomDetail(room) {
     floorElement.textContent =
       floor !== null && floor !== "" ? `ชั้น ${floor}` : "ไม่ระบุ";
   }
+
+
+
+
 
   // =========================
   // ขนาดห้อง

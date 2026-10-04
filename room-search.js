@@ -117,7 +117,7 @@ function renderRooms(rooms){
     rooms.forEach(room => {
         const card = roomCardTemplate.content.cloneNode(true);
         
-        card.querySelector('[data-room-number]').textContent = room.room_number;
+        card.querySelector('[data-room-number]').textContent = `บร.2-${room.room_number}`;
         card.querySelector('[data-room-type]').textContent = room.room_type;
         card.querySelector('[data-room-location]').textContent = `ชั้น ${room.floor}`;
         card.querySelector('[data-room-capacity]').textContent = `${room.capacity} คน`;

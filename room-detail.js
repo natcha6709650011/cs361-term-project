@@ -184,7 +184,7 @@ function displayRoomDetail(room) {
 
   const number = getRoomNumber(room);
 
-  const displayName = number ? `บร2-${number}` : "ไม่ระบุห้อง";
+  const displayName = number ? `บร.2-${number}` : "ไม่ระบุห้อง";
 
   const type = getRoomType(room);
 

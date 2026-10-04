@@ -131,7 +131,7 @@ function renderRooms(rooms){
         ? room.amenities.map(item => item.item).join(', ')
     : '';
         const link = card.querySelector('[data-room-link]');
-        link.href = `room-detail.html?roomId=${room.room_number}`;
+        link.href = `room-detail.html?roomId=${room.room_number}&date=${searchDate.value}`;
 
         searchResults.appendChild(card);
     });

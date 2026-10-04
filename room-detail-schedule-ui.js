@@ -42,12 +42,16 @@ document.querySelectorAll("[data-schedule-date-picker]").forEach((picker) => {
     const [year, month, day] = iso.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
-  let selectedDate = new Date();
-  let viewDate = new Date(
-    selectedDate.getFullYear(),
-    selectedDate.getMonth(),
-    1,
-  );
+  const params = new URLSearchParams(window.location.search);
+const urlDate = params.get("date");
+
+let selectedDate = urlDate ? toDate(urlDate) : new Date();
+
+let viewDate = new Date(
+  selectedDate.getFullYear(),
+  selectedDate.getMonth(),
+  1,
+);
 
   const updateTrigger = () => {
     triggerText.textContent = `${selectedDate.getDate()} ${shortMonths[selectedDate.getMonth()]} ${selectedDate.getFullYear() + 543}`;

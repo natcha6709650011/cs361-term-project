@@ -127,10 +127,11 @@ function renderRooms(rooms){
         image.alt = `ห้อง ${room.room_number}`;
 
         const facilities = card.querySelector('[data-room-facilities]');
-        facilities.textContent = Array.isArray(room.amenities) ? room.amenities.join(', ') : '';
-
+        facilities.textContent = Array.isArray(room.amenities)
+        ? room.amenities.map(item => item.item).join(', ')
+    : '';
         const link = card.querySelector('[data-room-link]');
-        link.href = `room-details.html?roomId=${room.room_number}`;
+        link.href = `room-detail.html?roomId=${room.room_number}`;
 
         searchResults.appendChild(card);
     });

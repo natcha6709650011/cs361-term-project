@@ -85,7 +85,7 @@ def validate_input(params):
 
     room_type = None
 
-    # Empty roomType means "ทุกประเภท"
+    # Empty/missing roomType means all room types.
     if room_type_value not in (None, ""):
         try:
             room_type = int(room_type_value)
@@ -130,8 +130,7 @@ def parse_amenities(value):
 
     if isinstance(value, str):
         try:
-            parsed = json.loads(value)
-            return parsed
+            return json.loads(value)
         except json.JSONDecodeError:
             return []
 
@@ -140,46 +139,59 @@ def parse_amenities(value):
 
 def search_available_rooms(connection, params):
     conditions = [
-        "r.is_active = 1",
-        "r.is_permanent_locked = 0",
-        "rt.is_bookable = 1",
+        "r.is_active = TRUE",
+        "r.is_permanent_locked = FALSE",
+        "rt.is_bookable = TRUE",
         "r.capacity IS NOT NULL",
         "r.capacity >= %s",
     ]
 
     values = [params["min_capacity"]]
 
+    # If a room type is provided, restrict the search to that type.
+    # Empty/missing roomType means all bookable room types.
     if params["room_type"] is not None:
         conditions.append("r.room_type_id = %s")
         values.append(params["room_type"])
 
-    # Overlap rule:
-    # existing.start < requested.end
-    # AND existing.end > requested.start
+    # A room is unavailable if it has a pending or approved booking
+    # that overlaps the requested date/time.
     #
-    # Therefore, adjacent intervals such as
-    # 08:00-10:00 and 10:00-12:00 do NOT overlap.
+    # Overlap rule:
+    #     booking.start_time < requested_end
+    # AND booking.end_time > requested_start
+    #
+    # Adjacent bookings do not overlap:
+    #     08:00-10:00 and 10:00-12:00 -> available
+    #
+    # Cancelled bookings are ignored.
     conditions.append(
         """
         NOT EXISTS (
             SELECT 1
-            FROM room_schedules rs
-            WHERE rs.room_id = r.room_id
-              AND rs.schedule_date = %s
-              AND rs.is_active = 1
-              AND rs.start_time < %s
-              AND rs.end_time > %s
+            FROM bookings b
+            WHERE b.room_id = r.room_id
+              AND b.status IN ('approved', 'pending')
+              AND b.start_time < %s
+              AND b.end_time > %s
         )
         """
     )
 
-    values.extend(
-        [
-            params["date"],
-            params["end_time"],
-            params["start_time"],
-        ]
+    requested_start = datetime.combine(
+        params["date"],
+        params["start_time"],
     )
+
+    requested_end = datetime.combine(
+        params["date"],
+        params["end_time"],
+    )
+
+    values.extend([
+        requested_end,
+        requested_start,
+    ])
 
     sql = f"""
         SELECT
@@ -272,3 +284,4 @@ def lambda_handler(event, context):
     finally:
         if connection:
             connection.close()
+

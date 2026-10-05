@@ -14,7 +14,7 @@ async function loadRoomDetail() {
     if (roomPage) roomPage.style.display = "none";
 
     const params = new URLSearchParams(window.location.search);
-    const roomNumber = params.get("roomId");
+    const roomNumber = params.get("roomId") || params.get("room");
 
     if (!roomNumber) {
       throw new Error("ไม่พบเลขห้องใน URL");

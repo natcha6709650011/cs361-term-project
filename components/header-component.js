@@ -20,11 +20,21 @@
         <span class="brand-divider" aria-hidden="true"></span>
         <span class="brand-name"><b>CS</b><span>COMPUTER SCIENCE<br />THAMMASAT UNIVERSITY</span></span>
       </a>
+
       <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+
       <nav class="main-nav" aria-label="เมนูหลัก">
+
         <a href="index.html">หน้าหลัก</a>
+
         <div class="nav-dropdown">
-          <button class="dropdown-toggle" type="button" aria-expanded="false" aria-controls="room-type-menu">ประเภทห้อง <svg aria-hidden="true" viewBox="0 0 16 10"><path d="m2 2 6 6 6-6" /></svg></button>
+          <button class="dropdown-toggle" type="button" aria-expanded="false" aria-controls="room-type-menu">
+            ประเภทห้อง
+            <svg aria-hidden="true" viewBox="0 0 16 10">
+              <path d="m2 2 6 6 6-6" />
+            </svg>
+          </button>
+
           <div class="dropdown-menu" id="room-type-menu">
             <a href="room-types.html?type=classroom">ห้องเรียน</a>
             <a href="room-meeting.html">ห้องประชุม</a>
@@ -33,9 +43,21 @@
             <a href="room-coworking.html">Co-Working Space</a>
           </div>
         </div>
+
         <a href="guidelines.html">ข้อปฏิบัติ</a>
         <a href="contact.html">ติดต่อเรา</a>
-        <a class="user-link" href="profile.html"><span class="user-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.5-4 3.1-6 7.5-6s7 2 7.5 6"/></svg></span> Xxxxxxxxx.x</a>
+
+        <!-- User เดิมของ V2 -->
+        <a class="user-link" href="profile.html">
+          <span class="user-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3.5"/>
+              <path d="M4.5 20c.5-4 3.1-6 7.5-6s7 2 7.5 6"/>
+            </svg>
+          </span>
+          Xxxxxxxxx.x
+        </a>
+
       </nav>
     </header>`;
 
@@ -45,27 +67,222 @@
   const dropdown = header.querySelector('.nav-dropdown');
   const dropdownButton = header.querySelector('.dropdown-toggle');
 
-  // ทำสีแดงให้เมนูของหน้าที่กำลังเปิดอยู่โดยอัตโนมัติ
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  const activeLink = header.querySelector(`.main-nav a[href="${currentPage}"]`);
-  if (activeLink) activeLink.classList.add('active');
-  if (['room-types.html', 'room-meeting.html', 'room-lab.html', 'room-activity.html', 'room-coworking.html'].includes(currentPage)) {
+  // =========================================================
+  // AUTHENTICATION - เพิ่มจาก V2
+  // =========================================================
+
+  const userLink = header.querySelector('.user-link');
+  const userIcon = header.querySelector('.user-icon');
+
+  // ตรวจสอบว่ามี User ที่ Login อยู่หรือไม่
+  const storedUser = localStorage.getItem('tuUser');
+
+  let userMenu = null;
+
+  if (storedUser) {
+    try {
+      const user = JSON.parse(storedUser);
+
+      // แสดงชื่อ User
+      const displayName =
+        user.displayname_th ||
+        user.displayname_en ||
+        user.username ||
+        'ผู้ใช้งาน';
+
+      // เปลี่ยนชื่อจาก Xxxxxxxxx.x เป็นชื่อจริง
+      userLink.innerHTML = `
+        <span class="user-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3.5"/>
+            <path d="M4.5 20c.5-4 3.1-6 7.5-6s7 2 7.5 6"/>
+          </svg>
+        </span>
+        <span class="user-name">${displayName}</span>
+      `;
+
+      // ไม่ให้กดแล้วไป profile.html
+      userLink.href = '#';
+      userLink.setAttribute('aria-expanded', 'false');
+
+      // สร้าง User Dropdown
+      userMenu = document.createElement('div');
+      userMenu.className = 'user-dropdown';
+
+      userMenu.innerHTML = `
+        <a href="booking.html">
+          การจองของฉัน
+        </a>
+
+        <a href="booking-history.html">
+          ประวัติการจอง
+        </a>
+
+        <button type="button" class="logout-button">
+          ออกจากระบบ
+        </button>
+      `;
+
+      // ใส่ dropdown ต่อจาก user-link
+      userLink.parentNode.insertBefore(
+        userMenu,
+        userLink.nextSibling
+      );
+
+      // กดชื่อ User เปิด/ปิด dropdown
+      userLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const isOpen = userMenu.classList.toggle('open');
+
+        userLink.setAttribute(
+          'aria-expanded',
+          String(isOpen)
+        );
+      });
+
+      // Logout
+      const logoutButton =
+        userMenu.querySelector('.logout-button');
+
+      logoutButton.addEventListener('click', () => {
+
+        // ลบข้อมูล Login
+        localStorage.removeItem('tuUser');
+
+        // กลับหน้าแรก
+        window.location.href = 'index.html';
+      });
+
+      // ปิด dropdown เมื่อคลิกข้างนอก
+      document.addEventListener('click', (event) => {
+        if (
+          !userLink.contains(event.target) &&
+          !userMenu.contains(event.target)
+        ) {
+          userMenu.classList.remove('open');
+
+          userLink.setAttribute(
+            'aria-expanded',
+            'false'
+          );
+        }
+      });
+
+    } catch (error) {
+      console.error('ไม่สามารถอ่านข้อมูลผู้ใช้ได้');
+
+      // ถ้าอ่านข้อมูลไม่ได้ ให้กลับเป็นสถานะยังไม่ Login
+      userLink.href = 'login.html';
+      userLink.innerHTML = `
+        <span class="user-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3.5"/>
+            <path d="M4.5 20c.5-4 3.1-6 7.5-6s7 2 7.5 6"/>
+          </svg>
+        </span>
+        เข้าสู่ระบบ
+      `;
+    }
+
+  } else {
+
+    // =====================================================
+    // ยังไม่ได้ Login
+    // =====================================================
+
+    userLink.href = 'login.html';
+
+    userLink.innerHTML = `
+      <span class="user-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="3.5"/>
+          <path d="M4.5 20c.5-4 3.1-6 7.5-6s7 2 7.5 6"/>
+        </svg>
+      </span>
+      <span class="user-name">เข้าสู่ระบบ</span>
+    `;
+  }
+
+
+  // =========================================================
+  // ACTIVE MENU - ของเดิม
+  // =========================================================
+
+  const currentPage =
+    window.location.pathname.split('/').pop() || 'index.html';
+
+  const activeLink =
+    header.querySelector(
+      `.main-nav a[href="${currentPage}"]`
+    );
+
+  if (activeLink) {
+    activeLink.classList.add('active');
+  }
+
+  if (
+    [
+      'room-types.html',
+      'room-meeting.html',
+      'room-lab.html',
+      'room-activity.html',
+      'room-coworking.html'
+    ].includes(currentPage)
+  ) {
     dropdownButton.classList.add('active');
   }
 
+
+  // =========================================================
+  // MOBILE MENU - ของเดิม
+  // =========================================================
+
   menuButton.addEventListener('click', () => {
-    const isOpen = navigation.classList.toggle('open');
-    menuButton.setAttribute('aria-expanded', String(isOpen));
-    menuButton.setAttribute('aria-label', isOpen ? 'ปิดเมนู' : 'เปิดเมนู');
+
+    const isOpen =
+      navigation.classList.toggle('open');
+
+    menuButton.setAttribute(
+      'aria-expanded',
+      String(isOpen)
+    );
+
+    menuButton.setAttribute(
+      'aria-label',
+      isOpen ? 'ปิดเมนู' : 'เปิดเมนู'
+    );
   });
+
+
+  // =========================================================
+  // ROOM DROPDOWN - ของเดิม
+  // =========================================================
+
   dropdownButton.addEventListener('click', () => {
-    const isOpen = dropdown.classList.toggle('open');
-    dropdownButton.setAttribute('aria-expanded', String(isOpen));
+
+    const isOpen =
+      dropdown.classList.toggle('open');
+
+    dropdownButton.setAttribute(
+      'aria-expanded',
+      String(isOpen)
+    );
   });
+
+
   document.addEventListener('click', (event) => {
+
     if (!dropdown.contains(event.target)) {
+
       dropdown.classList.remove('open');
-      dropdownButton.setAttribute('aria-expanded', 'false');
+
+      dropdownButton.setAttribute(
+        'aria-expanded',
+        'false'
+      );
     }
   });
+
 })();

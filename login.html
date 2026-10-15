@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>เข้าสู่ระบบ | ระบบจองห้อง CS Thammasat</title>
+
+  <!-- CSS หลักของระบบ -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- CSS ของ Login -->
+  <link rel="stylesheet" href="login.css">
+
+  <!-- Header Component -->
+  <script src="components/header-component.js" defer></script>
+
+  <!-- Login JavaScript -->
+  <script src="login.js" defer></script>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div data-site-header></div>
+
+  <!-- Login -->
+  <main class="login-page">
+
+    <h1 class="login-title">เข้าสู่ระบบ</h1>
+
+    <section class="login-container">
+
+      <div class="login-card">
+
+        <div class="login-card-header"></div>
+
+        <form class="login-form" id="loginForm">
+
+          <label for="username">
+            username
+          </label>
+
+          <input
+            type="text"
+            id="username"
+            name="username"
+            autocomplete="username"
+            required
+          >
+
+          <label for="password">
+            password
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            required
+          >
+
+          <p
+            class="login-error"
+            id="loginError"
+          >
+            กรุณากรอก username และ password
+          </p>
+
+          <button
+            type="submit"
+            class="login-button"
+          >
+            login
+          </button>
+
+          <p class="login-hint">
+            Log in with your TU Wi-Fi account.
+          </p>
+
+        </form>
+
+      </div>
+
+    </section>
+
+    <!-- Footer -->
+    <footer class="login-footer">
+
+      <div class="login-footer-inner">
+
+        <!-- ฝั่งซ้าย -->
+        <div class="footer-left">
+
+          <img
+            src="assets/cstu-logo.png"
+            alt="Computer Science Thammasat University"
+            class="footer-logo"
+          >
+
+          <p>
+            สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต
+          </p>
+
+          <p>
+            อาคารบรรยายรวม 2 คณะวิทยาศาสตร์และเทคโนโลยี
+          </p>
+
+          <p>
+            มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต ปทุมธานี 12120
+          </p>
+
+        </div>
+
+        <!-- เส้นคั่นกลาง -->
+        <div class="footer-divider"></div>
+
+        <!-- ฝั่งขวา -->
+        <div class="footer-right">
+
+          <div class="footer-item">
+
+            <p class="footer-heading">
+              โทรศัพท์
+            </p>
+
+            <p>
+              0-2986-9154, 0-2986-9156, 0-2986-9138-39,<br>
+              0-2564-4440-59 ต่อ 2157,2714
+            </p>
+
+          </div>
+
+          <div class="footer-item">
+
+            <p class="footer-heading">
+              โทรสาร
+            </p>
+
+            <p>
+              0-2986-9157
+            </p>
+
+          </div>
+
+          <div class="footer-item">
+
+            <p class="footer-heading">
+              Email :
+            </p>
+
+            <p>
+              <a
+                class="footer-link"
+                href="mailto:scitu_cs@scitu.tu.ac.th"
+              >
+                scitu_cs@scitu.tu.ac.th
+              </a>
+            </p>
+
+          </div>
+
+          <div class="footer-item">
+
+            <p class="footer-heading">
+              ช่องทางการติดตาม
+            </p>
+
+            <p>
+              <a
+                class="footer-link facebook-link"
+                href="#"
+              >
+                <span class="facebook-icon">f</span>
+                CSTUAdmissioncenter
+              </a>
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </footer>
+
+  </main>
+
+</body>
+</html>

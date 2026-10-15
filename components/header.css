@@ -297,3 +297,98 @@
 
 }
 
+.user-link {
+  cursor: pointer;
+}
+
+.user-name {
+  white-space: nowrap;
+}
+
+/* กล่องเมนูของ User หลัง Login */
+.user-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 190px;
+  padding: 8px 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px #0002;
+  z-index: 20;
+}
+
+/* เปิด dropdown */
+.user-dropdown.open {
+  display: grid;
+}
+
+/* รายการใน User dropdown */
+.user-dropdown a,
+.user-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 10px 18px;
+  border: 0;
+  background: transparent;
+  color: #555;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* hover */
+.user-dropdown a:hover,
+.user-dropdown button:hover {
+  background: #f7f7f7;
+  color: #d10a3a;
+}
+
+/* Logout */
+.user-dropdown .logout-button {
+  border-top: 1px solid #eee;
+}
+
+/* ให้ตำแหน่ง dropdown อ้างอิงจาก user menu */
+.user-link + .user-dropdown {
+  position: absolute;
+}
+
+/* =========================================================
+   User menu container
+   ========================================================= */
+
+.main-nav {
+  position: relative;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .user-dropdown {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    box-shadow: none;
+    border-radius: 0;
+    margin-top: 5px;
+  }
+
+  .user-dropdown a,
+  .user-dropdown button {
+    padding-left: 20px;
+  }
+}.main-nav {
+  position: relative;
+}
+
+.user-link {
+  position: relative;
+}

@@ -39,9 +39,9 @@ loginForm.addEventListener('submit', async function (event) {
         },
 
         body: JSON.stringify({
-        UserName: username,
-        PassWord: password
-      })
+          UserName: username,
+          PassWord: password
+        })
       }
     );
 
@@ -61,14 +61,47 @@ loginForm.addEventListener('submit', async function (event) {
       return;
     }
 
+    // ==========================================
     // Login สำเร็จ
-    // เก็บข้อมูล User ที่ได้จาก TU API
+    // ==========================================
+
+    // เก็บข้อมูล User ทั้งหมดที่ได้จาก TU API
     localStorage.setItem(
       'tuUser',
       JSON.stringify(data)
     );
 
+    // เก็บ username แยกไว้ด้วย
+    localStorage.setItem(
+      'username',
+      username
+    );
+
+    // แสดงข้อมูลที่ถูกเก็บไว้ใน Console
     console.log('Login successful:', data);
+    console.log(
+      'Saved tuUser:',
+      localStorage.getItem('tuUser')
+    );
+
+    console.log(
+      'Saved username:',
+      localStorage.getItem('username')
+    );
+
+    // ==========================================
+    // เตรียมข้อมูลสำหรับ Permission
+    // ==========================================
+    // ตอนนี้ยังไม่เดาว่า TU API ใช้ field ไหน
+    // สำหรับแยก ตรี / โท / เอก
+    // เก็บข้อมูลจริงจาก API ไว้ก่อน
+    // แล้ว Permission จะอ่านจาก tuUser ภายหลัง
+    // ==========================================
+
+    localStorage.setItem(
+      'isLoggedIn',
+      'true'
+    );
 
     // กลับหน้าแรกหลัง Login
     window.location.href = 'index.html';

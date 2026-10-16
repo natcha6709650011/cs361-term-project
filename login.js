@@ -1,7 +1,7 @@
 const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 
-loginForm.addEventListener('submit', function (event) {
+loginForm.addEventListener('submit', async function (event) {
 
   event.preventDefault();
 
@@ -10,7 +10,6 @@ loginForm.addEventListener('submit', function (event) {
 
   const password =
     document.getElementById('password').value.trim();
-
 
   // ตรวจสอบว่ากรอกข้อมูลครบหรือไม่
   if (!username || !password) {
@@ -23,42 +22,65 @@ loginForm.addEventListener('submit', function (event) {
     return;
   }
 
+  try {
 
-  /*
-    ตอนนี้ยังไม่ตรวจสอบกับ TU API
+    console.log('Sending to TU API:', {
+      username: username
+    });
 
-    ขั้นต่อไปจะเปลี่ยนส่วนนี้เป็น:
+    const response = await fetch(
+      'https://restapi.tu.ac.th/api/v1/auth/Ad/verify',
+      {
+        method: 'POST',
 
-    Login Form
-        ↓
-    TU Authentication / TU API
-        ↓
-    ตรวจสอบสำเร็จ
-        ↓
-    ได้ข้อมูล User
-        ↓
-    เก็บ tuUser
-        ↓
-    index.html
-  */
+        headers: {
+          'Content-Type': 'application/json',
+          'Application-Key': 'TU8acabf0056d3dca25afa2c93086ef46b0e3c309eb19b09123e47d2c1032ee24247c3369bf04516431c1eec63907a8bcb'
+        },
 
+        body: JSON.stringify({
+        UserName: username,
+        PassWord: password
+      })
+      }
+    );
 
-  // DEMO ชั่วคราว
-  const demoUser = {
-    username: username,
-    displayname_th: username,
-    displayname_en: username,
-    type: "student"
-  };
+    const data = await response.json();
 
+    console.log('TU API Status:', response.status);
+    console.log('TU API Response:', data);
 
-  localStorage.setItem(
-    'tuUser',
-    JSON.stringify(demoUser)
-  );
+    // Login ไม่สำเร็จ
+    if (!response.ok || !data.status) {
 
+      loginError.textContent =
+        'Username หรือ Password ไม่ถูกต้อง';
 
-  // กลับหน้าแรกหลัง Login
-  window.location.href = 'index.html';
+      loginError.style.display = 'block';
+
+      return;
+    }
+
+    // Login สำเร็จ
+    // เก็บข้อมูล User ที่ได้จาก TU API
+    localStorage.setItem(
+      'tuUser',
+      JSON.stringify(data)
+    );
+
+    console.log('Login successful:', data);
+
+    // กลับหน้าแรกหลัง Login
+    window.location.href = 'index.html';
+
+  } catch (error) {
+
+    console.error('Login error:', error);
+
+    loginError.textContent =
+      'ไม่สามารถเชื่อมต่อระบบ Login ได้';
+
+    loginError.style.display = 'block';
+  }
 
 });

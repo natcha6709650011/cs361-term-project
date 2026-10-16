@@ -45,6 +45,7 @@ def lambda_handler(event, context):
         username = body.get("username")
 
         # TU API ใช้ field ชื่อ "type"
+        username = body.get("username")
         user_type = body.get("type")
 
         if not username:

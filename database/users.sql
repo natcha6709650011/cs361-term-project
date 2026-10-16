@@ -27,15 +27,8 @@ CREATE TABLE users (
         'special'
     ),
 
-    year_level INT,
-
     department VARCHAR(255),
     organization VARCHAR(255),
-
-    employee_type ENUM(
-        'teacher',
-        'staff'
-    ),
 
     tu_status VARCHAR(50),
     status_id VARCHAR(20),

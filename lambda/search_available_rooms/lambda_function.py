@@ -141,7 +141,7 @@ def search_available_rooms(connection, params):
     conditions = [
         "r.is_active = TRUE",
         "r.is_permanent_locked = FALSE",
-        "rt.is_bookable = TRUE",
+        "r.is_bookable = TRUE",
         "r.capacity IS NOT NULL",
         "r.capacity >= %s",
     ]
@@ -206,7 +206,8 @@ def search_available_rooms(connection, params):
             r.amenities_json,
             r.is_partitionable,
             r.is_permanent_locked,
-            r.is_active
+            r.is_active,
+            r.is_bookable
         FROM rooms r
         INNER JOIN room_types rt
             ON r.room_type_id = rt.room_type_id

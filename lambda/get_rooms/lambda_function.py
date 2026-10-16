@@ -35,6 +35,7 @@ def lambda_handler(event, context):
                     r.is_partitionable,
                     r.is_permanent_locked,
                     r.is_active,
+                    r.is_bookable,
                     r.created_at
                 FROM rooms r
                 JOIN room_types rt

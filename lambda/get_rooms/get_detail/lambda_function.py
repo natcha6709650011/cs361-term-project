@@ -42,8 +42,6 @@ def lambda_handler(event, context):
                     r.room_number,
                     rt.room_type_id,
                     rt.type_name AS room_type,
-                    rt.is_bookable,
-                    rt.allowed_roles_json,
                     r.floor,
                     r.capacity,
                     r.caretaker_name,

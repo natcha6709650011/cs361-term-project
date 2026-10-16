@@ -18,12 +18,14 @@ def lambda_handler(event, context):
             cursorclass=pymysql.cursors.DictCursor
         )
 
-        # Execute SQL query
+        # Get all rooms
         with connection.cursor() as cursor:
+
             sql = """
                 SELECT
                     r.room_id,
                     r.room_number,
+                    rt.room_type_id,
                     rt.type_name AS room_type,
                     r.floor,
                     r.capacity,
@@ -38,12 +40,13 @@ def lambda_handler(event, context):
                 JOIN room_types rt
                     ON r.room_type_id = rt.room_type_id
                 WHERE r.is_active = 1
+                ORDER BY r.room_number
             """
 
             cursor.execute(sql)
             rooms = cursor.fetchall()
 
-        # Return room data
+        # Return all rooms
         return {
             "statusCode": 200,
             "headers": {
@@ -59,7 +62,6 @@ def lambda_handler(event, context):
 
     except Exception as e:
 
-        # Return error
         return {
             "statusCode": 500,
             "headers": {
@@ -73,6 +75,5 @@ def lambda_handler(event, context):
 
     finally:
 
-        # Close database connection
         if connection:
             connection.close()

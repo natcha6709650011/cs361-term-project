@@ -2,6 +2,7 @@ import json
 import os
 import urllib.request
 import pymysql
+import re
 
 
 def lambda_handler(event, context):
@@ -90,6 +91,61 @@ def lambda_handler(event, context):
 
         user_type = tu_data.get("type")
 
+        # -------------------------------------------------
+        # Student education mapping
+        #
+        # TU API may return the education information in
+        # "department" as one combined string, for example:
+        #
+        # "ปริญญาตรี ภาคพิเศษ สาขาวิชาวิทยาการคอมพิวเตอร์"
+        #
+        # We keep the original department value AND derive
+        # separate fields for permission comparison:
+        #   education_level -> undergraduate / master / doctoral
+        #   program_type    -> regular / special
+        #   program         -> สาขาวิชาวิทยาการคอมพิวเตอร์
+        # -------------------------------------------------
+
+        department = tu_data.get("department")
+
+        education_level = tu_data.get("education_level")
+        program_type = tu_data.get("program_type")
+        program = tu_data.get("program")
+
+        if user_type == "student" and department:
+            education_text = str(department).strip()
+
+            # Degree level
+            if "ปริญญาตรี" in education_text:
+                education_level = "undergraduate"
+            elif "ปริญญาโท" in education_text:
+                education_level = "master"
+            elif "ปริญญาเอก" in education_text:
+                education_level = "doctoral"
+
+            # Study type
+            if "ภาคพิเศษ" in education_text:
+                program_type = "special"
+            elif "ภาคปกติ" in education_text:
+                program_type = "regular"
+
+            # Program / major
+            # Keep everything after "สาขา" as the program name.
+            # This supports "สาขาวิชา..." and "สาขา..."
+            program_match = re.search(
+                r"(สาข(?:าวิชา)?[^,;|]*)",
+                education_text
+            )
+
+            if program_match:
+                program = program_match.group(1).strip()
+
+        # For employees, education/program fields are not applicable.
+        if user_type == "employee":
+            program = None
+            education_level = None
+            program_type = None
+
         user = {
             "username": tu_data.get("username"),
             "user_type": user_type,
@@ -98,15 +154,12 @@ def lambda_handler(event, context):
             "email": tu_data.get("email"),
 
             "faculty": tu_data.get("faculty"),
-            "program": tu_data.get("program"),
-            "education_level": tu_data.get(
-                "education_level"
-            ),
-            "program_type": tu_data.get(
-                "program_type"
-            ),
+            "program": program,
+            "education_level": education_level,
+            "program_type": program_type,
 
-            "department": tu_data.get("department"),
+            # Keep the original TU API value for traceability.
+            "department": department,
             "organization": tu_data.get(
                 "organization"
             ),
@@ -136,7 +189,7 @@ def lambda_handler(event, context):
                 "email": "teacher002@tu.ac.th",
                 "department": "สาขาวิทยาการคอมพิวเตอร์",
                 "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
-                "role": "teacher"
+                "role": "APPROVER"
             },
 
             "staff002": {
@@ -146,7 +199,7 @@ def lambda_handler(event, context):
                 "email": "staff002@tu.ac.th",
                 "department": "งานบริหารและจัดการทั่วไป",
                 "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
-                "role": "staff"
+                "role": "FACILITY_ADMIN"
             },
 
             "employee001": {
@@ -156,7 +209,7 @@ def lambda_handler(event, context):
                 "email": "employee001@tu.ac.th",
                 "department": "งานบริหารทั่วไป",
                 "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
-                "role": "employee"
+                "role": None
             }
         }
 
@@ -165,7 +218,13 @@ def lambda_handler(event, context):
         #    ให้ใช้ข้อมูล mock
         # ==========================================
 
-        role = "student"
+        # role is only for special permissions stored in the DB.
+        # Current DB roles are:
+        #   APPROVER
+        #   FACILITY_ADMIN
+        # Students and normal employees do not need a role.
+
+        role = None
 
         if username in employee_mock:
 
@@ -194,15 +253,15 @@ def lambda_handler(event, context):
 
         elif user_type == "student":
 
-            role = "student"
+            role = None
 
         elif user_type == "employee":
 
-            role = "employee"
+            role = None
 
         else:
 
-            role = "unknown"
+            role = None
 
         # ==========================================
         # 7. Connect RDS
@@ -317,46 +376,48 @@ def lambda_handler(event, context):
                 user_id = db_user["user_id"]
 
                 # ==================================
-                # 10. หา role_id
+                # 10-11. หา role_id และผูก user กับ role
                 # ==================================
+                # Only special roles from the existing DB are linked.
+                # Students/normal employees have role = None.
 
-                cursor.execute(
-                    """
-                    SELECT role_id
-                    FROM roles
-                    WHERE role_name = %s
-                    """,
-                    (role,)
-                )
+                role_id = None
 
-                db_role = cursor.fetchone()
+                if role:
 
-                if not db_role:
-                    raise Exception(
-                        f"Role '{role}' not found"
+                    cursor.execute(
+                        """
+                        SELECT role_id
+                        FROM roles
+                        WHERE role_name = %s
+                        """,
+                        (role,)
                     )
 
-                role_id = db_role["role_id"]
+                    db_role = cursor.fetchone()
 
-                # ==================================
-                # 11. ผูก user กับ role
-                # ==================================
+                    if not db_role:
+                        raise Exception(
+                            f"Role '{role}' not found"
+                        )
 
-                cursor.execute(
-                    """
-                    INSERT INTO user_roles (
-                        user_id,
-                        role_id
+                    role_id = db_role["role_id"]
+
+                    cursor.execute(
+                        """
+                        INSERT INTO user_roles (
+                            user_id,
+                            role_id
+                        )
+                        VALUES (%s, %s)
+                        ON DUPLICATE KEY UPDATE
+                            role_id = VALUES(role_id)
+                        """,
+                        (
+                            user_id,
+                            role_id
+                        )
                     )
-                    VALUES (%s, %s)
-                    ON DUPLICATE KEY UPDATE
-                        role_id = VALUES(role_id)
-                    """,
-                    (
-                        user_id,
-                        role_id
-                    )
-                )
 
                 connection.commit()
 

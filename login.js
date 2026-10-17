@@ -67,6 +67,12 @@ loginForm.addEventListener('submit', async function (event) {
 
     const user = data.user;
 
+    // เก็บ Authentication token
+    localStorage.setItem(
+      'authToken',
+      data.token
+    );
+
     // เก็บข้อมูล User ที่ Lambda ส่งกลับมา
     localStorage.setItem(
       'tuUser',
@@ -90,6 +96,11 @@ loginForm.addEventListener('submit', async function (event) {
     console.log(
       'Saved tuUser:',
       localStorage.getItem('tuUser')
+    );
+
+    console.log(
+      'Saved authToken:',
+      localStorage.getItem('authToken')
     );
 
     // ==========================================

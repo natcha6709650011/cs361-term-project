@@ -3,123 +3,157 @@ const loginError = document.getElementById('loginError');
 
 loginForm.addEventListener('submit', async function (event) {
 
-  event.preventDefault();
+    event.preventDefault();
 
-  const username =
-    document.getElementById('username').value.trim();
+    const username =
+        document.getElementById('username').value.trim();
 
-  const password =
-    document.getElementById('password').value.trim();
+    const password =
+        document.getElementById('password').value;
 
-  // ตรวจสอบว่ากรอกข้อมูลครบหรือไม่
-  if (!username || !password) {
+    // ตรวจสอบข้อมูล
+    if (!username || !password) {
 
-    loginError.textContent =
-      'กรุณากรอก username และ password';
+        loginError.textContent =
+            'กรุณากรอก username และ password';
 
-    loginError.style.display = 'block';
+        loginError.style.display = 'block';
 
-    return;
-  }
-
-  try {
-
-    console.log('Sending login request:', {
-      username: username
-    });
-
-    // เรียก API Gateway ของระบบเรา
-    const response = await fetch(
-      'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/auth/login',
-      {
-        method: 'POST',
-
-        headers: {
-          'Content-Type': 'application/json'
-        },
-
-        body: JSON.stringify({
-          username: username,
-          password: password
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    console.log('API Status:', response.status);
-    console.log('API Response:', data);
-
-    // Login ไม่สำเร็จ
-    if (!response.ok || !data.status) {
-
-      loginError.textContent =
-        data.message || 'Username หรือ Password ไม่ถูกต้อง';
-
-      loginError.style.display = 'block';
-
-      return;
+        return;
     }
 
-    // ==========================================
-    // Login สำเร็จ
-    // ==========================================
+    // ซ่อน error เดิม
+    loginError.style.display = 'none';
 
-    const user = data.user;
+    try {
 
-    // เก็บ Authentication token
-    localStorage.setItem(
-      'authToken',
-      data.token
-    );
+        console.log('Sending login request:', {
+            username: username
+        });
 
-    // เก็บข้อมูล User ที่ Lambda ส่งกลับมา
-    localStorage.setItem(
-      'tuUser',
-      JSON.stringify(user)
-    );
+        const response = await fetch(
+            'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/auth/login',
+            {
+                method: 'POST',
 
-    // เก็บ username
-    localStorage.setItem(
-      'username',
-      user.username || username
-    );
+                headers: {
+                    'Content-Type': 'application/json'
+                },
 
-    // สถานะ Login
-    localStorage.setItem(
-      'isLoggedIn',
-      'true'
-    );
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }
+        );
 
-    // ตรวจสอบ token ที่ได้รับ
-    console.log('Token from API:', data.token);
+        const data = await response.json();
 
-    console.log('Login successful:', data);
+        console.log('API Status:', response.status);
+        console.log('API Response:', data);
 
-    console.log(
-      'Saved tuUser:',
-      localStorage.getItem('tuUser')
-    );
+        // Login ไม่สำเร็จ
+        if (!response.ok || !data.status) {
 
-    console.log(
-      'Saved authToken:',
-      localStorage.getItem('authToken')
-    );
+            loginError.textContent =
+                data.message ||
+                'Username หรือ Password ไม่ถูกต้อง';
 
-    // ==========================================
-    // ไปหน้าแรก
-    // ==========================================
+            loginError.style.display = 'block';
 
-    window.location.href = 'index.html';
+            return;
+        }
 
-  } catch (error) {
+        // ==========================================
+        // ตรวจสอบว่ามี JWT กลับมาจริง
+        // ==========================================
 
-    console.error('Login error:', error);
+        if (!data.token) {
 
-    loginError.textContent =
-      'ไม่สามารถเชื่อมต่อระบบ Login ได้';
+            console.error(
+                'Login succeeded but token is missing:',
+                data
+            );
 
-    loginError.style.display = 'block';
-  }
+            loginError.textContent =
+                'เข้าสู่ระบบสำเร็จ แต่ระบบไม่ได้รับ Token';
+
+            loginError.style.display = 'block';
+
+            return;
+        }
+
+        // ==========================================
+        // Login สำเร็จ
+        // ==========================================
+
+        const user = data.user || {};
+
+        // JWT ที่ Lambda ของเราออกเอง
+        localStorage.setItem(
+            'authToken',
+            data.token
+        );
+
+        // ข้อมูล User
+        localStorage.setItem(
+            'tuUser',
+            JSON.stringify(user)
+        );
+
+        // Username
+        localStorage.setItem(
+            'username',
+            user.username || username
+        );
+
+        // สถานะ Login
+        localStorage.setItem(
+            'isLoggedIn',
+            'true'
+        );
+
+        // ==========================================
+        // Debug
+        // ==========================================
+
+        console.log(
+            'JWT received:',
+            data.token
+        );
+
+        console.log(
+            'User:',
+            user
+        );
+
+        console.log(
+            'Saved authToken:',
+            localStorage.getItem('authToken')
+        );
+
+        console.log(
+            'Saved tuUser:',
+            localStorage.getItem('tuUser')
+        );
+
+        // ==========================================
+        // ไปหน้าแรก
+        // ==========================================
+
+        window.location.href = 'index.html';
+
+    } catch (error) {
+
+        console.error(
+            'Login error:',
+            error
+        );
+
+        loginError.textContent =
+            'ไม่สามารถเชื่อมต่อระบบ Login ได้';
+
+        loginError.style.display = 'block';
+    }
 
 });

@@ -24,53 +24,78 @@ loginForm.addEventListener('submit', async function (event) {
 
   try {
 
-    console.log('Sending to TU API:', {
+    console.log('Sending login request:', {
       username: username
     });
 
+    // เรียก API Gateway ของระบบเรา
     const response = await fetch(
-      'https://restapi.tu.ac.th/api/v1/auth/Ad/verify',
+      'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/auth/login',
       {
         method: 'POST',
 
         headers: {
-          'Content-Type': 'application/json',
-          'Application-Key': 'TU8acabf0056d3dca25afa2c93086ef46b0e3c309eb19b09123e47d2c1032ee24247c3369bf04516431c1eec63907a8bcb'
+          'Content-Type': 'application/json'
         },
 
         body: JSON.stringify({
-        UserName: username,
-        PassWord: password
-      })
+          username: username,
+          password: password
+        })
       }
     );
 
     const data = await response.json();
 
-    console.log('TU API Status:', response.status);
-    console.log('TU API Response:', data);
+    console.log('API Status:', response.status);
+    console.log('API Response:', data);
 
     // Login ไม่สำเร็จ
     if (!response.ok || !data.status) {
 
       loginError.textContent =
-        'Username หรือ Password ไม่ถูกต้อง';
+        data.message || 'Username หรือ Password ไม่ถูกต้อง';
 
       loginError.style.display = 'block';
 
       return;
     }
 
+    // ==========================================
     // Login สำเร็จ
-    // เก็บข้อมูล User ที่ได้จาก TU API
+    // ==========================================
+
+    const user = data.user;
+
+    // เก็บข้อมูล User ที่ Lambda ส่งกลับมา
     localStorage.setItem(
       'tuUser',
-      JSON.stringify(data)
+      JSON.stringify(user)
+    );
+
+    // เก็บ username
+    localStorage.setItem(
+      'username',
+      user.username || username
+    );
+
+    // สถานะ Login
+    localStorage.setItem(
+      'isLoggedIn',
+      'true'
     );
 
     console.log('Login successful:', data);
 
-    // กลับหน้าแรกหลัง Login
+    console.log(
+      'Saved tuUser:',
+      localStorage.getItem('tuUser')
+    );
+
+    // ==========================================
+    // ไปหน้าแรก
+    // ==========================================
+
     window.location.href = 'index.html';
 
   } catch (error) {

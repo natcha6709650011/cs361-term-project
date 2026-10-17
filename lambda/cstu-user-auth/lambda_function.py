@@ -1,8 +1,9 @@
 import json
 import os
+import re
+import traceback
 import urllib.request
 import pymysql
-import re
 
 
 def lambda_handler(event, context):
@@ -30,43 +31,212 @@ def lambda_handler(event, context):
             )
 
         # ==========================================
-        # 2. เรียก TU API
+        # 2. TEST MOCK ACCOUNTS / TU API
+        # ==========================================
+        #
+        # Mock accounts are for testing the web login only.
+        # Their passwords are NOT stored in the users table.
+        # They are checked here, then the same users INSERT/UPDATE
+        # flow below stores the user profile in RDS.
+        #
+        # Existing real students continue to authenticate through TU API.
         # ==========================================
 
-        tu_api_url = os.environ["TU_API_URL"]
-        tu_api_key = os.environ["TU_API_KEY"]
+        mock_accounts = {
 
-        request_data = json.dumps({
-            "UserName": username,
-            "PassWord": password
-        }).encode("utf-8")
+            # ------------------------------------------
+            # Employee mock accounts
+            # ------------------------------------------
+            "teacher002": {
+                "password": "teacher123",
+                "user_type": "employee",
+                "displayname_th": "อาจารย์ผู้อนุมัติ",
+                "displayname_en": "Test Approver",
+                "email": "teacher002@tu.ac.th",
+                "faculty": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "program": None,
+                "education_level": None,
+                "program_type": None,
+                "department": "สาขาวิชาวิทยาการคอมพิวเตอร์",
+                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "tu_status": "ปกติ",
+                "status_id": None,
+                "status_work": None,
+                "status_emp": None,
+                "role": "APPROVER"
+            },
 
-        request = urllib.request.Request(
-            tu_api_url,
-            data=request_data,
-            method="POST"
-        )
+            "staff002": {
+                "password": "staff123",
+                "user_type": "employee",
+                "displayname_th": "เจ้าหน้าที่ดูแลสถานที่",
+                "displayname_en": "Test Facility Admin",
+                "email": "staff002@tu.ac.th",
+                "faculty": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "program": None,
+                "education_level": None,
+                "program_type": None,
+                "department": "งานบริการและจัดการห้อง",
+                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "tu_status": "ปกติ",
+                "status_id": None,
+                "status_work": None,
+                "status_emp": None,
+                "role": "FACILITY_ADMIN"
+            },
 
-        request.add_header(
-            "Content-Type",
-            "application/json"
-        )
+            "employee001": {
+                "password": "employee123",
+                "user_type": "employee",
+                "displayname_th": "บุคลากรทดสอบ",
+                "displayname_en": "Test Employee",
+                "email": "employee001@tu.ac.th",
+                "faculty": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "program": None,
+                "education_level": None,
+                "program_type": None,
+                "department": "งานบริหารทั่วไป",
+                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "tu_status": "ปกติ",
+                "status_id": None,
+                "status_work": None,
+                "status_emp": None,
+                "role": None
+            },
 
-        request.add_header(
-            "Application-Key",
-            tu_api_key
-        )
+            # ------------------------------------------
+            # Student master mock
+            # Same faculty/program as undergraduate,
+            # but education_level = master.
+            # ------------------------------------------
+            "master001": {
+                "password": "master123",
+                "user_type": "student",
+                "displayname_th": "นักศึกษาปริญญาโททดสอบ",
+                "displayname_en": "Test Master Student",
+                "email": "master001@dome.tu.ac.th",
+                "faculty": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "program": "สาขาวิชาวิทยาการคอมพิวเตอร์",
+                "education_level": "master",
+                "program_type": "special",
+                "department": "ปริญญาโท ภาคพิเศษ สาขาวิชาวิทยาการคอมพิวเตอร์",
+                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "tu_status": "ปกติ",
+                "status_id": "10",
+                "status_work": None,
+                "status_emp": None,
+                "role": None
+            },
 
-        with urllib.request.urlopen(
-            request,
-            timeout=10
-        ) as res:
+            # ------------------------------------------
+            # Student doctoral mock
+            # Same faculty/program as undergraduate,
+            # but education_level = doctoral.
+            # ------------------------------------------
+            "doctoral001": {
+                "password": "doctoral123",
+                "user_type": "student",
+                "displayname_th": "นักศึกษาปริญญาเอกทดสอบ",
+                "displayname_en": "Test Doctoral Student",
+                "email": "doctoral001@dome.tu.ac.th",
+                "faculty": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "program": "สาขาวิชาวิทยาการคอมพิวเตอร์",
+                "education_level": "doctoral",
+                "program_type": "special",
+                "department": "ปริญญาเอก ภาคพิเศษ สาขาวิชาวิทยาการคอมพิวเตอร์",
+                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
+                "tu_status": "ปกติ",
+                "status_id": "10",
+                "status_work": None,
+                "status_emp": None,
+                "role": None
+            }
+        }
 
-            tu_data = json.loads(
-                res.read().decode("utf-8")
+        if username in mock_accounts:
+
+            mock = mock_accounts[username]
+
+            if password != mock["password"]:
+                return response(
+                    401,
+                    {
+                        "status": False,
+                        "message": "Invalid username or password"
+                    }
+                )
+
+            # Build the same data shape as TU API so the
+            # existing RDS INSERT/UPDATE logic is reused.
+            tu_data = {
+                "status": True,
+                "message": "Success",
+                "type": mock["user_type"],
+                "username": username,
+                "displayname_th": mock["displayname_th"],
+                "displayname_en": mock["displayname_en"],
+                "email": mock["email"],
+                "faculty": mock["faculty"],
+                "program": mock["program"],
+                "education_level": mock["education_level"],
+                "program_type": mock["program_type"],
+                "department": mock["department"],
+                "organization": mock["organization"],
+                "tu_status": mock["tu_status"],
+                "statusid": mock["status_id"],
+                "status_work": mock["status_work"],
+                "status_emp": mock["status_emp"]
+            }
+
+            print(
+                "MOCK LOGIN:",
+                username,
+                "type=",
+                mock["user_type"],
+                "role=",
+                mock["role"]
             )
 
-        print("TU API response:", tu_data)
+        else:
+
+            # ==========================================
+            # Real login -> TU API
+            # ==========================================
+
+            tu_api_url = os.environ["TU_API_URL"]
+            tu_api_key = os.environ["TU_API_KEY"]
+
+            request_data = json.dumps({
+                "UserName": username,
+                "PassWord": password
+            }).encode("utf-8")
+
+            request = urllib.request.Request(
+                tu_api_url,
+                data=request_data,
+                method="POST"
+            )
+
+            request.add_header(
+                "Content-Type",
+                "application/json"
+            )
+
+            request.add_header(
+                "Application-Key",
+                tu_api_key
+            )
+
+            with urllib.request.urlopen(
+                request,
+                timeout=10
+            ) as res:
+
+                tu_data = json.loads(
+                    res.read().decode("utf-8")
+                )
+
+            print("TU API response:", tu_data)
 
         # ==========================================
         # 3. ตรวจสอบ Login
@@ -177,90 +347,31 @@ def lambda_handler(event, context):
         }
 
         # ==========================================
-        # 5. EMPLOYEE MOCK
+        # 5. MOCK ROLE
         # ==========================================
 
-        employee_mock = {
-
-            "teacher002": {
-                "user_type": "employee",
-                "displayname_th": "อาจารย์อนุมัติ",
-                "displayname_en": "Test Approver",
-                "email": "teacher002@tu.ac.th",
-                "department": "สาขาวิทยาการคอมพิวเตอร์",
-                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
-                "role": "APPROVER"
-            },
-
-            "staff002": {
-                "user_type": "employee",
-                "displayname_th": "เจ้าหน้าที่ดูแลสถานที่",
-                "displayname_en": "Test Facility Admin",
-                "email": "staff002@tu.ac.th",
-                "department": "งานบริหารและจัดการทั่วไป",
-                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
-                "role": "FACILITY_ADMIN"
-            },
-
-            "employee001": {
-                "user_type": "employee",
-                "displayname_th": "บุคลากรทดสอบ",
-                "displayname_en": "Test Employee",
-                "email": "employee001@tu.ac.th",
-                "department": "งานบริหารทั่วไป",
-                "organization": "คณะวิทยาศาสตร์และเทคโนโลยี",
-                "role": None
-            }
-        }
+        mock = mock_accounts.get(username)
 
         # ==========================================
-        # 6. ถ้าเป็น employee mock
-        #    ให้ใช้ข้อมูล mock
+        # 6. Role
         # ==========================================
 
-        # role is only for special permissions stored in the DB.
-        # Current DB roles are:
-        #   APPROVER
-        #   FACILITY_ADMIN
-        # Students and normal employees do not need a role.
+        # Special roles come only from the existing DB:
+        # APPROVER / FACILITY_ADMIN.
+        # Mock students and normal employees have no special role.
 
         role = None
 
-        if username in employee_mock:
-
-            mock = employee_mock[username]
-
-            user_type = "employee"
-
-            user["user_type"] = "employee"
-            user["displayname_th"] = mock[
-                "displayname_th"
-            ]
-            user["displayname_en"] = mock[
-                "displayname_en"
-            ]
-            user["email"] = mock["email"]
-
-            user["department"] = mock[
-                "department"
-            ]
-
-            user["organization"] = mock[
-                "organization"
-            ]
-
+        if mock:
             role = mock["role"]
 
         elif user_type == "student":
-
             role = None
 
         elif user_type == "employee":
-
             role = None
 
         else:
-
             role = None
 
         # ==========================================
@@ -491,6 +602,8 @@ def lambda_handler(event, context):
     except Exception as e:
 
         print("ERROR:", str(e))
+        print("TRACEBACK:")
+        print(traceback.format_exc())
 
         return response(
             500,

@@ -91,6 +91,9 @@ loginForm.addEventListener('submit', async function (event) {
       'true'
     );
 
+    // ตรวจสอบ token ที่ได้รับ
+    console.log('Token from API:', data.token);
+
     console.log('Login successful:', data);
 
     console.log(

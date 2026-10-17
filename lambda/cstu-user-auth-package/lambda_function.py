@@ -539,7 +539,7 @@ def create_token(user):
             current_time,
 
         "exp":
-            current_time + 3600
+            current_time + 604800  # 7 days
     }
 
     token = jwt.encode(

@@ -265,7 +265,7 @@ def list_my_bookings(connection, user_id):
             INNER JOIN rooms r ON r.room_id = b.room_id
             INNER JOIN room_types rt ON rt.room_type_id = r.room_type_id
             WHERE b.user_id = %s
-            ORDER BY b.start_time DESC, b.booking_id DESC
+            ORDER BY b.booking_id DESC
             """,
             (user_id,),
         )

@@ -51,6 +51,9 @@
     try {
       if (!window.BookingService) throw new Error("Booking service is unavailable");
       bookingData = await window.BookingService.getMyBookings();
+      // The newest submitted request has the largest booking id. Keep it at
+      // the top even when its requested room time is earlier than older rows.
+      bookingData.sort((first, second) => Number(second.id) - Number(first.id));
       isLoading = false;
       updateCounts();
       renderBookings();
@@ -127,6 +130,14 @@
     dialog.querySelector("button, input, select, textarea")?.focus();
   }
 
+  function positionActionMenu(trigger, popover) {
+    const triggerBox = trigger.getBoundingClientRect();
+    const menuWidth = popover.getBoundingClientRect().width;
+    const left = Math.max(8, Math.min(triggerBox.right - menuWidth, window.innerWidth - menuWidth - 8));
+    popover.style.top = `${triggerBox.bottom + 6}px`;
+    popover.style.left = `${left}px`;
+  }
+
   function closeDialogs() {
     document.querySelectorAll(".booking-dialog").forEach((dialog) => {
       dialog.hidden = true;
@@ -138,6 +149,14 @@
   function setText(selector, value) {
     const element = document.querySelector(selector);
     if (element) element.textContent = value;
+  }
+
+  function showUpdateSuccess(trigger) {
+    openDialog("#booking-update-success-dialog", trigger);
+  }
+
+  function showCancelSuccess(trigger) {
+    openDialog("#booking-cancel-success-dialog", trigger);
   }
 
   function openDetail(booking, trigger) {
@@ -184,6 +203,8 @@
 
   function openEdit(booking, trigger) {
     activeBookingId = booking.id;
+    // Do not stack the edit dialog over the detail dialog.
+    getDialog("#booking-detail-dialog").hidden = true;
     setText("[data-edit-room]", booking.room);
     syncDatePicker("#edit-booking-date", booking.date);
     document.querySelector("#edit-booking-purpose").value = booking.purpose;
@@ -198,6 +219,8 @@
 
   function openCancel(booking, trigger) {
     activeBookingId = booking.id;
+    // Do not stack the cancellation confirmation over the detail dialog.
+    getDialog("#booking-detail-dialog").hidden = true;
     setText("[data-cancel-room]", booking.room);
     setText("[data-cancel-date]", `วันที่ ${formatDate(booking.date)}`);
     setText("[data-cancel-time]", `เวลา ${booking.startTime} - ${booking.endTime}`);
@@ -231,6 +254,7 @@
         const isOpen = !popover.hidden;
         document.querySelectorAll(".booking-action-popover").forEach((item) => { item.hidden = true; });
         popover.hidden = isOpen;
+        if (!isOpen) positionActionMenu(menu, popover);
         menu.setAttribute("aria-expanded", String(!isOpen));
       }
       if (edit && booking) openEdit(booking, edit);
@@ -295,6 +319,7 @@
         if (index !== -1) bookingData[index] = result.booking;
         closeDialogs();
         renderBookings();
+        showUpdateSuccess(submitButton);
       } catch (error) {
         console.error("Unable to update booking:", error);
         if (error.code === "BOOKING_CONFLICT") {
@@ -325,6 +350,7 @@
         closeDialogs();
         updateCounts();
         renderBookings();
+        showCancelSuccess(button);
       } catch (error) {
         console.error("Unable to cancel booking:", error);
         if (errorMessage) {

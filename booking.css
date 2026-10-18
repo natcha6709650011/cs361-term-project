@@ -68,7 +68,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .booking-action-menu { position: relative; }
 .booking-more-button { width: 34px; height: 34px; border: 1px solid #d8dee7; border-radius: 6px; background: #fff; color: #495568; font-size: 20px; line-height: 1; cursor: pointer; }
 .booking-more-button:hover, .booking-more-button:focus-visible { border-color: #e6a4b6; background: #fff1f4; color: var(--booking-red); outline: none; }
-.booking-action-popover { position: absolute; z-index: 3; right: 0; bottom: calc(100% + 5px); min-width: 118px; padding: 5px; border: 1px solid #e1e5ea; border-radius: 7px; background: #fff; box-shadow: 0 8px 18px rgb(15 23 42 / 15%); }
+.booking-action-popover { position: fixed; z-index: 110; min-width: 118px; padding: 5px; border: 1px solid #e1e5ea; border-radius: 7px; background: #fff; box-shadow: 0 8px 18px rgb(15 23 42 / 15%); }
 .booking-action-popover button { display: block; width: 100%; padding: 8px 10px; border: 0; border-radius: 4px; background: transparent; color: #344054; font: 600 13px/1 "Noto Sans Thai", Arial, sans-serif; text-align: left; cursor: pointer; }
 .booking-action-popover button:last-child { color: var(--booking-red); }
 .booking-action-popover button:hover, .booking-action-popover button:focus-visible { background: #fff1f4; outline: none; }
@@ -140,6 +140,13 @@ tbody tr:last-child td { border-bottom: 0; }
 .booking-cancel-error { margin: 12px 0 0; color: #b42318; font-size: 14px; font-weight: 600; text-align: left; }
 .booking-cancel-panel__actions { justify-content: stretch; gap: 12px; padding: 0 28px 28px; border-top: 0; }
 .booking-cancel-panel__actions .dialog-button { flex: 1; min-height: 50px; }
+.booking-success-panel { overflow: hidden; }
+.booking-success-panel__body { padding: 34px 28px 20px; text-align: center; }
+.booking-success-icon { display: grid; width: 68px; height: 68px; place-items: center; margin: 0 auto 16px; border-radius: 50%; background: #dcfce7; color: #15803d; font-size: 38px; font-weight: 800; }
+.booking-success-panel__body h2 { margin: 0; color: #121a2a; font-size: 22px; line-height: 1.35; }
+.booking-success-panel__body p { margin: 8px 0 0; color: #697586; }
+.booking-success-panel__actions { justify-content: center; padding: 0 28px 28px; border-top: 0; }
+.booking-success-panel__actions .dialog-button { min-width: 160px; }
 .booking-conflict-panel { overflow: hidden; }
 .booking-conflict-panel__header { display: flex; justify-content: flex-end; padding: 14px 16px 0; }
 .booking-conflict-panel__body { padding: 0 28px 26px; text-align: center; }

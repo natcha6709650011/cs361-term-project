@@ -216,6 +216,8 @@ async function loadRoomSchedule(roomNumber, selectedDate) {
     return;
   }
 
+  setScheduleMessage("loading", "กำลังโหลด", "กำลังตรวจสอบสถานะห้อง");
+
   const response = await fetch(
     `${API_BASE_URL}/${encodeURIComponent(roomNumber)}/schedule?date=${encodeURIComponent(selectedDate)}`,
     {
@@ -233,6 +235,18 @@ async function loadRoomSchedule(roomNumber, selectedDate) {
   console.log("API Room Schedule:", data);
 
   renderRoomSchedule(data.bookings || []);
+}
+
+function setScheduleMessage(state, title, description) {
+  document.querySelectorAll("[data-time-slot]").forEach((slot) => {
+    slot.classList.remove("is-booked", "is-pending", "is-free", "is-loading", "is-error");
+    slot.classList.add(`is-${state}`);
+    const statusTitle = slot.querySelector("b");
+    const statusDescription = slot.querySelector("small");
+    if (statusTitle) statusTitle.textContent = title;
+    if (statusDescription) statusDescription.textContent = description;
+    updateScheduleSlotAction(slot, state);
+  });
 }
 
 function renderRoomSchedule(bookings) {
@@ -273,6 +287,8 @@ function updateScheduleSlot(slot, status) {
     "is-booked",
     "is-pending",
     "is-free",
+    "is-loading",
+    "is-error",
   );
 
   slot.classList.add(`is-${status}`);
@@ -386,12 +402,30 @@ function setupRoomSchedule(roomNumber) {
       await loadRoomSchedule(roomNumber, scheduleDate.value);
     } catch (error) {
       console.error("Error loading room schedule:", error);
+      setScheduleMessage("error", "โหลดไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
+    }
+  });
+
+  // Update the visible timetable as soon as a booking from this page is
+  // created, so returning from the success dialog never requires a reload.
+  document.addEventListener("room-booking:created", async (event) => {
+    const detail = event.detail || {};
+    if (String(detail.roomNumber) !== String(roomNumber) || detail.date !== scheduleDate.value) {
+      return;
+    }
+
+    try {
+      await loadRoomSchedule(roomNumber, scheduleDate.value);
+    } catch (error) {
+      console.error("Error refreshing room schedule after booking:", error);
+      setScheduleMessage("error", "โหลดไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
     }
   });
 
   if (scheduleDate.value) {
     loadRoomSchedule(roomNumber, scheduleDate.value).catch((error) => {
       console.error("Error loading initial room schedule:", error);
+      setScheduleMessage("error", "โหลดไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
     });
   }
 

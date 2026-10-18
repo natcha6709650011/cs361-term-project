@@ -83,11 +83,21 @@ form.addEventListener('submit', async (event) => {
     });
 
     try {
+        const authToken = window.localStorage.getItem('authToken');
+        if (!authToken) {
+            throw new Error('กรุณาเข้าสู่ระบบก่อนค้นหาห้องว่าง');
+        }
+
         const apiBaseUrl = window.location.port === '5501'
             ? '/api/v1'
             : 'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1';
         const response = await fetch(
-            `${apiBaseUrl}/rooms/available?${query.toString()}`
+            `${apiBaseUrl}/rooms/available?${query.toString()}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
         );
 
         const data = await response.json();

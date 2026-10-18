@@ -192,6 +192,12 @@
       });
 
       if (result.success) {
+        document.dispatchEvent(new CustomEvent("room-booking:created", {
+          detail: {
+            roomNumber: bookingContext.room.number,
+            date: bookingContext.date,
+          },
+        }));
         openSuccess({ purpose, participants });
       } else if (result.isMock) {
         showFormMessage("นี่คือการส่งข้อมูลตัวอย่าง: เมื่อเชื่อม API แล้วคำขอจริงจะถูกบันทึกเป็นสถานะ “รออนุมัติ”");

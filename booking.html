@@ -80,6 +80,34 @@
       </section>
     </main>
 
+    <div class="booking-dialog" id="booking-update-success-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-update-success-title" hidden>
+      <div class="booking-dialog__backdrop" data-dialog-close></div>
+      <section class="booking-dialog__panel booking-dialog__panel--confirm booking-success-panel">
+        <div class="booking-success-panel__body">
+          <div class="booking-success-icon" aria-hidden="true">✓</div>
+          <h2 id="booking-update-success-title">แก้ไขการจองเรียบร้อย</h2>
+          <p>ระบบบันทึกข้อมูลการจองของคุณแล้ว</p>
+        </div>
+        <footer class="booking-dialog__actions booking-success-panel__actions">
+          <button type="button" class="dialog-button dialog-button--danger" data-dialog-close>ตกลง</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="booking-dialog" id="booking-cancel-success-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-cancel-success-title" hidden>
+      <div class="booking-dialog__backdrop" data-dialog-close></div>
+      <section class="booking-dialog__panel booking-dialog__panel--confirm booking-success-panel">
+        <div class="booking-success-panel__body">
+          <div class="booking-success-icon" aria-hidden="true">✓</div>
+          <h2 id="booking-cancel-success-title">ยกเลิกคำขอเรียบร้อย</h2>
+          <p>คำขอจองห้องของคุณถูกยกเลิกแล้ว และห้องกลับมาว่าง</p>
+        </div>
+        <footer class="booking-dialog__actions booking-success-panel__actions">
+          <button type="button" class="dialog-button dialog-button--danger" data-dialog-close>ตกลง</button>
+        </footer>
+      </section>
+    </div>
+
     <div class="booking-dialog" id="booking-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-detail-title" hidden>
       <div class="booking-dialog__backdrop" data-dialog-close></div>
       <section class="booking-dialog__panel booking-dialog__panel--detail">

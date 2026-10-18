@@ -1,0 +1,74 @@
+.admin { max-width: 1180px; margin: 0 auto; padding: 56px 24px 72px; color: #172033; }
+.admin-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.admin h1 { margin: 0; font-size: 40px; font-weight: 800; }
+.admin__status { margin: 0 0 16px; padding: 12px 16px; border-radius: 10px; background: #d7f7e5; color: #11633f; }
+.admin__status.is-error { background: #ffd5df; color: #8f0029; }
+
+.admin-filters { display: flex; flex-wrap: wrap; gap: 12px; }
+.admin-search, .admin-filters select { height: 45px; border: 1px solid #172033; border-radius: 10px; background: #fff; font: inherit; color: #172033; }
+.admin-search { display: flex; align-items: center; gap: 8px; width: 320px; max-width: 100%; padding: 0 14px; color: #768296; }
+.admin-search input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; color: #172033; background: none; }
+.admin-filters select { width: 205px; padding: 0 36px 0 14px; appearance: none; cursor: pointer;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23172033' stroke-width='3'%3E%3Cpath d='m6 15 6-6 6 6'/%3E%3C/svg%3E") no-repeat right 14px center; }
+.admin-search:focus-within, .admin-filters select:focus-visible { outline: 2px solid #c60039; outline-offset: 1px; }
+
+.admin-card { border-radius: 16px; background: #fff; box-shadow: 0 2px 10px rgb(23 32 51 / 12%); overflow: hidden; }
+.admin-table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.admin-table th { padding: 18px 20px; background: #f5f5f5; text-align: left; font-size: 15px; font-weight: 700; }
+.admin-table td { padding: 18px 20px; border-top: 1px solid #e2e6eb; }
+.admin-table td:first-child { font-weight: 700; }
+.admin-table .c { text-align: center; }
+.admin-table tr:hover td { background: #fafbfc; }
+.admin-empty { text-align: center; color: #768296; padding: 40px 20px !important; }
+.on { color: #11633f; } .off { color: #c60039; }
+.dots { border: 0; background: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; color: #768296; font-size: 22px; line-height: 1; letter-spacing: 1px; }
+.dots:hover, .dots:focus-visible { background: #eef0f3; }
+
+.row-menu[hidden] { display: none; }
+.row-menu { position: fixed; z-index: 900; width: 164px; padding: 8px; border-radius: 12px; background: #fff; box-shadow: 0 6px 24px rgb(23 32 51 / 22%); }
+.row-menu button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 14px; cursor: pointer; text-align: left; }
+.row-menu button:hover { background: #f5f5f5; }
+.row-menu button + button { border-top: 1px solid #eef0f3; border-radius: 0 0 8px 8px; }
+
+.btn { padding: 11px 24px; border-radius: 10px; font: inherit; font-weight: 700; cursor: pointer; border: 1px solid #e2e6eb; }
+.btn--primary { background: #c60039; border-color: #c60039; color: #fff; }
+.btn--primary:hover { background: #a5002b; }
+.btn--primary:disabled { opacity: .6; cursor: wait; }
+.btn--ghost { background: #fff; color: #172033; }
+
+.admin-modal[hidden] { display: none; }
+.admin-modal { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 16px; }
+.admin-modal__backdrop { position: absolute; inset: 0; background: rgb(23 32 51 / 55%); }
+.admin-modal__panel { position: relative; width: min(720px, 100%); max-height: calc(100vh - 32px); display: flex; flex-direction: column; border-radius: 24px; background: #fff; box-shadow: 0 20px 60px rgb(0 0 0 / 30%); }
+.admin-modal__header { display: flex; align-items: center; justify-content: space-between; padding: 22px 32px; border-bottom: 1px solid #e2e6eb; }
+.admin-modal__header h2 { margin: 0; font-size: 28px; }
+.admin-modal__close { border: 0; background: none; font-size: 32px; line-height: 1; color: #5b6579; cursor: pointer; }
+.admin-modal__notice { margin: 16px 32px 0; padding: 10px 14px; border-radius: 10px; background: #d7f7e5; color: #11633f; font-weight: 600; }
+.admin-modal__notice.is-error { background: #ffd5df; color: #8f0029; }
+.admin-modal__body { padding: 24px 32px; overflow-y: auto; display: grid; gap: 18px; }
+.admin-modal__actions { display: flex; justify-content: flex-end; gap: 12px; padding: 18px 32px; border-top: 1px solid #e2e6eb; }
+
+.detail-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 14px; }
+.detail { display: grid; grid-template-columns: 170px 1fr; gap: 12px 16px; margin: 0; }
+.detail dt { color: #768296; } .detail dd { margin: 0; font-weight: 700; word-break: break-word; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 6px 14px; border-radius: 6px; background: #f1d98b; color: #5c4300; font-weight: 600; font-size: 14px; }
+
+.admin-modal__body label { display: grid; gap: 6px; font-weight: 700; }
+.admin-modal__body input[type=text], .admin-modal__body input[type=number], .admin-modal__body input[type=url] { padding: 12px 14px; border: 1px solid #e2e6eb; border-radius: 10px; background: #f8f9fb; font: inherit; font-weight: 400; }
+.admin-modal__body input:focus { outline: 2px solid #c60039; background: #fff; }
+.admin-modal__body input.is-invalid { border-color: #c60039; background: #fff5f7; }
+.admin-modal__body small { font-weight: 400; color: #768296; }
+.admin-modal__error { margin: 0; color: #c60039; font-weight: 600; }
+.switch { display: flex !important; grid-auto-flow: column; align-items: center; gap: 12px !important; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch__track { width: 44px; height: 24px; border-radius: 999px; background: #c9d0da; position: relative; transition: background .15s; }
+.switch__track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.switch input:checked + .switch__track { background: #20c979; }
+.switch input:checked + .switch__track::after { transform: translateX(20px); }
+.switch input:focus-visible + .switch__track { outline: 2px solid #c60039; outline-offset: 2px; }
+@media (max-width: 560px) { .detail { grid-template-columns: 1fr; gap: 2px; } .detail dd { margin-bottom: 10px; } }
+
+.main-nav > a:not(.user-link), .main-nav > .nav-dropdown { display: none; }
+.admin-empty a { color: #c60039; font-weight: 700; }

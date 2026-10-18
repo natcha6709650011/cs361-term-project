@@ -1,5 +1,5 @@
 (function () {
-    const ROOMS_LIST_URL = "https://aisw93f81a.execute-api.us-east-1.amazonaws.com/v1/rooms";
+    const ROOMS_LIST_URL = "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/rooms";
     const MANAGE_BASE_URL = "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com"; // PATCH /rooms/{id}[/status]
   
     const $ = (id) => document.getElementById(id);

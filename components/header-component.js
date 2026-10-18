@@ -148,11 +148,14 @@
 
       logoutButton.addEventListener('click', () => {
 
-        // ลบข้อมูล Login
+        // ลบข้อมูล Login ทั้งหมด เพื่อไม่ให้ JWT หรือสถานะเดิมค้างอยู่
         localStorage.removeItem('tuUser');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('username');
+        localStorage.removeItem('isLoggedIn');
 
-        // กลับหน้าแรก
-        window.location.href = 'index.html';
+        // กลับไป Login เพื่อรับ JWT ชุดใหม่
+        window.location.href = 'login.html';
       });
 
       // ปิด dropdown เมื่อคลิกข้างนอก

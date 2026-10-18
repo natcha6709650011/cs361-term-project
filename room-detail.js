@@ -1,7 +1,21 @@
-const API_BASE_URL =
-  "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1";
+const API_BASE_URL = window.location.port === "5501"
+  ? "/api/v1"
+  : "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1";
+
+let currentRoom = null;
 
 document.addEventListener("DOMContentLoaded", loadRoomDetail);
+
+// Room APIs are protected by the JWT authorizer.  Use the token saved by
+// login.js instead of trusting a username from the page or URL.
+function apiHeaders() {
+  const token = window.localStorage.getItem("authToken");
+
+  return {
+    Accept: "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 async function loadRoomDetail() {
   const loading = document.querySelector("#room-loading");
@@ -24,11 +38,13 @@ async function loadRoomDetail() {
       `${API_BASE_URL}/rooms/${encodeURIComponent(roomNumber)}`,
       {
         method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
+        headers: apiHeaders(),
       },
     );
+
+    if (response.status === 401) {
+      throw new Error("AUTH_REQUIRED");
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);
@@ -57,7 +73,12 @@ async function loadRoomDetail() {
 
     if (loading) loading.style.display = "none";
     if (roomPage) roomPage.style.display = "none";
-    if (errorBox) errorBox.style.display = "flex";
+    if (errorBox) {
+      errorBox.textContent = error.message === "AUTH_REQUIRED"
+        ? "เซสชันหมดอายุหรือยังไม่ได้เข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่"
+        : "ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง";
+      errorBox.style.display = "flex";
+    }
   }
 }
 
@@ -170,7 +191,14 @@ function getDescription(room) {
 }
 
 function getBuilding(room) {
-  return room?.building ?? room?.building_name ?? room?.buildingName ?? "";
+  // Current CS room inventory is located in Bor Ror 2. Prefer the API value
+  // when it is available, while retaining a useful display value for V2 data.
+  return (
+    room?.building ??
+    room?.building_name ??
+    room?.buildingName ??
+    "อาคารบรรยายรวม 2 (บร.2)"
+  );
 }
 
 function getRoomSize(room) {
@@ -192,9 +220,7 @@ async function loadRoomSchedule(roomNumber, selectedDate) {
     `${API_BASE_URL}/${encodeURIComponent(roomNumber)}/schedule?date=${encodeURIComponent(selectedDate)}`,
     {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
+      headers: apiHeaders(),
     },
   );
 
@@ -270,6 +296,82 @@ function updateScheduleSlot(slot, status) {
       statusDescription.textContent = "สามารถใช้งานได้";
     }
   }
+
+  updateScheduleSlotAction(slot, status);
+}
+
+function updateScheduleSlotAction(slot, status) {
+  const isFree = status === "free";
+
+  slot.tabIndex = isFree ? 0 : -1;
+  slot.setAttribute("role", isFree ? "button" : "group");
+
+  if (isFree) {
+    slot.setAttribute(
+      "aria-label",
+      `จองห้องช่วงเวลา ${slot.dataset.start} ถึง ${slot.dataset.end}`,
+    );
+  } else {
+    slot.removeAttribute("aria-label");
+  }
+}
+
+function setupAvailableSlotBooking() {
+  const scheduleSlots = document.querySelector("#room-schedule-slots");
+
+  if (!scheduleSlots) {
+    return;
+  }
+
+  const openBookingForSlot = (slot) => {
+    if (!slot.classList.contains("is-free") || !currentRoom) {
+      return;
+    }
+
+    const selectedDate = document.querySelector("#schedule-date")?.value;
+
+    if (!selectedDate || !slot.dataset.start || !slot.dataset.end) {
+      return;
+    }
+
+    document.dispatchEvent(
+      new CustomEvent("room-booking:open", {
+        detail: {
+          room: currentRoom,
+          date: selectedDate,
+          startTime: slot.dataset.start,
+          endTime: slot.dataset.end,
+        },
+      }),
+    );
+  };
+
+  scheduleSlots.addEventListener("click", (event) => {
+    const slot = event.target.closest("[data-time-slot]");
+
+    if (slot) {
+      openBookingForSlot(slot);
+    }
+  });
+
+  scheduleSlots.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    const slot = event.target.closest("[data-time-slot]");
+
+    if (!slot?.classList.contains("is-free")) {
+      return;
+    }
+
+    event.preventDefault();
+    openBookingForSlot(slot);
+  });
+
+  document.querySelectorAll("[data-time-slot]").forEach((slot) => {
+    updateScheduleSlotAction(slot, slot.classList.contains("is-free") ? "free" : "booked");
+  });
 }
 
 function setupRoomSchedule(roomNumber) {
@@ -292,6 +394,8 @@ function setupRoomSchedule(roomNumber) {
       console.error("Error loading initial room schedule:", error);
     });
   }
+
+  setupAvailableSlotBooking();
 }
 
 // ==============================
@@ -320,6 +424,20 @@ function displayRoomDetail(room) {
   const amenities = getAmenities(room);
 
   const roles = getRoles(room);
+
+  const imageUrl =
+    room?.image_url ?? room?.imageUrl ?? room?.photo_url ?? room?.photoUrl ?? "";
+
+  currentRoom = {
+    number,
+    displayName,
+    type,
+    floor,
+    capacity: Number(capacity) || null,
+    building,
+    size: roomSize,
+    imageUrl,
+  };
 
   // =========================
   // ชื่อห้อง
@@ -414,13 +532,6 @@ function displayRoomDetail(room) {
   const roomImage = document.querySelector("#room-image");
 
   if (roomImage) {
-    const imageUrl =
-      room?.image_url ??
-      room?.imageUrl ??
-      room?.photo_url ??
-      room?.photoUrl ??
-      "";
-
     if (imageUrl) {
       roomImage.src = imageUrl;
       roomImage.alt = `ห้อง ${displayName}`;

@@ -116,7 +116,7 @@
 
       <section class="content-section recommended" id="recommended">
         <h2>ห้องแนะนำ</h2>
-        <!-- JavaScript จะเปลี่ยนการ์ด fallback ด้านล่างเป็นข้อมูลจาก GET /v1/rooms เมื่อเรียก API ได้ -->
+        <!-- รายละเอียดการ์ดเป็นเนื้อหาแนะนำ ส่วนความจุดึงจาก GET /v1/rooms เสมอ -->
         <div class="room-grid" id="rooms-grid" aria-live="polite">
           <article class="room-card">
             <div class="room-image room-photo-bor2-308"><b>ห้องเรียน</b></div>
@@ -128,11 +128,11 @@
                 ><span>โปรเจคเตอร์</span>
               </div>
               <footer>
-                <span class="capacity"
+                <span class="capacity" data-room-capacity="308"
                   ><svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="7" r="3.5" />
                     <path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg
-                  >70 ที่นั่ง</span
+                  >กำลังโหลดความจุ</span
                 >
                 <a class="room-detail-link" href="room-detail.html?room=308"
                   >ดูรายละเอียดเพิ่มเติม</a
@@ -153,11 +153,11 @@
                 ><span>โปรเจคเตอร์</span>
               </div>
               <footer>
-                <span class="capacity"
+                <span class="capacity" data-room-capacity="107"
                   ><svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="7" r="3.5" />
                     <path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg
-                  >84 ที่นั่ง</span
+                  >กำลังโหลดความจุ</span
                 >
                 <a class="room-detail-link" href="room-detail.html?room=107"
                   >ดูรายละเอียดเพิ่มเติม</a
@@ -176,11 +176,11 @@
                 ><span>ทีวี</span>
               </div>
               <footer>
-                <span class="capacity"
+                <span class="capacity" data-room-capacity="214"
                   ><svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="7" r="3.5" />
                     <path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg
-                  >8 ที่นั่ง</span
+                  >กำลังโหลดความจุ</span
                 >
                 <a class="room-detail-link" href="room-detail.html?room=214">
                   ดูรายละเอียดเพิ่มเติม
@@ -196,11 +196,11 @@
               <p>ห้องเรียน 106 ชั้น 1</p>
               <div class="tags"><span>โต๊ะ</span><span>เก้าอี้</span></div>
               <footer>
-                <span class="capacity"
+                <span class="capacity" data-room-capacity="106"
                   ><svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="7" r="3.5" />
                     <path d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5" /></svg
-                  >- ที่นั่ง</span
+                  >กำลังโหลดความจุ</span
                 >
                 <a class="room-detail-link" href="room-detail.html?room=106">
                   ดูรายละเอียดเพิ่มเติม
@@ -257,5 +257,6 @@
     </footer>
 
     <script src="components/header-component.js"></script>
+    <script src="home-room-capacity.js"></script>
   </body>
 </html>

@@ -1,5 +1,6 @@
-const API_BASE_URL =
-  "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1";
+const API_BASE_URL = window.location.port === "5501"
+  ? "/api/v1"
+  : "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1";
 
 document.addEventListener("DOMContentLoaded", loadRoomDetail);
 

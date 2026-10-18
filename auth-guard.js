@@ -396,3 +396,42 @@ function updateRoleBasedMenu() {
 document.addEventListener("DOMContentLoaded", () => {
     updateRoleBasedMenu();
 });
+
+async function updateApproverMenu() {
+    const approveMenu = document.querySelector('[data-menu="approve"]');
+
+    if (!approveMenu) return;
+
+    // ซ่อนไว้ก่อน
+    approveMenu.hidden = true;
+
+    const token = localStorage.getItem("authToken");
+
+    if (!token) return;
+
+    try {
+        const response = await fetch(
+            "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        console.log("Permission:", data);
+
+        if (data.user?.is_approver === true) {
+            approveMenu.hidden = false;
+        }
+
+    } catch (error) {
+        console.error("Failed to check approver permission:", error);
+    }
+}
+
+updateApproverMenu();

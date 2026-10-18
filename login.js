@@ -159,5 +159,6 @@ loginForm.addEventListener('submit', async function (event) {
 
         loginError.style.display = 'block';
     }
+    
 
 });

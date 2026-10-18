@@ -195,6 +195,7 @@ def booking_to_json(row):
         "id": row["booking_id"],
         "room": f"บร.2-{row['room_number']}",
         "roomNumber": str(row["room_number"]),
+        "roomType": row.get("room_type_name") or "ไม่ระบุ",
         "date": row["start_time"].strftime("%Y-%m-%d"),
         "startTime": row["start_time"].strftime("%H:%M"),
         "endTime": row["end_time"].strftime("%H:%M"),
@@ -210,9 +211,10 @@ def get_owned_booking(cursor, booking_id, user_id, *, for_update=False):
         f"""
         SELECT b.booking_id, b.room_id, b.user_id, b.title, b.participant_count,
                b.start_time, b.end_time, b.status, r.room_number, r.capacity,
-               r.room_type_id
+               r.room_type_id, rt.type_name AS room_type_name
         FROM bookings b
         INNER JOIN rooms r ON r.room_id = b.room_id
+        INNER JOIN room_types rt ON rt.room_type_id = r.room_type_id
         WHERE b.booking_id = %s AND b.user_id = %s{lock}
         """,
         (booking_id, user_id),
@@ -242,9 +244,10 @@ def get_booking(cursor, booking_id, user_id):
     cursor.execute(
         """
         SELECT b.booking_id, b.title, b.participant_count, b.start_time, b.end_time,
-               b.status, r.room_number
+               b.status, r.room_number, rt.type_name AS room_type_name
         FROM bookings b
         INNER JOIN rooms r ON r.room_id = b.room_id
+        INNER JOIN room_types rt ON rt.room_type_id = r.room_type_id
         WHERE b.booking_id = %s AND b.user_id = %s
         """,
         (booking_id, user_id),
@@ -257,9 +260,10 @@ def list_my_bookings(connection, user_id):
         cursor.execute(
             """
             SELECT b.booking_id, b.title, b.participant_count, b.start_time,
-                   b.end_time, b.status, r.room_number
+                   b.end_time, b.status, r.room_number, rt.type_name AS room_type_name
             FROM bookings b
             INNER JOIN rooms r ON r.room_id = b.room_id
+            INNER JOIN room_types rt ON rt.room_type_id = r.room_type_id
             WHERE b.user_id = %s
             ORDER BY b.start_time DESC, b.booking_id DESC
             """,

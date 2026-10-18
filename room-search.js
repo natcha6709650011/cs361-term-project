@@ -83,8 +83,11 @@ form.addEventListener('submit', async (event) => {
     });
 
     try {
+        const apiBaseUrl = window.location.port === '5501'
+            ? '/api/v1'
+            : 'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1';
         const response = await fetch(
-            `https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/rooms/available?${query.toString()}`
+            `${apiBaseUrl}/rooms/available?${query.toString()}`
         );
 
         const data = await response.json();

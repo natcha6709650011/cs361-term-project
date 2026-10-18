@@ -98,7 +98,10 @@ def lambda_handler(event, context):
 
         username = payload.get("username")
         role = payload.get("role")
-        user_type = payload.get("type")
+        # The login Lambda issues this claim as `user_type`.
+        # Reading `type` here made the value disappear before it reached
+        # protected APIs.
+        user_type = payload.get("user_type")
 
         print("Authenticated user:", username)
         print("Role:", role)
@@ -110,7 +113,8 @@ def lambda_handler(event, context):
 
         return allow(
             username=username,
-            role=role
+            role=role,
+            user_type=user_type,
         )
 
     except jwt.ExpiredSignatureError:
@@ -133,13 +137,14 @@ def lambda_handler(event, context):
 # Allow
 # =========================
 
-def allow(username=None, role=None):
+def allow(username=None, role=None, user_type=None):
 
     return {
         "isAuthorized": True,
         "context": {
             "username": username or "",
-            "role": role or ""
+            "role": role or "",
+            "user_type": user_type or "",
         }
     }
 

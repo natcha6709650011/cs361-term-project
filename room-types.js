@@ -1,5 +1,6 @@
-const ROOMS_API_URL =
-  "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/rooms";
+const ROOMS_API_URL = window.location.port === "5501"
+  ? "/api/v1/rooms"
+  : "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/rooms";
 
 const typePage =
   document.body.dataset.roomType ||

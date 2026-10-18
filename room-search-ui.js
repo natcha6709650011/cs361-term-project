@@ -61,6 +61,9 @@ document.querySelectorAll("[data-date-picker]").forEach((picker) => {
       button.setAttribute("aria-label", label);
 
       button.addEventListener("click", (event) => {
+        // Keep navigation inside the custom picker. This also prevents an
+        // enclosing label from activating its associated form control.
+        event.preventDefault();
         event.stopPropagation();
         viewDate = new Date(
           viewDate.getFullYear(),
@@ -134,7 +137,10 @@ document.querySelectorAll("[data-date-picker]").forEach((picker) => {
 
   source.value = "";
 
-  trigger.addEventListener("click", () => {
+  trigger.addEventListener("click", (event) => {
+    // Some pickers live inside a <label>. Prevent the label's default action
+    // from focusing the hidden native date input and opening a second calendar.
+    event.preventDefault();
     const isClosed = menu.hidden;
 
     if (isClosed) {

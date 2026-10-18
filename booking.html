@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="การจองของฉัน" />
+    <title>การจองของฉัน | CS Thammasat</title>
+    <link rel="stylesheet" href="booking.css" />
+  </head>
+  <body>
+    <div data-site-header></div>
+
+    <main class="booking-page">
+      <p class="booking-breadcrumb"><a href="index.html">หน้าแรก</a> <span>›</span> การจองของฉัน</p>
+
+      <section class="booking-heading">
+        <div>
+          <h1>การจองของฉัน</h1>
+          <p>ตรวจสอบสถานะคำขอจองห้อง และจัดการการจองของคุณ</p>
+        </div>
+        <div class="booking-tools" aria-label="ค้นหาและกรองรายการจอง">
+          <label class="booking-search">
+            <span class="visually-hidden">ค้นหาห้องหรือวัตถุประสงค์</span>
+            <span aria-hidden="true">⌕</span>
+            <input id="booking-search" type="search" placeholder="ค้นหาห้อง หรือวัตถุประสงค์..." />
+          </label>
+          <div class="booking-v2-picker booking-date-filter date-picker" data-date-picker>
+            <svg class="booking-date-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></svg>
+            <input class="date-source" id="booking-date-filter" type="date" tabindex="-1" aria-hidden="true" />
+            <button class="date-trigger is-placeholder" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="เลือกวันที่"><span>เลือกช่วงวันที่</span></button>
+            <svg class="booking-picker-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+            <div class="date-menu" role="dialog" aria-label="เลือกวันที่" hidden></div>
+          </div>
+          <a class="booking-new-button" href="room-search.html">＋ จองห้องใหม่</a>
+        </div>
+      </section>
+
+      <section class="booking-list" aria-labelledby="booking-list-title">
+        <h2 id="booking-list-title" class="visually-hidden">รายการจองของฉัน</h2>
+        <div class="booking-status-tabs" role="tablist" aria-label="กรองตามสถานะ">
+          <button type="button" role="tab" aria-selected="true" data-status-filter="ALL">ทั้งหมด <span data-count="ALL"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-status-filter="PENDING">รออนุมัติ <span data-count="PENDING"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-status-filter="APPROVED">อนุมัติแล้ว <span data-count="APPROVED"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-status-filter="REJECTED">ปฏิเสธ <span data-count="REJECTED"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-status-filter="CANCELLED">ยกเลิก <span data-count="CANCELLED"></span></button>
+        </div>
+
+        <div class="booking-table-wrap" data-booking-table-wrap>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">วันที่</th>
+                <th scope="col">เวลา</th>
+                <th scope="col">ห้อง</th>
+                <th scope="col">ประเภทห้อง</th>
+                <th scope="col">วัตถุประสงค์</th>
+                <th scope="col">จำนวนคน</th>
+                <th scope="col">สถานะ</th>
+                <th scope="col">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="my-bookings-body"></tbody>
+          </table>
+        </div>
+        <div class="booking-list-state booking-list-state--loading" id="my-bookings-loading" role="status" aria-live="polite">
+          <span class="booking-spinner" aria-hidden="true"></span>
+          <strong>กำลังโหลดรายการจอง</strong>
+          <p>กรุณารอสักครู่</p>
+        </div>
+        <div class="booking-empty" id="my-bookings-empty" hidden>
+          <strong>ไม่พบรายการจอง</strong>
+          <p>ลองเปลี่ยนคำค้นหา ตัวกรอง หรือจองห้องใหม่</p>
+          <a href="room-search.html">ค้นหาห้องว่าง</a>
+        </div>
+        <div class="booking-list-state booking-list-state--error" id="my-bookings-error" role="alert" hidden>
+          <strong>ไม่สามารถโหลดรายการจองได้</strong>
+          <p>กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่อีกครั้ง</p>
+          <button type="button" class="booking-retry-button" data-bookings-retry>ลองใหม่</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="booking-dialog" id="booking-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-detail-title" hidden>
+      <div class="booking-dialog__backdrop" data-dialog-close></div>
+      <section class="booking-dialog__panel booking-dialog__panel--detail">
+        <header class="booking-dialog__header">
+          <div>
+            <h2 id="booking-detail-title" data-detail-room>รายละเอียดการจอง</h2>
+            <p data-detail-room-subtitle></p>
+          </div>
+          <button type="button" class="booking-dialog__close" aria-label="ปิด" data-dialog-close>×</button>
+        </header>
+        <div class="booking-dialog__body">
+          <span class="booking-status" data-detail-status></span>
+          <dl class="booking-detail-list">
+            <div><dt>วันที่</dt><dd data-detail-date></dd></div>
+            <div><dt>เวลา</dt><dd data-detail-time></dd></div>
+            <div><dt>ประเภทห้อง</dt><dd data-detail-type></dd></div>
+            <div><dt>วัตถุประสงค์</dt><dd data-detail-purpose></dd></div>
+            <div><dt>จำนวนผู้เข้าร่วม</dt><dd data-detail-participants></dd></div>
+            <div data-detail-reason-row hidden><dt>เหตุผลที่ปฏิเสธ</dt><dd data-detail-reason></dd></div>
+          </dl>
+        </div>
+        <footer class="booking-dialog__actions">
+          <button type="button" class="dialog-button dialog-button--secondary" data-dialog-close>ปิด</button>
+          <button type="button" class="dialog-button dialog-button--outline" data-detail-edit hidden>แก้ไข</button>
+          <button type="button" class="dialog-button dialog-button--danger" data-detail-cancel hidden>ยกเลิก</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="booking-dialog" id="booking-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-edit-title" hidden>
+      <div class="booking-dialog__backdrop" data-dialog-close></div>
+      <section class="booking-dialog__panel">
+        <header class="booking-dialog__header">
+          <div><h2 id="booking-edit-title">แก้ไขการจอง: <span data-edit-room></span></h2><p>ระบบจะตรวจสอบช่วงเวลาว่างอีกครั้งเมื่อเชื่อม API</p></div>
+          <button type="button" class="booking-dialog__close" aria-label="ปิด" data-dialog-close>×</button>
+        </header>
+        <form class="booking-dialog__body booking-edit-form" id="booking-edit-form" novalidate>
+          <label>วันที่
+            <div class="booking-v2-picker booking-edit-picker date-picker" data-date-picker>
+              <input class="date-source" id="edit-booking-date" type="hidden" />
+              <button class="date-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="เลือกวันที่"><span></span></button>
+              <svg class="booking-picker-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+              <div class="date-menu" role="dialog" aria-label="เลือกวันที่" hidden></div>
+            </div>
+          </label>
+          <div class="booking-edit-form__times">
+            <label>เวลาเริ่ม
+              <div class="booking-v2-picker time-picker" data-time-picker>
+                <select class="time-source" id="edit-booking-start" tabindex="-1" aria-hidden="true"><option value="08:00">08:00</option><option value="09:30">09:30</option><option value="11:00">11:00</option><option value="12:30">12:30</option><option value="13:30">13:30</option><option value="15:00">15:00</option><option value="16:30">16:30</option><option value="18:00">18:00</option></select>
+                <button class="time-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="เลือกเวลาเริ่ม"><span>08:00</span></button>
+                <svg class="booking-picker-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+                <div class="time-menu" role="listbox" hidden></div>
+              </div>
+            </label>
+            <label>เวลาสิ้นสุด
+              <div class="booking-v2-picker time-picker" data-time-picker>
+                <select class="time-source" id="edit-booking-end" tabindex="-1" aria-hidden="true"><option value="08:00">08:00</option><option value="09:30">09:30</option><option value="11:00">11:00</option><option value="12:30">12:30</option><option value="13:30">13:30</option><option value="15:00">15:00</option><option value="16:30">16:30</option><option value="18:00">18:00</option></select>
+                <button class="time-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="เลือกเวลาสิ้นสุด"><span>08:00</span></button>
+                <svg class="booking-picker-chevron" viewBox="0 0 16 10" aria-hidden="true"><path d="m2 2 6 6 6-6" /></svg>
+                <div class="time-menu" role="listbox" hidden></div>
+              </div>
+            </label>
+          </div>
+          <label>วัตถุประสงค์การใช้ห้อง<textarea id="edit-booking-purpose" maxlength="200" required></textarea></label>
+          <label>จำนวนผู้เข้าร่วมโดยประมาณ<div class="booking-number-input"><input id="edit-booking-participants" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required aria-label="จำนวนผู้เข้าร่วมโดยประมาณ" /><span aria-hidden="true">คน</span></div></label>
+          <p class="booking-dialog__message" id="booking-edit-message" role="alert" hidden></p>
+          <footer class="booking-dialog__actions booking-dialog__actions--form">
+            <button type="button" class="dialog-button dialog-button--secondary" data-dialog-close>ยกเลิก</button>
+            <button type="submit" class="dialog-button dialog-button--danger">บันทึกการแก้ไข</button>
+          </footer>
+        </form>
+      </section>
+    </div>
+
+    <div class="booking-dialog" id="booking-cancel-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-cancel-title" hidden>
+      <div class="booking-dialog__backdrop" data-dialog-close></div>
+      <section class="booking-dialog__panel booking-dialog__panel--confirm booking-cancel-panel">
+        <header class="booking-cancel-panel__header">
+          <button type="button" class="booking-dialog__close" aria-label="ปิด" data-dialog-close>×</button>
+        </header>
+        <div class="booking-dialog__body booking-cancel-panel__body">
+          <div class="booking-cancel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 3v6h2v-6h-2Zm4 0v6h-2v-6h2Z" /></svg></div>
+          <h2 id="booking-cancel-title">ต้องการยกเลิกคำขอนี้ใช่หรือไม่?</h2>
+          <div class="booking-cancel-summary"><span data-cancel-room></span><span data-cancel-date></span><span data-cancel-time></span></div>
+          <p class="booking-cancel-warning"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v6M12 17h.01" /></svg><span><strong>หมายเหตุ</strong>เมื่อยกเลิกแล้วจะไม่สามารถกู้คืนรายการนี้ได้ และห้องจะกลับไปเป็นสถานะว่างทันที</span></p>
+          <p class="booking-cancel-error" data-cancel-error role="alert" hidden></p>
+        </div>
+        <footer class="booking-dialog__actions booking-cancel-panel__actions">
+          <button type="button" class="dialog-button dialog-button--secondary" data-dialog-close>ย้อนกลับ</button>
+          <button type="button" class="dialog-button dialog-button--danger" data-confirm-cancel>ยืนยันการยกเลิก</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="booking-dialog" id="booking-conflict-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-conflict-title" hidden>
+      <div class="booking-dialog__backdrop" data-dialog-close></div>
+      <section class="booking-dialog__panel booking-dialog__panel--confirm booking-conflict-panel">
+        <header class="booking-conflict-panel__header">
+          <button type="button" class="booking-dialog__close" aria-label="ปิด" data-dialog-close>×</button>
+        </header>
+        <div class="booking-dialog__body booking-conflict-panel__body">
+          <div class="booking-conflict-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v6M12 17h.01" /></svg></div>
+          <h2 id="booking-conflict-title">ไม่สามารถจองห้องได้</h2>
+          <p>ช่วงเวลาที่เลือกไม่ว่างแล้ว กรุณาเลือกช่วงเวลาอื่น</p>
+          <div class="booking-conflict-slot"><strong>ช่วงเวลาที่ไม่ว่าง</strong><span data-conflict-date></span><span data-conflict-time></span></div>
+        </div>
+        <footer class="booking-dialog__actions booking-conflict-panel__actions">
+          <button type="button" class="dialog-button dialog-button--secondary" data-dialog-close>ปิด</button>
+          <button type="button" class="dialog-button dialog-button--danger" data-conflict-edit>เลือกเวลาใหม่</button>
+        </footer>
+      </section>
+    </div>
+
+    <footer class="booking-footer">
+      <div>
+        <img src="assets/cstu-logo.png" alt="Computer Science Thammasat University" />
+        <p>สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต<br />อาคารบรรยายรวม 2 คณะวิทยาศาสตร์และเทคโนโลยี<br />มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต ปทุมธานี 12120</p>
+      </div>
+      <div>
+        <h2>โทรศัพท์</h2>
+        <p>0-2986-9154, 0-2986-9156, 0-2986-9138-39<br />0-2564-4440-59 ต่อ 2157,2714</p>
+        <p>โทรสาร : 0-2986-9157</p>
+        <p>Email : <a href="mailto:scitu_cs@sci.tu.ac.th">scitu_cs@sci.tu.ac.th</a></p>
+      </div>
+      <p class="booking-copyright">© 2026 Computer Science Thammasat University. All rights reserved.</p>
+    </footer>
+
+    <script src="components/header-component.js"></script>
+    <script src="booking-mock-data.js"></script>
+    <script src="booking-service.js"></script>
+    <script src="room-search-ui.js"></script>
+    <script src="booking.js"></script>
+  </body>
+</html>

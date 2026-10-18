@@ -229,6 +229,149 @@
       </section>
     </main>
 
+    <div
+      class="booking-modal"
+      id="booking-request-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-modal-title"
+      hidden
+    >
+      <div class="booking-modal__backdrop" data-booking-close></div>
+      <section class="booking-modal__panel">
+        <header class="booking-modal__header">
+          <h2 id="booking-modal-title">จองห้อง: <span data-booking-room-name></span></h2>
+          <button
+            class="booking-modal__close"
+            type="button"
+            aria-label="ปิดหน้าต่างจองห้อง"
+            data-booking-close
+          >
+            ×
+          </button>
+        </header>
+
+        <form id="booking-request-form" novalidate>
+          <div class="booking-modal__content">
+            <div class="booking-form">
+              <h3>ข้อมูลการจอง</h3>
+              <p class="booking-form__notice">
+                ช่วงเวลานี้เลือกจากตารางห้อง หากต้องการเปลี่ยนช่วงเวลาให้เลือกช่องว่างใหม่
+              </p>
+
+              <label class="booking-field">
+                <span>วันที่ <b aria-hidden="true">*</b></span>
+                <input type="text" data-booking-date readonly />
+              </label>
+
+              <div class="booking-time-fields">
+                <label class="booking-field">
+                  <span>เวลาเริ่ม <b aria-hidden="true">*</b></span>
+                  <input type="text" data-booking-start readonly />
+                </label>
+                <label class="booking-field">
+                  <span>เวลาสิ้นสุด <b aria-hidden="true">*</b></span>
+                  <input type="text" data-booking-end readonly />
+                </label>
+              </div>
+
+              <label class="booking-field">
+                <span>วัตถุประสงค์การใช้ห้อง <b aria-hidden="true">*</b></span>
+                <textarea
+                  id="booking-purpose"
+                  name="purpose"
+                  maxlength="200"
+                  rows="4"
+                  placeholder="เช่น จัดประชุม อบรม สัมมนา กิจกรรมชมรม ฯลฯ"
+                  required
+                ></textarea>
+                <small class="booking-field__count"><span data-purpose-count>0</span>/200</small>
+              </label>
+
+              <label class="booking-field">
+                <span>จำนวนผู้เข้าร่วมโดยประมาณ <b aria-hidden="true">*</b></span>
+                <div class="booking-number-input">
+                  <input
+                    id="booking-participants"
+                    name="participants"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    autocomplete="off"
+                    required
+                  />
+                  <span>คน</span>
+                </div>
+              </label>
+              <p class="booking-form__error" data-booking-form-error role="alert" hidden></p>
+              <p class="booking-form__api-note">
+                เมื่อส่งคำขอแล้ว ระบบจะอยู่ในสถานะรออนุมัติ
+              </p>
+            </div>
+
+            <aside class="booking-summary" aria-label="สรุปรายละเอียดการจอง">
+              <h3>สรุปรายละเอียดการจอง</h3>
+              <div class="booking-summary__room">
+                <img data-booking-room-image src="assets/bor2-308.jpg" alt="" />
+                <div>
+                  <strong data-booking-room-name></strong>
+                  <span data-booking-room-location></span>
+                </div>
+              </div>
+              <dl>
+                <div><dt>วันที่</dt><dd data-summary-date>-</dd></div>
+                <div><dt>เวลา</dt><dd data-summary-time>-</dd></div>
+                <div><dt>จำนวนผู้เข้าร่วม</dt><dd data-summary-participants>-</dd></div>
+                <div><dt>วัตถุประสงค์</dt><dd data-summary-purpose>-</dd></div>
+                <div><dt>ประเภทห้อง</dt><dd data-summary-type>-</dd></div>
+                <div><dt>อาคาร</dt><dd data-summary-building>-</dd></div>
+                <div><dt>ชั้น</dt><dd data-summary-floor>-</dd></div>
+                <div><dt>ขนาดห้อง</dt><dd data-summary-size>-</dd></div>
+              </dl>
+            </aside>
+          </div>
+
+          <footer class="booking-modal__actions">
+            <button class="booking-button booking-button--secondary" type="button" data-booking-close>
+              ยกเลิก
+            </button>
+            <button class="booking-button booking-button--primary" type="submit">
+              ส่งคำขอจอง
+            </button>
+          </footer>
+        </form>
+      </section>
+    </div>
+
+    <div
+      class="booking-modal booking-success-modal"
+      id="booking-success-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-success-title"
+      hidden
+    >
+      <div class="booking-modal__backdrop" data-booking-success-close></div>
+      <section class="booking-modal__panel booking-success-modal__panel">
+        <button class="booking-modal__close booking-success-modal__close" type="button" aria-label="ปิด" data-booking-success-close>×</button>
+        <div class="booking-success-modal__body">
+          <div class="booking-success-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.2 4.2L19 6.7" /></svg></div>
+          <h2 id="booking-success-title">ส่งคำขอจองเรียบร้อย</h2>
+          <p>คำขอของคุณอยู่ในสถานะ <strong>“รออนุมัติ”</strong></p>
+          <dl class="booking-success-summary">
+            <div><dt>ห้อง</dt><dd data-success-room></dd></div>
+            <div><dt>วันที่</dt><dd data-success-date></dd></div>
+            <div><dt>เวลา</dt><dd data-success-time></dd></div>
+            <div><dt>จำนวนผู้เข้าร่วม</dt><dd data-success-participants></dd></div>
+          </dl>
+        </div>
+        <footer class="booking-success-modal__actions">
+          <button class="booking-button booking-button--secondary" type="button" data-booking-success-close>กลับไปดูห้อง</button>
+          <a class="booking-button booking-button--primary" href="booking.html">ดูการจองของฉัน</a>
+        </footer>
+      </section>
+    </div>
+
     <footer class="site-footer">
       <div class="footer-brand">
         <img
@@ -279,6 +422,8 @@
     </script>
     <script src="components/header-component.js"></script>
     <script src="room-detail-schedule-ui.js"></script>
+    <script src="booking-service.js"></script>
+    <script src="booking-request-ui.js"></script>
     <script src="room-detail.js"></script>
   </body>
 </html>

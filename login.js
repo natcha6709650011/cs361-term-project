@@ -1,5 +1,9 @@
 const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
+const API_BASE_URL = window.location.port === '5501'
+    ? '/api/v1'
+    : 'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1';
+const LOGIN_API_URL = `${API_BASE_URL}/auth/login`;
 
 loginForm.addEventListener('submit', async function (event) {
 
@@ -32,7 +36,7 @@ loginForm.addEventListener('submit', async function (event) {
         });
 
         const response = await fetch(
-            'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/auth/login',
+            LOGIN_API_URL,
             {
                 method: 'POST',
 

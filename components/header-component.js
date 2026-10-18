@@ -114,10 +114,6 @@
           การจองของฉัน
         </a>
 
-        <a href="booking-history.html">
-          ประวัติการจอง
-        </a>
-
         <button type="button" class="logout-button">
           ออกจากระบบ
         </button>

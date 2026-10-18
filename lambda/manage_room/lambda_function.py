@@ -303,6 +303,11 @@ def lambda_handler(event, context):
     room_id = validate_room_id(room_id)
     if room_id is None:
         return response(400, {"message": "Invalid room_id"})
+    role = get_user_role(event)
+
+    if role != "facility_admin":
+        return response(403, {"message": "You do not have permission to manage rooms"
+    })
 
     expected_path = (
         f"/rooms/{room_id}/status"
@@ -336,3 +341,18 @@ def lambda_handler(event, context):
     finally:
         if connection:
             connection.close()
+def get_user_role(event):
+    """
+    Get user role from API Gateway Lambda Authorizer context.
+    """
+    authorizer = (
+        event.get("requestContext", {})
+        .get("authorizer", {})
+    )
+
+    lambda_context = authorizer.get("lambda", {})
+
+    if isinstance(lambda_context, dict):
+        return lambda_context.get("role")
+
+    return None

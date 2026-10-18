@@ -200,7 +200,7 @@
       console.error("Unable to submit booking request:", error);
       showFormMessage(error.code === "BOOKING_CONFLICT"
         ? "ช่วงเวลานี้ไม่ว่างแล้ว กรุณาเลือกช่วงเวลาอื่น"
-        : "ไม่สามารถส่งคำขอจองได้ กรุณาลองใหม่อีกครั้ง");
+        : error.message || "ไม่สามารถส่งคำขอจองได้ กรุณาลองใหม่อีกครั้ง");
     } finally {
       submitButton.disabled = false;
       submitButton.textContent = "ส่งคำขอจอง";

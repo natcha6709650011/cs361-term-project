@@ -85,7 +85,14 @@ form.addEventListener('submit', async (event) => {
     try {
         const authToken = window.localStorage.getItem('authToken');
         if (!authToken) {
-            throw new Error('กรุณาเข้าสู่ระบบก่อนค้นหาห้องว่าง');
+            const goLogin = confirm(
+                'กรุณาเข้าสู่ระบบก่อนค้นหาห้องว่าง\n\nต้องการไปหน้าเข้าสู่ระบบหรือไม่?'
+            );
+            if (goLogin) {
+                window.location.href = 'login.html';
+            }
+            hideSearchStates();
+            return;
         }
 
         const apiBaseUrl = window.location.port === '5501'

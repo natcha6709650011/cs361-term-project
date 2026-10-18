@@ -204,6 +204,18 @@
       }
     } catch (error) {
       console.error("Unable to submit booking request:", error);
+       if (error.code === "AUTH_REQUIRED") {
+    const goLogin = confirm(
+      "กรุณาเข้าสู่ระบบก่อนจองห้อง\n\nต้องการไปหน้าเข้าสู่ระบบหรือไม่?"
+    );
+
+    if (goLogin) {
+      window.location.href = "login.html";
+    }
+
+    return;
+  }
+
       showFormMessage(error.code === "BOOKING_CONFLICT"
         ? "ช่วงเวลานี้ไม่ว่างแล้ว กรุณาเลือกช่วงเวลาอื่น"
         : error.message || "ไม่สามารถส่งคำขอจองได้ กรุณาลองใหม่อีกครั้ง");

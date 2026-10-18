@@ -68,7 +68,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .booking-action-menu { position: relative; }
 .booking-more-button { width: 34px; height: 34px; border: 1px solid #d8dee7; border-radius: 6px; background: #fff; color: #495568; font-size: 20px; line-height: 1; cursor: pointer; }
 .booking-more-button:hover, .booking-more-button:focus-visible { border-color: #e6a4b6; background: #fff1f4; color: var(--booking-red); outline: none; }
-.booking-action-popover { position: absolute; z-index: 3; top: calc(100% + 5px); right: 0; min-width: 118px; padding: 5px; border: 1px solid #e1e5ea; border-radius: 7px; background: #fff; box-shadow: 0 8px 18px rgb(15 23 42 / 15%); }
+.booking-action-popover { position: absolute; z-index: 3; right: 0; bottom: calc(100% + 5px); min-width: 118px; padding: 5px; border: 1px solid #e1e5ea; border-radius: 7px; background: #fff; box-shadow: 0 8px 18px rgb(15 23 42 / 15%); }
 .booking-action-popover button { display: block; width: 100%; padding: 8px 10px; border: 0; border-radius: 4px; background: transparent; color: #344054; font: 600 13px/1 "Noto Sans Thai", Arial, sans-serif; text-align: left; cursor: pointer; }
 .booking-action-popover button:last-child { color: var(--booking-red); }
 .booking-action-popover button:hover, .booking-action-popover button:focus-visible { background: #fff1f4; outline: none; }

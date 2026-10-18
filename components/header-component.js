@@ -120,6 +120,15 @@
           การจองของฉัน
         </a>
 
+        <!-- ลิงก์ของ FACILITY_ADMIN (Person 4) ซ่อนไว้จนกว่าจะยืนยัน role -->
+        <a
+          href="facility-schedule.html"
+          data-facility-admin-link
+          style="display: none"
+        >
+          ตารางห้องประจำ
+        </a>
+
         <button type="button" class="logout-button">
           ออกจากระบบ
         </button>
@@ -249,6 +258,16 @@ const facilityAdminTab = header.querySelector('#facility-admin-tab');
           } else {
             facilityAdminTab.hidden = true;
           }
+
+          // ลิงก์ใน dropdown ของ user สำหรับหน้าของ Person 4
+          const isFacilityAdmin =
+            data.user && data.user.is_facility_admin === true;
+
+          header
+            .querySelectorAll('[data-facility-admin-link]')
+            .forEach((link) => {
+              link.style.display = isFacilityAdmin ? '' : 'none';
+            });
         })
         .catch(error => {
           console.error('Permission check failed:', error);

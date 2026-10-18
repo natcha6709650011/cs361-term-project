@@ -95,7 +95,7 @@
         <td>${formatDate(booking.date)}</td>
         <td>${booking.startTime} - ${booking.endTime}</td>
         <td><strong>${booking.room}</strong></td>
-        <td>${booking.roomType}</td>
+        <td>${booking.roomType || "ไม่ระบุ"}</td>
         <td>${booking.purpose}</td>
         <td>${booking.participants}</td>
         <td><span class="booking-status booking-status--${booking.status.toLowerCase()}">${statusLabels[booking.status]}</span></td>
@@ -109,7 +109,10 @@
   }
 
   function findBooking(id) {
-    return bookingData.find((booking) => booking.id === id);
+    // Dataset values are always strings, while the Booking API returns a
+    // numeric booking id. Compare their text forms so action buttons work
+    // with both mock data and the live API.
+    return bookingData.find((booking) => String(booking.id) === String(id));
   }
 
   function getDialog(id) {
@@ -140,10 +143,10 @@
   function openDetail(booking, trigger) {
     activeBookingId = booking.id;
     setText("[data-detail-room]", booking.room);
-    setText("[data-detail-room-subtitle]", booking.roomType);
+    setText("[data-detail-room-subtitle]", booking.roomType || "ไม่ระบุประเภทห้อง");
     setText("[data-detail-date]", formatDate(booking.date));
     setText("[data-detail-time]", `${booking.startTime} - ${booking.endTime}`);
-    setText("[data-detail-type]", booking.roomType);
+    setText("[data-detail-type]", booking.roomType || "ไม่ระบุ");
     setText("[data-detail-purpose]", booking.purpose);
     setText("[data-detail-participants]", `${booking.participants} คน`);
 

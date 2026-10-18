@@ -70,5 +70,5 @@
 .switch input:focus-visible + .switch__track { outline: 2px solid #c60039; outline-offset: 2px; }
 @media (max-width: 560px) { .detail { grid-template-columns: 1fr; gap: 2px; } .detail dd { margin-bottom: 10px; } }
 
-.main-nav > a:not(.user-link), .main-nav > .nav-dropdown { display: none; }
+
 .admin-empty a { color: #c60039; font-weight: 700; }

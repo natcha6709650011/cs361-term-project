@@ -16,6 +16,54 @@ function apiHeaders() {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
+async function loadRoomPermission(roomNumber) {
+  const rolesContainer = document.querySelector("#room-roles");
+
+  if (!rolesContainer || !roomNumber) {
+    return;
+  }
+
+  rolesContainer.textContent = "กำลังตรวจสอบสิทธิ์...";
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/${encodeURIComponent(roomNumber)}/permission`,
+      {
+        method: "GET",
+        headers: apiHeaders(),
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("API Room Permission:", data);
+
+    rolesContainer.replaceChildren();
+
+    const span = document.createElement("span");
+
+    if (response.ok && data.can_book === true) {
+      span.textContent = "มีสิทธิ์จองห้องนี้";
+      span.className = "permission-allowed";
+    } else {
+      span.textContent = "ไม่มีสิทธิ์จองห้องนี้";
+      span.className = "permission-denied";
+    }
+
+    rolesContainer.appendChild(span);
+
+  } catch (error) {
+    console.error("Error loading room permission:", error);
+
+    rolesContainer.replaceChildren();
+
+    const span = document.createElement("span");
+    span.textContent = "ไม่สามารถตรวจสอบสิทธิ์ได้";
+    span.className = "permission-denied";
+
+    rolesContainer.appendChild(span);
+  }
+}
 
 async function loadRoomDetail() {
   const loading = document.querySelector("#room-loading");
@@ -63,7 +111,7 @@ async function loadRoomDetail() {
     }
 
     displayRoomDetail(room);
-
+    await loadRoomPermission(roomNumber);
     setupRoomSchedule(roomNumber);
 
     if (loading) loading.style.display = "none";
@@ -457,7 +505,8 @@ function displayRoomDetail(room) {
 
   const amenities = getAmenities(room);
 
-  const roles = getRoles(room);
+
+  
 
   const imageUrl =
     room?.image_url ?? room?.imageUrl ?? room?.photo_url ?? room?.photoUrl ?? "";
@@ -596,31 +645,21 @@ function displayRoomDetail(room) {
     }
   }
 
-  // =========================
-  // สิทธิ์การใช้งาน
-  // =========================
+// =========================
+// สิทธิ์การใช้งาน
+// =========================
 
-  const rolesContainer = document.querySelector("#room-roles");
+const rolesContainer = document.querySelector("#room-roles");
 
-  if (rolesContainer) {
-    rolesContainer.replaceChildren();
+if (rolesContainer) {
+  rolesContainer.replaceChildren();
 
-    if (roles.length === 0) {
-      const span = document.createElement("span");
+  const span = document.createElement("span");
 
-      span.textContent = "ไม่มีข้อมูล";
+  span.textContent = "กำลังตรวจสอบสิทธิ์...";
 
-      rolesContainer.appendChild(span);
-    } else {
-      roles.forEach((role) => {
-        const span = document.createElement("span");
-
-        span.textContent = role;
-
-        rolesContainer.appendChild(span);
-      });
-    }
-  }
+  rolesContainer.appendChild(span);
+}
 
   // =========================
   // title browser

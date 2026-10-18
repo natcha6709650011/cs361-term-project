@@ -49,6 +49,7 @@
         <a href="approval.html" id="approver-tab" hidden>
   อนุมัติการจอง
 </a>
+
 <a href="admin-rooms.html" id="facility-admin-tab" hidden>
   จัดการห้อง
 </a>
@@ -209,96 +210,50 @@
       <span class="user-name">เข้าสู่ระบบ</span>
     `;
   }
-// =========================================================
-// APPROVER TAB
-// =========================================================
-
 const approverTab = header.querySelector('#approver-tab');
 const facilityAdminTab = header.querySelector('#facility-admin-tab');
 
-  if (approverTab) {
-    const authToken = localStorage.getItem('authToken');
+const authToken = localStorage.getItem('authToken');
 
-    if (authToken) {
-      fetch(
-        'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions',
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`
-          }
-        }
-      )
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          return response.json();
-        })
-        .then(data => {
-          console.log('Permission:', data);
-
-          if (data.user && data.user.is_approver === true) {
-            approverTab.hidden = false;
-          } else {
-            approverTab.hidden = true;
-          }
-
-          if (data.user && data.user.is_facility_admin === true) {
-            facilityAdminTab.hidden = false;
-          } else {
-            facilityAdminTab.hidden = true;
-          }
-        })
-        .catch(error => {
-          console.error('Permission check failed:', error);
-          approverTab.hidden = true;
-        });
-    } else {
-      approverTab.hidden = true;
-    }
-  }
-  // =========================================================
-// FACILITY ADMIN TAB
-// =========================================================
-
-if (facilityAdminTab) {
-  const authToken = localStorage.getItem('authToken');
-
-  if (authToken) {
-    fetch(
-      'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions',
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        }
+if (authToken) {
+  fetch(
+    'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions',
+    {
+      headers: {
+        Authorization: `Bearer ${authToken}`
       }
-    )
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+    }
+  )
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-        return response.json();
-      })
-      .then(data => {
-        console.log('Facility Permission:', data);
+      return response.json();
+    })
+    .then(data => {
+      console.log('Permission:', data);
 
-        if (data.user && data.user.is_facility_admin === true) {
-          facilityAdminTab.hidden = false;
-        } else {
-          facilityAdminTab.hidden = true;
-        }
-      })
-      .catch(error => {
-        console.error('Facility permission check failed:', error);
-        facilityAdminTab.hidden = true;
-      });
-  } else {
-    facilityAdminTab.hidden = true;
-  }
+      // ปุ่มอนุมัติ
+      if (approverTab) {
+        approverTab.hidden = !(data.user?.is_approver === true);
+      }
+
+      // ปุ่มจัดการห้อง
+      if (facilityAdminTab) {
+        facilityAdminTab.hidden = !(data.user?.is_facility_admin === true);
+      }
+    })
+    .catch(error => {
+      console.error('Permission check failed:', error);
+
+      if (approverTab) approverTab.hidden = true;
+      if (facilityAdminTab) facilityAdminTab.hidden = true;
+    });
+} else {
+  if (approverTab) approverTab.hidden = true;
+  if (facilityAdminTab) facilityAdminTab.hidden = true;
 }
-
 
   // =========================================================
   // ACTIVE MENU - ของเดิม

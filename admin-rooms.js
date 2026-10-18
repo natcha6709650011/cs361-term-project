@@ -111,7 +111,7 @@
           </dl>
           <label class="switch"><input type="checkbox" id="fBookable" ${r.is_bookable ? "checked" : ""} /><span class="switch__track"></span>เปิดให้จอง</label>
           <label>ความจุ (คน)<input type="number" id="fCapacity" min="1" step="1" value="${esc(r.capacity)}" placeholder="ไม่ระบุ" /></label>
-          <label>ชั้น *<input type="number" id="fFloor" min="1" step="1" value="${esc(r.floor)}" required /></label>
+          <label>ชั้น<input type="number" id="fFloor" min="1" step="1" value="${esc(r.floor)}" /></label>
           <label>ผู้ดูแลห้อง<input type="text" id="fCaretaker" maxlength="100" value="${esc(r.caretaker_name)}" /></label>
           <label>URL รูปภาพ<input type="url" id="fImage" maxlength="500" value="${esc(r.image_url)}" placeholder="https://..." /></label>
           <label>อุปกรณ์และสิ่งอำนวยความสะดวก<input type="text" id="fAmenities" value="${esc(items.join(", "))}" placeholder="โต๊ะ, เก้าอี้, ทีวี" /><small>คั่นแต่ละรายการด้วยเครื่องหมายจุลภาค (,)</small></label>`;
@@ -120,25 +120,32 @@
     }
   
     async function save() {
+      const r = current, body = {}, bad = [];
       const cap = $("fCapacity").value.trim(), floor = $("fFloor").value.trim();
-      const bad = [];
-      if (cap && !(Number.isInteger(+cap) && +cap > 0)) bad.push("fCapacity");
-      if (!(Number.isInteger(+floor) && +floor > 0)) bad.push("fFloor");
+      const pos = (v) => Number.isInteger(+v) && +v > 0;
+      if (cap !== String(r.capacity ?? "")) { if (cap && !pos(cap)) bad.push("fCapacity"); else body.capacity = cap ? +cap : null; }
+      if (floor && floor !== String(r.floor ?? "")) { if (pos(floor)) body.floor = +floor; else bad.push("fFloor"); }
+      const care = $("fCaretaker").value.trim(), img = $("fImage").value.trim();
+      if (care !== (r.caretaker_name || "")) body.caretaker_name = care || null;
+      if (img !== (r.image_url || "")) body.image_url = img || null;
+      const items = $("fAmenities").value.split(",").map((s) => s.trim()).filter(Boolean);
+      const old = amenities(r.amenities_json).map((a) => a.item).filter(Boolean);
+      if (items.join("\n") !== old.join("\n")) body.amenities_json = items.map((item) => ({ item }));
       ["fCapacity", "fFloor"].forEach((id) => $(id).classList.toggle("is-invalid", bad.includes(id)));
-      if (bad.length) return draw2("กรุณากรอกความจุและชั้นเป็นจำนวนเต็มบวก", true);
-  
-      const body = {
-        capacity: cap ? +cap : null, floor: +floor,
-        caretaker_name: $("fCaretaker").value.trim() || null,
-        image_url: $("fImage").value.trim() || null,
-        amenities_json: $("fAmenities").value.split(",").map((s) => s.trim()).filter(Boolean).map((item) => ({ item })),
-      };
-      const bookable = $("fBookable").checked, btn = $("saveBtn");
+      if (bad.length) return draw2("ความจุและชั้นต้องเป็นจำนวนเต็มบวก", true);
+   
+      const bookable = $("fBookable").checked, bookableChanged = !!r.is_bookable !== bookable;
+      const hasBody = Object.keys(body).length > 0;
+      if (!hasBody && !bookableChanged) { mode = "view"; return draw("ไม่มีการเปลี่ยนแปลง"); }
+   
+      const btn = $("saveBtn");
       btn.disabled = true;
       try {
-        const d = await api(`${MANAGE_BASE_URL}/rooms/${current.room_id}`, { method: "PATCH", body: JSON.stringify(body) });
-        Object.assign(current, d && d.room ? d.room : body);
-        if (!!current.is_bookable !== bookable) {
+        if (hasBody) {
+          const d = await api(`${MANAGE_BASE_URL}/rooms/${current.room_id}`, { method: "PATCH", body: JSON.stringify(body) });
+          Object.assign(current, d && d.room ? d.room : body);
+        }
+        if (bookableChanged) {
           await api(`${MANAGE_BASE_URL}/rooms/${current.room_id}/status`, { method: "PATCH", body: JSON.stringify({ is_bookable: bookable }) });
           current.is_bookable = bookable ? 1 : 0;
         }
@@ -148,7 +155,6 @@
         render(); btn.disabled = false; draw2(e.message, true);
       }
     }
-    // show a message without redrawing (keeps the user's input)
     function draw2(msg, isError) { const n = $("mNotice"); n.textContent = msg; n.hidden = false; n.classList.toggle("is-error", !!isError); }
   
     modal.addEventListener("click", (ev) => {

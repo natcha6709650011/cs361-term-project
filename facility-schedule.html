@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="จัดการตารางห้องประจำรายสัปดาห์" />
+    <title>Fixed Facility Schedule | CS Thammasat</title>
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div data-site-header></div>
+
+    <main class="admin-page">
+      <p class="breadcrumb">
+        <a href="index.html">หน้าแรก</a> <span aria-hidden="true">&gt;</span>
+        <strong>ตารางห้องประจำ</strong>
+      </p>
+      <h1>
+        จัดการตารางห้องประจำ
+        <span class="role-badge">FACILITY_ADMIN</span>
+      </h1>
+      <p class="page-intro">
+        ล็อกห้องตามตารางสอนตลอดภาคเรียน และปล่อยหรือคืนตารางเป็นรายวันได้
+      </p>
+
+      <nav class="admin-tabs" aria-label="เมนูผู้ดูแล">
+        <a
+          href="approval.html"
+          data-requires="is_approver"
+          >อนุมัติคำขอจอง</a
+        >
+        <a
+          class="active"
+          aria-current="page"
+          href="facility-schedule.html"
+          data-requires="is_facility_admin"
+          >ตารางประจำ (Fixed Schedule)</a
+        >
+        <a
+          href="admin-rooms.html"
+          data-requires="is_facility_admin"
+          >จัดการห้อง</a
+        >
+      </nav>
+
+      <div id="notice" class="notice" role="status">พร้อมใช้งาน</div>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>สร้างตารางประจำรายสัปดาห์</h2>
+        </div>
+
+        <form id="scheduleForm">
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="roomId">Room ID</label>
+              <input
+                id="roomId"
+                type="number"
+                min="1"
+                required
+                placeholder="เช่น 14"
+              />
+            </div>
+            <div class="form-field">
+              <label for="title">ชื่อ / วัตถุประสงค์</label>
+              <input
+                id="title"
+                maxlength="150"
+                required
+                placeholder="เช่น รายวิชา / ใช้ห้องประจำ"
+              />
+            </div>
+            <div class="form-field">
+              <label for="weekday">วันประจำ</label>
+              <select id="weekday" required>
+                <option value="0">วันจันทร์</option>
+                <option value="1">วันอังคาร</option>
+                <option value="2">วันพุธ</option>
+                <option value="3">วันพฤหัสบดี</option>
+                <option value="4">วันศุกร์</option>
+                <option value="5">วันเสาร์</option>
+                <option value="6">วันอาทิตย์</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="startTime">เวลาเริ่ม</label>
+              <input id="startTime" type="time" required value="13:30" />
+            </div>
+            <div class="form-field">
+              <label for="endTime">เวลาสิ้นสุด</label>
+              <input id="endTime" type="time" required value="16:00" />
+            </div>
+            <div class="form-field">
+              <label for="validFrom">เริ่มใช้ตั้งแต่</label>
+              <input id="validFrom" type="date" required />
+            </div>
+            <div class="form-field">
+              <label for="validUntil">ใช้ถึงวันที่</label>
+              <input id="validUntil" type="date" required />
+            </div>
+          </div>
+
+          <p class="panel-note">
+            ตัวอย่าง: ห้อง 209 ทุกวันศุกร์ 13:30–16:00 ตลอดช่วงวันที่ของภาคเรียน
+            ช่วงเวลานี้จะถูกล็อก ไม่สามารถจองทับได้
+          </p>
+
+          <div class="form-actions" style="margin-top: 16px">
+            <button class="btn" type="submit" id="save">
+              สร้างตารางประจำ
+            </button>
+            <button class="btn outline" type="reset">ล้างฟอร์ม</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>รายการตารางประจำและข้อยกเว้นรายวัน</h2>
+          <button class="btn outline small" id="reload" type="button">
+            โหลดตารางใหม่
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="form-field">
+            <label for="filterDate">วันที่ต้องการตรวจ</label>
+            <input id="filterDate" type="date" />
+          </div>
+          <div class="form-field">
+            <label for="filterRoom">Room ID (ไม่บังคับ)</label>
+            <input id="filterRoom" type="number" min="1" />
+          </div>
+          <button class="btn" id="filter" type="button">ค้นหา</button>
+        </div>
+
+        <div class="help-box">
+          เลือกวันที่เพื่อดูสถานะของตารางในวันนั้น จากนั้นกด “ปล่อยวันนี้”
+          เพื่อเปิดให้จอง (เช่น สัปดาห์ที่ไม่มีการสอน) หรือ “คืนตารางวันนี้”
+          เพื่อกลับมาล็อกตามตารางประจำ หากมีคำขอจองที่รออนุมัติหรืออนุมัติแล้วทับเวลา
+          ระบบจะไม่อนุญาตให้คืนตาราง และแสดงรายการที่ชน
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table" style="min-width: 900px">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ห้อง</th>
+                <th>ชื่อ</th>
+                <th>วัน / เวลา</th>
+                <th>ช่วงที่ใช้</th>
+                <th>สถานะวันที่เลือก</th>
+                <th>การทำงาน</th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr>
+                <td colspan="7" class="empty">กำลังโหลด...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <img
+          class="footer-logo"
+          src="assets/cstu-logo.png"
+          alt="Computer Science Thammasat University"
+        />
+        <p>
+          สาขาวิชาวิทยาการคอมพิวเตอร์ มธ. ศูนย์รังสิต<br />อาคารบรรยายรวม 2
+          คณะวิทยาศาสตร์และเทคโนโลยี<br />มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต
+          ปทุมธานี 12120
+        </p>
+      </div>
+      <div class="footer-contact">
+        <h2>โทรศัพท์</h2>
+        <p>
+          0-2986-9154, 0-2986-9156, 0-2986-9138-39,<br />0-2564-4440-59 ต่อ
+          2157,2714
+        </p>
+        <p>โทรสาร : 0-2986-9157</p>
+        <p>
+          Email :
+          <a
+          href="mailto:scitu_cs@sci.tu.ac.th"
+          >scitu_cs@sci.tu.ac.th</a
+        >
+        </p>
+        <h2>ช่องทางการติดตาม</h2>
+        <p>
+          <a
+            class="facebook-link"
+            href="https://www.facebook.com/CSTUadmissioncenter"
+            target="_blank"
+            rel="noopener noreferrer"
+            ><svg aria-hidden="true" viewBox="0 0 24 24">
+              <path
+                d="M21 12a9 9 0 1 0-10.4 8.9v-6.3H8.3V12h2.3v-2c0-2.3 1.4-3.6 3.5-3.6 1 0 2 .2 2 .2v2.2h-1.2c-1.2 0-1.6.8-1.6 1.5V12H16l-.5 2.6h-2.3v6.3A9 9 0 0 0 21 12Z"
+              /></svg
+            >CSTUadmissioncenter</a
+          >
+        </p>
+      </div>
+      <p class="footer-copyright">
+        © 2026 Computer Science Thammasat University. All rights reserved.
+      </p>
+    </footer>
+
+    <script src="components/header-component.js"></script>
+    <script src="admin-common.js"></script>
+    <script src="facility-schedule.js"></script>
+  </body>
+</html>

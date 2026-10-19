@@ -116,10 +116,10 @@
           <label>ความจุ (คน)<input type="number" id="fCapacity" min="1" step="1" value="${esc(r.capacity)}" placeholder="ไม่ระบุ" /></label>
           <label>ชั้น<input type="number" id="fFloor" min="1" step="1" value="${esc(r.floor)}" /></label>
           <label>ผู้ดูแลห้อง<input type="text" id="fCaretaker" maxlength="100" value="${esc(r.caretaker_name)}" /></label>
-          <label>URL รูปภาพ<input type="url" id="fImage" maxlength="500" value="${esc(r.image_url)}" placeholder="https://..." /></label>
+          ${RoomImageField.html(r.image_url)}
           <label>อุปกรณ์และสิ่งอำนวยความสะดวก<input type="text" id="fAmenities" value="${esc(items.join(", "))}" placeholder="โต๊ะ, เก้าอี้, ทีวี" /><small>คั่นแต่ละรายการด้วยเครื่องหมายจุลภาค (,)</small></label>`;
         $("mActions").innerHTML = '<button type="button" class="btn btn--ghost" data-act="cancel">ยกเลิก</button><button type="button" class="btn btn--primary" data-act="save" id="saveBtn">บันทึก</button>';
-        // ต้องกรอกเหตุผลเมื่อสลับสถานะ "เปิดให้จอง" (บันทึกลงประวัติ room_closures)
+        RoomImageField.bind();
         $("fBookable").addEventListener("change", () => {
           $("fReasonWrap").hidden = !!r.is_bookable === $("fBookable").checked;
         });
@@ -133,9 +133,8 @@
       const pos = (v) => Number.isInteger(+v) && +v > 0;
       if (cap !== String(r.capacity ?? "")) { if (cap && !pos(cap)) bad.push("fCapacity"); else body.capacity = cap ? +cap : null; }
       if (floor && floor !== String(r.floor ?? "")) { if (pos(floor)) body.floor = +floor; else bad.push("fFloor"); }
-      const care = $("fCaretaker").value.trim(), img = $("fImage").value.trim();
+      const care = $("fCaretaker").value.trim();
       if (care !== (r.caretaker_name || "")) body.caretaker_name = care || null;
-      if (img !== (r.image_url || "")) body.image_url = img || null;
       const items = $("fAmenities").value.split(",").map((s) => s.trim()).filter(Boolean);
       const old = amenities(r.amenities_json).map((a) => a.item).filter(Boolean);
       if (items.join("\n") !== old.join("\n")) body.amenities_json = items.map((item) => ({ item }));
@@ -144,7 +143,7 @@
    
       const bookable = $("fBookable").checked, bookableChanged = !!r.is_bookable !== bookable;
       const hasBody = Object.keys(body).length > 0;
-      if (!hasBody && !bookableChanged) { mode = "view"; return draw("ไม่มีการเปลี่ยนแปลง"); }
+      if (!hasBody && !bookableChanged && !RoomImageField.changed()) { mode = "view"; return draw("ไม่มีการเปลี่ยนแปลง"); }
    
       const reason = $("fReason").value.trim();
       if (bookableChanged && !reason) {
@@ -155,12 +154,12 @@
       const btn = $("saveBtn");
       btn.disabled = true;
       try {
-        if (hasBody) {
+        if (RoomImageField.changed()) body.image_url = await RoomImageField.upload(current.room_id, api, MANAGE_BASE_URL);
+        if (Object.keys(body).length) {
           const d = await api(`${MANAGE_BASE_URL}/rooms/${current.room_id}`, { method: "PATCH", body: JSON.stringify(body) });
           Object.assign(current, d && d.room ? d.room : body);
         }
         if (bookableChanged) {
-          // บันทึกเหตุผล + ประวัติการปิด/เปิดห้อง (V3 Facility Admin)
           await api(`${MANAGE_BASE_URL}/rooms/${current.room_id}/availability`, { method: "POST", body: JSON.stringify({ action: bookable ? "OPEN" : "CLOSE", reason }) });
           current.is_bookable = bookable ? 1 : 0;
         }
@@ -180,7 +179,7 @@
         $("mClosures").innerHTML = items.length
           ? "<h3>ประวัติการปิด–เปิดห้อง</h3><ul>" + items.map((c) => `<li><b class="${c.status === "CLOSED" ? "off" : "on"}">${c.status === "CLOSED" ? "ปิดอยู่" : "เปิดแล้ว"}</b> — ${esc(c.reason)}<small>${esc(String(c.closed_at || "").slice(0, 16))}${c.opening_reason ? " · เหตุผลที่เปิด: " + esc(c.opening_reason) : ""}</small></li>`).join("") + "</ul>"
           : "";
-      } catch (e) { /* ประวัติเป็นข้อมูลเสริม ไม่ต้องขัดจังหวะหน้าหลัก */ }
+      } catch (e) {}
     }
 
     function draw2(msg, isError) { const n = $("mNotice"); n.textContent = msg; n.hidden = false; n.classList.toggle("is-error", !!isError); }

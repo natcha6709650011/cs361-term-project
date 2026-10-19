@@ -117,6 +117,12 @@ def lambda_handler(event, context):
         or ""
     ).rstrip("/")
 
+    # Remove API Gateway stage prefix, e.g. /v1
+    stage = event.get("requestContext", {}).get("stage")
+
+    if stage and path.startswith(f"/{stage}/"):
+        path = path[len(f"/{stage}"):]
+
     path_parameters = event.get("pathParameters") or {}
     room_number = path_parameters.get("room_number")
 

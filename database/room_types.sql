@@ -6,7 +6,7 @@ USE cstu_room_db;
 
 CREATE TABLE IF NOT EXISTS room_types (
     room_type_id INT AUTO_INCREMENT PRIMARY KEY,
-    type_name VARCHAR(100) NOT NULL,
+    type_name VARCHAR(100) NOT NULL
 );
 
 INSERT IGNORE INTO room_types (room_type_id, type_name) VALUES

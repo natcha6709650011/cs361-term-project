@@ -9,12 +9,19 @@ API Gateway routes expected for this Lambda:
 Attach `cstu-jwt-authorizer` to every route.  The authorizer must put the
 authenticated username in requestContext.authorizer.lambda.username.  Never
 accept a user id or username from the browser request body.
+
+V3 Fixed Facility Schedule: a booking request is rejected (409) when it overlaps
+a locked facility schedule of the same room (weekly rules from
+`facility_schedule_rules` minus per-date RELEASE exceptions, or a one-off row in
+`facility_schedules`).  The check runs in the same transaction as the INSERT/UPDATE
+and after the room row is locked FOR UPDATE, the same lock the Approval/Facility
+Lambda takes, so a request and a new fixed schedule cannot slip past each other.
 """
 
 import base64
 import json
 import os
-from datetime import datetime
+from datetime import datetime, time, timedelta
 
 import pymysql
 
@@ -223,6 +230,7 @@ def get_owned_booking(cursor, booking_id, user_id, *, for_update=False):
 
 
 def has_conflict(cursor, room_id, starts_at, ends_at, *, exclude_booking_id=None):
+    """True if another pending/approved booking overlaps (half-open intervals)."""
     sql = """
         SELECT booking_id
         FROM bookings
@@ -238,6 +246,101 @@ def has_conflict(cursor, room_id, starts_at, ends_at, *, exclude_booking_id=None
     sql += " LIMIT 1 FOR UPDATE"
     cursor.execute(sql, values)
     return cursor.fetchone() is not None
+
+
+def to_time(value):
+    """pymysql returns TIME columns as timedelta; normalize to datetime.time."""
+    if isinstance(value, time):
+        return value
+    if isinstance(value, timedelta):
+        seconds = int(value.total_seconds()) % 86400
+        return time(seconds // 3600, seconds % 3600 // 60, seconds % 60)
+    text = str(value)
+    for fmt in ("%H:%M:%S", "%H:%M"):
+        try:
+            return datetime.strptime(text, fmt).time()
+        except ValueError:
+            pass
+    raise ValueError(f"Invalid TIME value: {value!r}")
+
+
+def find_fixed_schedule_conflict(cursor, room_id, starts_at, ends_at):
+    """Return the first locked Fixed Facility Schedule overlapping the request.
+
+    Returns a dict {"title", "date"} or None.  Two sources are checked:
+      1) facility_schedules       - one-off locked datetime ranges
+      2) facility_schedule_rules  - weekly rules for a term, except dates where
+                                    the newest exception is RELEASE
+    """
+    cursor.execute(
+        """
+        SELECT title, start_time
+        FROM facility_schedules
+        WHERE room_id = %s
+          AND status = 'APPROVED'
+          AND is_locked = TRUE
+          AND start_time < %s
+          AND end_time > %s
+        LIMIT 1
+        FOR UPDATE
+        """,
+        (room_id, ends_at, starts_at),
+    )
+    one_off = cursor.fetchone()
+    if one_off:
+        return {"title": one_off["title"], "date": one_off["start_time"].strftime("%Y-%m-%d")}
+
+    cursor.execute(
+        """
+        SELECT schedule_id, title, weekday, start_time, end_time,
+               valid_from, valid_until
+        FROM facility_schedule_rules
+        WHERE room_id = %s
+          AND status = 'ACTIVE'
+          AND valid_from <= %s
+          AND valid_until >= %s
+        FOR UPDATE
+        """,
+        (room_id, ends_at.date(), starts_at.date()),
+    )
+    for rule in cursor.fetchall():
+        day = max(starts_at.date(), rule["valid_from"])
+        last_day = min(ends_at.date(), rule["valid_until"])
+        while day <= last_day:
+            if day.weekday() == int(rule["weekday"]):
+                occurrence_start = datetime.combine(day, to_time(rule["start_time"]))
+                occurrence_end = datetime.combine(day, to_time(rule["end_time"]))
+                if occurrence_start < ends_at and occurrence_end > starts_at:
+                    if not is_released_on(cursor, rule["schedule_id"], day):
+                        return {"title": rule["title"], "date": day.strftime("%Y-%m-%d")}
+            day += timedelta(days=1)
+    return None
+
+
+def is_released_on(cursor, schedule_id, day):
+    """The newest exception for that schedule/date decides (RELEASE opens it)."""
+    cursor.execute(
+        """
+        SELECT action
+        FROM facility_schedule_exceptions
+        WHERE schedule_id = %s AND exception_date = %s
+        ORDER BY exception_id DESC
+        LIMIT 1
+        """,
+        (schedule_id, day),
+    )
+    latest = cursor.fetchone()
+    return bool(latest and latest["action"] == "RELEASE")
+
+
+def fixed_schedule_conflict_response(conflict):
+    return response(
+        409,
+        {
+            "error": "Fixed schedule conflict",
+            "message": f"ห้องนี้ถูกจัดไว้สำหรับ \"{conflict['title']}\" ในวันที่ {conflict['date']} ไม่สามารถจองทับได้",
+        },
+    )
 
 
 def get_booking(cursor, booking_id, user_id):
@@ -313,6 +416,13 @@ def create_booking(connection, user, payload):
                 connection.rollback()
                 return response(409, {"error": "Booking conflict", "message": "ช่วงเวลานี้ไม่ว่าง"})
 
+            fixed = find_fixed_schedule_conflict(
+                cursor, room["room_id"], values["start_time"], values["end_time"]
+            )
+            if fixed:
+                connection.rollback()
+                return fixed_schedule_conflict_response(fixed)
+
             cursor.execute(
                 """
                 INSERT INTO bookings
@@ -343,6 +453,13 @@ def update_booking(connection, user, booking_id, payload):
             if booking["status"] == "cancelled":
                 connection.rollback()
                 return response(409, {"error": "Booking cancelled", "message": "ไม่สามารถแก้ไขรายการที่ยกเลิกแล้ว"})
+            if booking["status"] == "rejected":
+                connection.rollback()
+                return response(409, {"error": "Booking rejected", "message": "ไม่สามารถแก้ไขรายการที่ถูกปฏิเสธ กรุณาส่งคำขอใหม่"})
+
+            # Lock the room row first (same order as create_booking and the
+            # Approval/Facility Lambda) before checking conflicts.
+            cursor.execute("SELECT room_id FROM rooms WHERE room_id = %s FOR UPDATE", (booking["room_id"],))
 
             merged = {
                 "purpose": payload.get("purpose", booking["title"]),
@@ -363,13 +480,29 @@ def update_booking(connection, user, booking_id, payload):
                 connection.rollback()
                 return response(409, {"error": "Booking conflict", "message": "ช่วงเวลานี้ไม่ว่าง"})
 
+            fixed = find_fixed_schedule_conflict(
+                cursor, booking["room_id"], values["start_time"], values["end_time"]
+            )
+            if fixed:
+                connection.rollback()
+                return fixed_schedule_conflict_response(fixed)
+
+            # An approved booking whose time changes must be approved again;
+            # otherwise a user could move an approved booking without review.
+            time_changed = (
+                values["start_time"] != booking["start_time"]
+                or values["end_time"] != booking["end_time"]
+            )
+            new_status = "pending" if booking["status"] == "approved" and time_changed else booking["status"]
+
             cursor.execute(
                 """
                 UPDATE bookings
-                SET title = %s, participant_count = %s, start_time = %s, end_time = %s
+                SET title = %s, participant_count = %s, start_time = %s, end_time = %s,
+                    status = %s
                 WHERE booking_id = %s AND user_id = %s
                 """,
-                (values["purpose"], values["participants"], values["start_time"], values["end_time"], booking_id, user["user_id"]),
+                (values["purpose"], values["participants"], values["start_time"], values["end_time"], new_status, booking_id, user["user_id"]),
             )
             updated = get_booking(cursor, booking_id, user["user_id"])
         connection.commit()

@@ -100,8 +100,10 @@
             <dt>เปิดให้จอง</dt><dd>${onOff(r.is_bookable)}</dd>
             <dt>ผู้ดูแลห้อง</dt><dd>${esc(r.caretaker_name) || "-"}</dd>
             <dt>อุปกรณ์</dt><dd>${items.length ? `<span class="chips">${items.map((i) => `<span class="chip">${esc(i)}</span>`).join("")}</span>` : "-"}</dd>
-          </dl>`;
+          </dl>
+          <div class="closures" id="mClosures"></div>`;
         $("mActions").innerHTML = '<button type="button" class="btn btn--ghost" data-act="close">ปิด</button><button type="button" class="btn btn--primary" data-act="edit">แก้ไข</button>';
+        loadClosures(r);
       } else {
         $("mBody").innerHTML = `
           <dl class="detail">
@@ -110,12 +112,18 @@
             <dt>เปิดใช้งาน</dt><dd>${onOff(r.is_active)}</dd>
           </dl>
           <label class="switch"><input type="checkbox" id="fBookable" ${r.is_bookable ? "checked" : ""} /><span class="switch__track"></span>เปิดให้จอง</label>
+          <label id="fReasonWrap" hidden>เหตุผลที่เปิด/ปิดให้จอง (จำเป็น)<textarea id="fReason" maxlength="500" rows="3" placeholder="เช่น โปรเจกเตอร์ชำรุด อยู่ระหว่างซ่อม"></textarea></label>
           <label>ความจุ (คน)<input type="number" id="fCapacity" min="1" step="1" value="${esc(r.capacity)}" placeholder="ไม่ระบุ" /></label>
           <label>ชั้น<input type="number" id="fFloor" min="1" step="1" value="${esc(r.floor)}" /></label>
           <label>ผู้ดูแลห้อง<input type="text" id="fCaretaker" maxlength="100" value="${esc(r.caretaker_name)}" /></label>
           <label>URL รูปภาพ<input type="url" id="fImage" maxlength="500" value="${esc(r.image_url)}" placeholder="https://..." /></label>
           <label>อุปกรณ์และสิ่งอำนวยความสะดวก<input type="text" id="fAmenities" value="${esc(items.join(", "))}" placeholder="โต๊ะ, เก้าอี้, ทีวี" /><small>คั่นแต่ละรายการด้วยเครื่องหมายจุลภาค (,)</small></label>`;
         $("mActions").innerHTML = '<button type="button" class="btn btn--ghost" data-act="cancel">ยกเลิก</button><button type="button" class="btn btn--primary" data-act="save" id="saveBtn">บันทึก</button>';
+        // ต้องกรอกเหตุผลเมื่อสลับสถานะ "เปิดให้จอง" (บันทึกลงประวัติ room_closures)
+        $("fBookable").addEventListener("change", () => {
+          $("fReasonWrap").hidden = !!r.is_bookable === $("fBookable").checked;
+        });
+        $("fReason").addEventListener("input", () => $("fReason").classList.remove("is-invalid"));
       }
     }
   
@@ -138,6 +146,12 @@
       const hasBody = Object.keys(body).length > 0;
       if (!hasBody && !bookableChanged) { mode = "view"; return draw("ไม่มีการเปลี่ยนแปลง"); }
    
+      const reason = $("fReason").value.trim();
+      if (bookableChanged && !reason) {
+        $("fReason").classList.add("is-invalid");
+        return draw2("กรุณาระบุเหตุผลที่เปิด/ปิดให้จอง", true);
+      }
+
       const btn = $("saveBtn");
       btn.disabled = true;
       try {
@@ -146,7 +160,8 @@
           Object.assign(current, d && d.room ? d.room : body);
         }
         if (bookableChanged) {
-          await api(`${MANAGE_BASE_URL}/rooms/${current.room_id}/status`, { method: "PATCH", body: JSON.stringify({ is_bookable: bookable }) });
+          // บันทึกเหตุผล + ประวัติการปิด/เปิดห้อง (V3 Facility Admin)
+          await api(`${MANAGE_BASE_URL}/rooms/${current.room_id}/availability`, { method: "POST", body: JSON.stringify({ action: bookable ? "OPEN" : "CLOSE", reason }) });
           current.is_bookable = bookable ? 1 : 0;
         }
         render(); fillFilters();
@@ -155,6 +170,19 @@
         render(); btn.disabled = false; draw2(e.message, true);
       }
     }
+    async function loadClosures(room) {
+      const box = $("mClosures");
+      if (!box) return;
+      try {
+        const d = await api(`${MANAGE_BASE_URL}/room-closures?room_id=${room.room_id}`);
+        if (current !== room || !$("mClosures")) return;
+        const items = (d.items || []).slice(0, 5);
+        $("mClosures").innerHTML = items.length
+          ? "<h3>ประวัติการปิด–เปิดห้อง</h3><ul>" + items.map((c) => `<li><b class="${c.status === "CLOSED" ? "off" : "on"}">${c.status === "CLOSED" ? "ปิดอยู่" : "เปิดแล้ว"}</b> — ${esc(c.reason)}<small>${esc(String(c.closed_at || "").slice(0, 16))}${c.opening_reason ? " · เหตุผลที่เปิด: " + esc(c.opening_reason) : ""}</small></li>`).join("") + "</ul>"
+          : "";
+      } catch (e) { /* ประวัติเป็นข้อมูลเสริม ไม่ต้องขัดจังหวะหน้าหลัก */ }
+    }
+
     function draw2(msg, isError) { const n = $("mNotice"); n.textContent = msg; n.hidden = false; n.classList.toggle("is-error", !!isError); }
   
     modal.addEventListener("click", (ev) => {

@@ -56,9 +56,9 @@
 .chip { padding: 6px 14px; border-radius: 6px; background: #f1d98b; color: #5c4300; font-weight: 600; font-size: 14px; }
 
 .admin-modal__body label { display: grid; gap: 6px; font-weight: 700; }
-.admin-modal__body input[type=text], .admin-modal__body input[type=number], .admin-modal__body input[type=url] { padding: 12px 14px; border: 1px solid #e2e6eb; border-radius: 10px; background: #f8f9fb; font: inherit; font-weight: 400; }
-.admin-modal__body input:focus { outline: 2px solid #c60039; background: #fff; }
-.admin-modal__body input.is-invalid { border-color: #c60039; background: #fff5f7; }
+.admin-modal__body input[type=text], .admin-modal__body input[type=number], .admin-modal__body input[type=url], .admin-modal__body textarea { padding: 12px 14px; border: 1px solid #e2e6eb; border-radius: 10px; background: #f8f9fb; font: inherit; font-weight: 400; }
+.admin-modal__body input:focus, .admin-modal__body textarea:focus { outline: 2px solid #c60039; background: #fff; }
+.admin-modal__body input.is-invalid, .admin-modal__body textarea.is-invalid { border-color: #c60039; background: #fff5f7; }
 .admin-modal__body small { font-weight: 400; color: #768296; }
 .admin-modal__error { margin: 0; color: #c60039; font-weight: 600; }
 .switch { display: flex !important; grid-auto-flow: column; align-items: center; gap: 12px !important; cursor: pointer; }
@@ -72,3 +72,12 @@
 
 
 .admin-empty a { color: #c60039; font-weight: 700; }
+
+.admin-modal__body label[hidden] { display: none; }
+
+/* ประวัติการปิด–เปิดห้อง (ในหน้ารายละเอียดห้อง) */
+.closures:empty { display: none; }
+.closures h3 { margin: 18px 0 8px; font-size: 16px; }
+.closures ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.closures li { padding: 10px 12px; border: 1px solid #e2e6eb; border-radius: 10px; background: #f8f9fb; }
+.closures li small { display: block; margin-top: 2px; color: #6b7280; }

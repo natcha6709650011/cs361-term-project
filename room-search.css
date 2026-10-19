@@ -707,3 +707,10 @@ h1 {
   box-shadow: 0 0 0 3px #f8d7df;
   outline: none;
 }
+a.search-room-card__image-wrap {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  position: relative; /* คงตำแหน่งเดิมของ badge สถานะ/ประเภทห้อง */
+}

@@ -32,37 +32,39 @@ function clearValidation(){
     validationMessage.textContent = '';
     validationMessage.hidden = true;
 }
-function validateSearchForm(){
+function validateSearchForm() {
     clearValidation();
 
-    if(!searchDate.value){
-        showValidationMessage("กรุณาเลือกวันที่");
+    const hasDate = !!searchDate.value;
+    const hasStartTime = !!searchTime.value;
+    const hasEndTime = !!endTime.value;
+    const hasCapacity = !!minCapacity.value;
+    const hasRoomType = !!roomType.value;
+
+    // ต้องมี filter อย่างน้อย 1 ตัว
+    if (!hasDate && !hasStartTime && !hasEndTime && !hasCapacity && !hasRoomType) {
+        showValidationMessage("กรุณาเลือกเงื่อนไขการค้นหาอย่างน้อย 1 รายการ");
         return false;
     }
-    if(!searchTime.value){
-        showValidationMessage("กรุณาเลือกเวลาเริ่มต้น");
-        return false;
+
+    // ถ้าเลือกเวลา ต้องเลือกเวลาเริ่มและเวลาสิ้นสุดให้ถูกต้อง
+    if (hasStartTime && hasEndTime) {
+        if (searchTime.value >= endTime.value) {
+            showValidationMessage("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
+            return false;
+        }
     }
-    if(!endTime.value){
-        showValidationMessage("กรุณาเลือกเวลาสิ้นสุด");
-        return false;
-    }
-    if(!minCapacity.value){
-        showValidationMessage("กรุณาเลือกความจุขั้นต่ำ");
-        return false;
-    }
-    if(searchTime.value >= endTime.value){
-        showValidationMessage("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
-        return false;
-    }
+
     return true;
 }
+
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (!validateSearchForm()) {
         return;
     }
+
     const searchParams = {
         date: searchDate.value,
         startTime: searchTime.value,
@@ -70,27 +72,46 @@ form.addEventListener('submit', async (event) => {
         minCapacity: minCapacity.value,
         roomType: roomType.value,
     };
+
     console.log('Searching rooms with params:', searchParams);
 
     showLoading();
-    
-    const query = new URLSearchParams({
-        date: searchParams.date,
-        startTime: searchParams.startTime,
-        endTime: searchParams.endTime,
-        minCapacity: searchParams.minCapacity,
-        roomType: searchParams.roomType,
-    });
+
+    // สร้าง query เฉพาะค่าที่ผู้ใช้เลือก
+    const query = new URLSearchParams();
+
+    if (searchParams.date) {
+        query.append('date', searchParams.date);
+    }
+
+    if (searchParams.startTime) {
+        query.append('startTime', searchParams.startTime);
+    }
+
+    if (searchParams.endTime) {
+        query.append('endTime', searchParams.endTime);
+    }
+
+    if (searchParams.minCapacity) {
+        query.append('minCapacity', searchParams.minCapacity);
+    }
+
+    if (searchParams.roomType) {
+        query.append('roomType', searchParams.roomType);
+    }
 
     try {
         const authToken = window.localStorage.getItem('authToken');
+
         if (!authToken) {
             const goLogin = confirm(
                 'กรุณาเข้าสู่ระบบก่อนค้นหาห้องว่าง\n\nต้องการไปหน้าเข้าสู่ระบบหรือไม่?'
             );
+
             if (goLogin) {
                 window.location.href = 'login.html';
             }
+
             hideSearchStates();
             return;
         }
@@ -98,13 +119,14 @@ form.addEventListener('submit', async (event) => {
         const apiBaseUrl = window.location.port === '5501'
             ? '/api/v1'
             : 'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1';
+
         const response = await fetch(
             `${apiBaseUrl}/rooms/available?${query.toString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
                 },
-            },
+            }
         );
 
         const data = await response.json();
@@ -112,7 +134,9 @@ form.addEventListener('submit', async (event) => {
         console.log('API response:', data);
 
         if (!response.ok) {
-            throw new Error(data.message || 'เกิดข้อผิดพลาดในการค้นหาห้อง');
+            throw new Error(
+                data.message || 'เกิดข้อผิดพลาดในการค้นหาห้อง'
+            );
         }
 
         if (!data.rooms || data.rooms.length === 0) {
@@ -121,6 +145,7 @@ form.addEventListener('submit', async (event) => {
         }
 
         hideSearchStates();
+
         console.log('Available rooms:', data.rooms);
         renderRooms(data.rooms);
 
@@ -129,9 +154,8 @@ form.addEventListener('submit', async (event) => {
         hideSearchStates();
         searchError.hidden = false;
     }
-
-    
 });
+
 function renderRooms(rooms){
     searchResults.innerHTML = '';
     rooms.forEach(room => {

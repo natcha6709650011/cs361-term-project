@@ -284,7 +284,8 @@
         <!-- เพื่อนฝั่ง JavaScript clone template นี้เมื่อ API ส่งข้อมูลห้องว่างกลับมา -->
         <template id="room-card-template">
           <article class="search-room-card">
-            <div class="search-room-card__image-wrap">
+            <!-- เปลี่ยนจาก div เป็น a และใส่ data-room-link เพื่อให้ลิงก์ตรงกัน -->
+            <a class="search-room-card__image-wrap" data-room-link href="#">
               <img
                 class="search-room-card__image"
                 data-room-image
@@ -295,7 +296,7 @@
               <span class="search-room-card__status" data-room-status
                 >ว่าง</span
               >
-            </div>
+            </a>
             <div class="search-room-card__body">
               <h3 data-room-number></h3>
               <p class="search-room-card__location" data-room-location></p>
@@ -382,6 +383,9 @@
 <script>
     requireBookingAccess();
 </script>
+<script src="page-loader.js"></script>
+
+
 
   </body>
 </html>

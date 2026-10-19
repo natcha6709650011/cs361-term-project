@@ -260,5 +260,51 @@
     <script src="home-room-capacity.js"></script>
     <script src="auth-guard.js"></script>
     <script src="approver-tab.js"></script>
+    <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const roomCards = document.querySelectorAll('.room-card');
+    
+    roomCards.forEach(card => {
+      const roomImage = card.querySelector('.room-image');
+      const detailLink = card.querySelector('.room-detail-link');
+      
+      if (roomImage && detailLink) {
+        // เพิ่ม style ชี้เมาส์ให้เป็นรูปมือ
+        roomImage.style.cursor = 'pointer';
+        
+        // เมื่อคลิกที่รูปภาพ ให้เปิดไปยัง URL เดียวกับปุ่มดูรายละเอียด
+        roomImage.addEventListener('click', () => {
+          window.location.href = detailLink.getAttribute('href');
+        });
+      }
+    });
+  });
+</script>
+async function loadRooms() {
+  try {
+    const response = await fetch(ROOMS_API_URL, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    allRooms = getRoomsList(await response.json());
+    renderRooms(roomsForCurrentPage());
+
+  } catch (error) {
+    console.warn("ไม่สามารถโหลดรายการห้องจาก API ได้", error);
+
+    if (searchMessage) {
+      searchMessage.textContent =
+        "ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง";
+    }
+  } finally {
+    hidePageLoading();
+  }
+}
+
+loadRooms();
   </body>
 </html>

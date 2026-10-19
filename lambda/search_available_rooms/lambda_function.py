@@ -11,7 +11,7 @@ def response(status_code, body):
         "headers": {
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Headers": "Content-Type,Authorization",
             "Access-Control-Allow-Methods": "GET,OPTIONS",
         },
         "body": json.dumps(body, ensure_ascii=False, default=str),
@@ -39,58 +39,87 @@ def validate_input(params):
     min_capacity_value = params["min_capacity"]
     room_type_value = params["room_type"]
 
-    if not date_value:
-        errors["date"] = "กรุณาระบุวันที่"
+    # -----------------------------
+    # Date - optional
+    # -----------------------------
+    search_date = None
 
-    if not start_time_value:
-        errors["startTime"] = "กรุณาระบุเวลาเริ่มต้น"
+    if date_value:
+        try:
+            search_date = datetime.strptime(
+                date_value,
+                "%Y-%m-%d"
+            ).date()
+        except (ValueError, TypeError):
+            errors["date"] = "รูปแบบวันที่ไม่ถูกต้อง ต้องเป็น YYYY-MM-DD"
 
-    if not end_time_value:
+    # -----------------------------
+    # Start time - optional
+    # -----------------------------
+    start_time = None
+
+    if start_time_value:
+        try:
+            start_time = datetime.strptime(
+                start_time_value,
+                "%H:%M"
+            ).time()
+        except (ValueError, TypeError):
+            errors["startTime"] = "รูปแบบเวลาไม่ถูกต้อง ต้องเป็น HH:MM"
+
+    # -----------------------------
+    # End time - optional
+    # -----------------------------
+    end_time = None
+
+    if end_time_value:
+        try:
+            end_time = datetime.strptime(
+                end_time_value,
+                "%H:%M"
+            ).time()
+        except (ValueError, TypeError):
+            errors["endTime"] = "รูปแบบเวลาไม่ถูกต้อง ต้องเป็น HH:MM"
+
+    # ถ้ากรอกเวลา ต้องกรอกทั้งเริ่มและสิ้นสุด
+    if start_time_value and not end_time_value:
         errors["endTime"] = "กรุณาระบุเวลาสิ้นสุด"
 
-    if not min_capacity_value:
-        errors["minCapacity"] = "กรุณาระบุความจุขั้นต่ำ"
+    if end_time_value and not start_time_value:
+        errors["startTime"] = "กรุณาระบุเวลาเริ่มต้น"
 
-    if errors:
-        return errors, None
+    # เวลาเริ่มต้องน้อยกว่าเวลาสิ้นสุด
+    if start_time and end_time:
+        if start_time >= end_time:
+            errors["endTime"] = "เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น"
 
-    try:
-        search_date = datetime.strptime(date_value, "%Y-%m-%d").date()
-    except (ValueError, TypeError):
-        errors["date"] = "รูปแบบวันที่ไม่ถูกต้อง ต้องเป็น YYYY-MM-DD"
-        search_date = None
+    # -----------------------------
+    # Minimum capacity - optional
+    # -----------------------------
+    min_capacity = None
 
-    try:
-        start_time = datetime.strptime(start_time_value, "%H:%M").time()
-    except (ValueError, TypeError):
-        errors["startTime"] = "รูปแบบเวลาไม่ถูกต้อง ต้องเป็น HH:MM"
-        start_time = None
+    if min_capacity_value:
+        try:
+            min_capacity = int(min_capacity_value)
 
-    try:
-        end_time = datetime.strptime(end_time_value, "%H:%M").time()
-    except (ValueError, TypeError):
-        errors["endTime"] = "รูปแบบเวลาไม่ถูกต้อง ต้องเป็น HH:MM"
-        end_time = None
+            if min_capacity <= 0:
+                raise ValueError
 
-    if start_time and end_time and start_time >= end_time:
-        errors["endTime"] = "เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น"
+        except (ValueError, TypeError):
+            errors["minCapacity"] = "ความจุต้องเป็นจำนวนเต็มมากกว่า 0"
 
-    try:
-        min_capacity = int(min_capacity_value)
-        if min_capacity <= 0:
-            raise ValueError
-    except (ValueError, TypeError):
-        errors["minCapacity"] = "ความจุต้องเป็นจำนวนเต็มมากกว่า 0"
-        min_capacity = None
-
+    # -----------------------------
+    # Room type - optional
+    # -----------------------------
     room_type = None
 
-    # Empty/missing roomType means all room types.
     if room_type_value not in (None, ""):
         try:
             room_type = int(room_type_value)
+
             if room_type <= 0:
                 raise ValueError
+
         except (ValueError, TypeError):
             errors["roomType"] = "ประเภทห้องไม่ถูกต้อง"
 
@@ -138,60 +167,85 @@ def parse_amenities(value):
 
 
 def search_available_rooms(connection, params):
+
+    # ----------------------------------------
+    # Basic room conditions
+    # ----------------------------------------
+
     conditions = [
         "r.is_active = TRUE",
         "r.is_permanent_locked = FALSE",
         "r.is_bookable = TRUE",
-        "r.capacity IS NOT NULL",
-        "r.capacity >= %s",
     ]
 
-    values = [params["min_capacity"]]
+    values = []
 
-    # If a room type is provided, restrict the search to that type.
-    # Empty/missing roomType means all bookable room types.
+    # ----------------------------------------
+    # Minimum capacity
+    # ----------------------------------------
+
+    if params["min_capacity"] is not None:
+        conditions.append(
+            "r.capacity IS NOT NULL AND r.capacity >= %s"
+        )
+
+        values.append(params["min_capacity"])
+
+    # ----------------------------------------
+    # Room type
+    # ----------------------------------------
+
     if params["room_type"] is not None:
-        conditions.append("r.room_type_id = %s")
+        conditions.append(
+            "r.room_type_id = %s"
+        )
+
         values.append(params["room_type"])
 
-    # A room is unavailable if it has a pending or approved booking
-    # that overlaps the requested date/time.
+    # ----------------------------------------
+    # Booking availability
     #
-    # Overlap rule:
-    #     booking.start_time < requested_end
-    # AND booking.end_time > requested_start
-    #
-    # Adjacent bookings do not overlap:
-    #     08:00-10:00 and 10:00-12:00 -> available
-    #
-    # Cancelled bookings are ignored.
-    conditions.append(
-        """
-        NOT EXISTS (
-            SELECT 1
-            FROM bookings b
-            WHERE b.room_id = r.room_id
-              AND b.status IN ('approved', 'pending')
-              AND b.start_time < %s
-              AND b.end_time > %s
+    # Only check booking overlap when
+    # date + start time + end time are provided.
+    # ----------------------------------------
+
+    if (
+        params["date"] is not None
+        and params["start_time"] is not None
+        and params["end_time"] is not None
+    ):
+
+        requested_start = datetime.combine(
+            params["date"],
+            params["start_time"]
         )
-        """
-    )
 
-    requested_start = datetime.combine(
-        params["date"],
-        params["start_time"],
-    )
+        requested_end = datetime.combine(
+            params["date"],
+            params["end_time"]
+        )
 
-    requested_end = datetime.combine(
-        params["date"],
-        params["end_time"],
-    )
+        conditions.append(
+            """
+            NOT EXISTS (
+                SELECT 1
+                FROM bookings b
+                WHERE b.room_id = r.room_id
+                  AND b.status IN ('approved', 'pending')
+                  AND b.start_time < %s
+                  AND b.end_time > %s
+            )
+            """
+        )
 
-    values.extend([
-        requested_end,
-        requested_start,
-    ])
+        values.extend([
+            requested_end,
+            requested_start,
+        ])
+
+    # ----------------------------------------
+    # SQL
+    # ----------------------------------------
 
     sql = f"""
         SELECT
@@ -208,81 +262,142 @@ def search_available_rooms(connection, params):
             r.is_permanent_locked,
             r.is_active,
             r.is_bookable
+
         FROM rooms r
+
         INNER JOIN room_types rt
             ON r.room_type_id = rt.room_type_id
+
         WHERE {" AND ".join(conditions)}
+
         ORDER BY r.room_number ASC
     """
+
+    print("SQL:", sql)
+    print("VALUES:", values)
 
     with connection.cursor() as cursor:
         cursor.execute(sql, values)
         rooms = cursor.fetchall()
 
+    # ----------------------------------------
+    # Convert amenities JSON
+    # ----------------------------------------
+
     for room in rooms:
-        room["amenities"] = parse_amenities(room.get("amenities_json"))
+        room["amenities"] = parse_amenities(
+            room.get("amenities_json")
+        )
+
         room.pop("amenities_json", None)
 
     return rooms
 
 
 def lambda_handler(event, context):
+
+    # ----------------------------------------
+    # HTTP method
+    # ----------------------------------------
+
     method = (
         event.get("httpMethod")
-        or event.get("requestContext", {}).get("http", {}).get("method")
+        or event.get("requestContext", {})
+        .get("http", {})
+        .get("method")
     )
 
     if method == "OPTIONS":
-        return response(200, {"message": "OK"})
+        return response(
+            200,
+            {
+                "message": "OK"
+            }
+        )
+
+    # ----------------------------------------
+    # Get query parameters
+    # ----------------------------------------
 
     params = get_query_parameters(event or {})
+
+    print("Raw parameters:", params)
+
+    # ----------------------------------------
+    # Validate parameters
+    # ----------------------------------------
+
     errors, clean_params = validate_input(params)
 
     if errors:
+        print("Validation errors:", errors)
+
         return response(
             400,
             {
                 "error": "Invalid input",
                 "details": errors,
-            },
+            }
         )
+
+    # ----------------------------------------
+    # Database
+    # ----------------------------------------
 
     connection = None
 
     try:
+
         connection = connect_database()
-        rooms = search_available_rooms(connection, clean_params)
+
+        rooms = search_available_rooms(
+            connection,
+            clean_params
+        )
+
+        # ----------------------------------------
+        # No rooms
+        # ----------------------------------------
 
         if not rooms:
+
             return response(
                 200,
                 {
                     "count": 0,
                     "rooms": [],
                     "message": "ไม่พบห้องว่างตามเงื่อนไขที่เลือก",
-                },
+                }
             )
+
+        # ----------------------------------------
+        # Success
+        # ----------------------------------------
 
         return response(
             200,
             {
                 "count": len(rooms),
                 "rooms": rooms,
-            },
+            }
         )
 
     except Exception as error:
-        print("Database error:", repr(error))
+
+        print(
+            "Database error:",
+            repr(error)
+        )
 
         return response(
             500,
             {
                 "error": "Internal server error",
                 "message": "เกิดข้อผิดพลาดในการค้นหาห้องว่าง",
-            },
+            }
         )
 
     finally:
+
         if connection:
             connection.close()
-

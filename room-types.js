@@ -77,6 +77,7 @@ function getAmenities(room) {
       typeof rawAmenities === "string"
         ? JSON.parse(rawAmenities)
         : rawAmenities;
+
     return Array.isArray(amenities)
       ? amenities
           .map((amenity) => amenity?.item ?? amenity?.name ?? amenity)
@@ -110,7 +111,15 @@ function createRoomCard(room) {
   image.className = "room-card__image";
   detail.className = "room-card__detail";
 
-  if (room.image_url) image.style.backgroundImage = `url("${room.image_url}")`;
+  if (room.image_url) {
+  image.style.backgroundImage = `url("${room.image_url}")`;
+}
+
+image.style.cursor = "pointer";
+
+image.addEventListener("click", () => {
+  window.location.href = `room-detail.html?room=${encodeURIComponent(number)}`;
+});
 
   const badge = document.createElement("b");
   badge.textContent = typeName;
@@ -118,10 +127,13 @@ function createRoomCard(room) {
 
   const heading = document.createElement("h3");
   heading.textContent = `บร2-${number}`;
+
   const location = document.createElement("p");
   location.textContent = `${typeName} ${number} ชั้น ${floor}`;
+
   const tags = document.createElement("div");
   tags.className = "tags";
+
   amenities.forEach((amenity) => {
     const tag = document.createElement("span");
     tag.textContent = amenity;
@@ -129,44 +141,63 @@ function createRoomCard(room) {
   });
 
   const footer = document.createElement("footer");
+
   const capacity = document.createElement("span");
   capacity.className = "capacity";
   capacity.innerHTML = capacityLabel(room.capacity);
+
   const link = document.createElement("a");
   link.href = `room-detail.html?room=${encodeURIComponent(number)}`;
   link.textContent = "ดูรายละเอียดเพิ่มเติม";
+
   footer.append(capacity, link);
   detail.append(heading, location, tags, footer);
   card.append(image, detail);
+
   return card;
 }
 
 function roomsForCurrentPage() {
   const expectedType = pageTypes[typePage] ?? pageTypes.classroom;
-  return allRooms.filter((room) => getTypeName(room) === expectedType);
+
+  return allRooms.filter(
+    (room) => getTypeName(room) === expectedType
+  );
 }
 
 function renderRooms(rooms) {
   if (!roomGrid) return;
+
   roomGrid.replaceChildren(...rooms.map(createRoomCard));
-  if (roomCount) roomCount.textContent = `จำนวน ${rooms.length} ห้อง`;
+
+  if (roomCount) {
+    roomCount.textContent = `จำนวน ${rooms.length} ห้อง`;
+  }
 }
 
 function filterVisibleRoomCards(keyword) {
   const normalizedKeyword = normalizeSearchText(keyword);
-  const cards = [...document.querySelectorAll("#room-list-grid .room-card")];
+
+  const cards = [
+    ...document.querySelectorAll("#room-list-grid .room-card"),
+  ];
+
   const matchedCards = cards.filter((card) => {
     const matches =
       !normalizedKeyword ||
       normalizeSearchText(card.textContent).includes(normalizedKeyword);
+
     card.hidden = !matches;
+
     return matches;
   });
 
-  if (roomCount)
+  if (roomCount) {
     roomCount.textContent = normalizedKeyword
       ? `พบ ${matchedCards.length} ห้อง`
       : `จำนวน ${cards.length} ห้อง`;
+  }
+
   if (searchMessage) {
     searchMessage.textContent = normalizedKeyword
       ? matchedCards.length
@@ -181,24 +212,35 @@ async function loadRooms() {
 
   try {
     const response = await fetch(ROOMS_API_URL, {
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+      },
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
     allRooms = getRoomsList(await response.json());
+
     renderRooms(roomsForCurrentPage());
   } catch (error) {
     console.warn("ไม่สามารถโหลดรายการห้องจาก API ได้", error);
-    if (searchMessage)
+
+    if (searchMessage) {
       searchMessage.textContent =
         "ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง";
+    }
   }
 }
 
 if (searchForm) {
   searchForm.addEventListener("submit", (event) => {
     event.preventDefault();
+
     const keyword = searchInput.value.trim();
     const normalizedKeyword = normalizeSearchText(keyword);
+
     const availabilityKeywords = [
       "ห้องว่าง",
       "ค้นหาห้องว่าง",
@@ -206,26 +248,49 @@ if (searchForm) {
       "เช็กห้องว่าง",
     ];
 
+    // ค้นหา "ห้องว่าง" ในประเภทห้องปัจจุบัน
     if (availabilityKeywords.includes(normalizedKeyword)) {
-      window.location.href = "room-search.html";
+      const currentTypeRooms = roomsForCurrentPage();
+
+      const availableRooms = currentTypeRooms.filter((room) => {
+        return (
+          room.is_active !== false &&
+          room.is_permanent_locked !== true &&
+          room.is_bookable !== false
+        );
+      });
+
+      renderRooms(availableRooms);
+
+      if (searchMessage) {
+        searchMessage.textContent = availableRooms.length
+          ? `พบห้องว่าง ${availableRooms.length} ห้อง`
+          : "ไม่พบห้องว่างในประเภทนี้";
+      }
+
       return;
     }
 
     const typeDestination = typeDestinations[normalizedKeyword];
+
     if (typeDestination) {
       window.location.href = typeDestination;
       return;
     }
 
     const roomNumber = keyword.match(/\d{3}/)?.[0];
+
     const matchedRoom = allRooms.find(
       (room) => String(room.room_number) === roomNumber,
     );
+
     if (matchedRoom) {
       const roomDestination =
         typeDestinations[normalizeSearchText(getTypeName(matchedRoom))];
+
       const currentPage =
         window.location.pathname.split("/").pop() || "room-types.html";
+
       if (roomDestination && roomDestination !== currentPage) {
         window.location.href = roomDestination;
         return;

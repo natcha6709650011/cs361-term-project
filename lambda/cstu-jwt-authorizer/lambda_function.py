@@ -19,32 +19,31 @@ def lambda_handler(event, context):
     try:
 
         # =========================
-        # Get Authorization header
+        # Get JWT from Cookie
         # =========================
 
         headers = event.get("headers") or {}
 
-        authorization = (
-            headers.get("authorization")
-            or headers.get("Authorization")
+        cookie_header = (
+            headers.get("cookie")
+            or headers.get("Cookie")
         )
 
-        if not authorization:
-            print("No Authorization header")
+        if not cookie_header:
+            print("No Cookie header")
             return deny()
 
-        # =========================
-        # Check Bearer token
-        # =========================
+        token = None
 
-        if not authorization.startswith("Bearer "):
-            print("Invalid Authorization format")
-            return deny()
+        for cookie in cookie_header.split(";"):
+            cookie = cookie.strip()
 
-        token = authorization[7:].strip()
+            if cookie.startswith("session_token="):
+                token = cookie[len("session_token="):].strip()
+                break
 
         if not token:
-            print("Empty token")
+            print("No session_token cookie")
             return deny()
 
         # =========================

@@ -40,6 +40,8 @@ loginForm.addEventListener('submit', async function (event) {
             {
                 method: 'POST',
 
+                credentials: 'include',
+
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -69,31 +71,12 @@ loginForm.addEventListener('submit', async function (event) {
         }
 
         // ==========================================
-        // ตรวจสอบว่ามี JWT กลับมาจริง
-        // ==========================================
-
-        if (!data.token) {
-
-            console.error(
-                'Login succeeded but token is missing:',
-                data
-            );
-
-            loginError.textContent =
-                'เข้าสู่ระบบสำเร็จ แต่ระบบไม่ได้รับ Token';
-
-            loginError.style.display = 'block';
-
-            return;
-        }
-
-        // ==========================================
         // Login สำเร็จ
         // ==========================================
 
         const user = data.user || {};
 
-        // JWT ที่ Lambda ของเราออกเอง
+        // JWT
         localStorage.setItem(
             'authToken',
             data.token
@@ -122,18 +105,8 @@ loginForm.addEventListener('submit', async function (event) {
         // ==========================================
 
         console.log(
-            'JWT received:',
-            data.token
-        );
-
-        console.log(
             'User:',
             user
-        );
-
-        console.log(
-            'Saved authToken:',
-            localStorage.getItem('authToken')
         );
 
         console.log(
@@ -159,6 +132,6 @@ loginForm.addEventListener('submit', async function (event) {
 
         loginError.style.display = 'block';
     }
-    
+
 
 });

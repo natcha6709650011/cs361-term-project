@@ -9,11 +9,8 @@ document.addEventListener("DOMContentLoaded", loadRoomDetail);
 // Room APIs are protected by the JWT authorizer.  Use the token saved by
 // login.js instead of trusting a username from the page or URL.
 function apiHeaders() {
-  const token = window.localStorage.getItem("authToken");
-
   return {
     Accept: "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 async function loadRoomPermission(roomNumber) {
@@ -26,13 +23,10 @@ async function loadRoomPermission(roomNumber) {
   rolesContainer.textContent = "กำลังตรวจสอบสิทธิ์...";
 
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/rooms/${encodeURIComponent(roomNumber)}/permission`,
-      {
-        method: "GET",
-        headers: apiHeaders(),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/rooms/${roomNumber}/permission`, {
+    credentials: 'include',
+    headers: apiHeaders()
+});
 
     const data = await response.json();
 

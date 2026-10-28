@@ -101,9 +101,9 @@ form.addEventListener('submit', async (event) => {
     }
 
     try {
-        const authToken = window.localStorage.getItem('authToken');
+        const isLoggedIn = window.localStorage.getItem('isLoggedIn') === 'true';
 
-        if (!authToken) {
+        if (!isLoggedIn) {
             const goLogin = confirm(
                 'กรุณาเข้าสู่ระบบก่อนค้นหาห้องว่าง\n\nต้องการไปหน้าเข้าสู่ระบบหรือไม่?'
             );
@@ -123,9 +123,7 @@ form.addEventListener('submit', async (event) => {
         const response = await fetch(
             `${apiBaseUrl}/rooms/available?${query.toString()}`,
             {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
+                credentials: 'include',
             }
         );
 

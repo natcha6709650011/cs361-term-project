@@ -7,6 +7,8 @@
     mode: "api",
     // The local dev proxy avoids browser CORS during local testing.
     baseUrl: window.location.port === "5501" ? "/api" : remoteBaseUrl,
-    getAccessToken: () => window.localStorage.getItem("authToken"),
+    // Authentication now relies on the HttpOnly session_token cookie sent via
+    // credentials: 'include'. No JWT is read from localStorage.
+    useCredentials: true,
   };
 })();

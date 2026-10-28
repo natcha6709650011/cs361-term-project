@@ -213,15 +213,13 @@
 const approverTab = header.querySelector('#approver-tab');
 const facilityAdminTab = header.querySelector('#facility-admin-tab');
 
-const authToken = localStorage.getItem('authToken');
+const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-if (authToken) {
+if (isLoggedIn) {
   fetch(
     'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions',
     {
-      headers: {
-        Authorization: `Bearer ${authToken}`
-      }
+      credentials: 'include'
     }
   )
     .then(response => {

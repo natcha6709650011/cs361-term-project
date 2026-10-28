@@ -13,9 +13,6 @@ const REMOTE_API_URL =
 const API_BASE_URL =
   window.location.port === '5501' ? '/api' : REMOTE_API_URL;
 
-// ต้องตรงกับที่ login.js เก็บ token ไว้
-const TOKEN_STORAGE_KEY = 'authToken';
-
 const $ = (id) => document.getElementById(id);
 
 /* ---------- Login guard ---------- */
@@ -26,7 +23,7 @@ const $ = (id) => document.getElementById(id);
 function ensureLoggedIn() {
   const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-  if (!loggedIn || !getToken() || !localStorage.getItem('tuUser')) {
+  if (!loggedIn || !localStorage.getItem('tuUser')) {
     window.location.replace('login.html');
     return false;
   }
@@ -34,24 +31,14 @@ function ensureLoggedIn() {
   return true;
 }
 
-/* ---------- Token / API ---------- */
-
-function getToken() {
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
-}
+/* ---------- API ---------- */
 
 async function api(path, options = {}) {
-  const jwt = getToken();
-
-  if (!jwt) {
-    throw new Error('กรุณาเข้าสู่ระบบก่อนใช้งานหน้านี้');
-  }
-
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
       ...(options.headers || {}),
     },
   });

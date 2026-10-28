@@ -34,15 +34,11 @@ function isUserLoggedIn() {
     const isLoggedIn =
         localStorage.getItem('isLoggedIn');
 
-    const authToken =
-        localStorage.getItem('authToken');
-
     const user =
         getCurrentUser();
 
     return (
         isLoggedIn === 'true' &&
-        !!authToken &&
         !!user
     );
 }

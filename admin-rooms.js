@@ -6,11 +6,11 @@
     const rowsEl = $("roomRows"), statusEl = $("adminStatus"), modal = $("roomModal"), menu = $("rowMenu");
     let rooms = [], current = null, mode = "view", menuRoom = null;
   
-    const token = localStorage.getItem("authToken");
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
     let user = null;
     try { user = JSON.parse(localStorage.getItem("tuUser")); } catch (e) {}
 
-    const isAdmin = !!token && !!user && String(user.role || "").toLowerCase() === "facility_admin";
+    const isAdmin = loggedIn && !!user && String(user.role || "").toLowerCase() === "facility_admin";
   
     const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     const onOff = (v) => `<span class="${v ? "on" : "off"}">${v ? "เปิด" : "ปิด"}</span>`;
@@ -22,7 +22,7 @@
     }
   
     async function api(url, options = {}) {
-      const res = await fetch(url, { ...options, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } });
+      const res = await fetch(url, { ...options, credentials: "include", headers: { "Content-Type": "application/json" } });
       let data = null; try { data = await res.json(); } catch (e) {}
       if (res.status === 401) { window.location.href = "login.html"; throw new Error("กรุณาเข้าสู่ระบบใหม่"); }
       if (res.status === 403) throw new Error("คุณไม่มีสิทธิ์จัดการห้อง");
@@ -197,11 +197,11 @@
     });
   
     fillFilters();
-    if (!token || !user) {
-      rowsEl.innerHTML = '<tr><td colspan="7" class="admin-empty">กรุณา<a href="login.html">เข้าสู่ระบบ</a>ด้วยบัญชีเจ้าหน้าที่ดูแลสถานที่ (facility_admin) ก่อน</td></tr>';
-    } else if (!isAdmin) {
-      rowsEl.innerHTML = '<tr><td colspan="7" class="admin-empty">หน้านี้สำหรับเจ้าหน้าที่ดูแลสถานที่เท่านั้น (บัญชีนี้ role: ' + esc(user.role || "-") + ')</td></tr>';
-    } else {
-      loadRooms();
-    }
+    if (!loggedIn || !user) {
+  rowsEl.innerHTML = '<tr><td colspan="7" class="admin-empty">กรุณา<a href="login.html">เข้าสู่ระบบ</a>ด้วยบัญชีเจ้าหน้าที่ดูแลสถานที่ (facility_admin) ก่อน</td></tr>';
+} else if (!isAdmin) {
+  rowsEl.innerHTML = '<tr><td colspan="7" class="admin-empty">หน้านี้สำหรับเจ้าหน้าที่ดูแลสถานที่เท่านั้น (บัญชีนี้ role: ' + esc(user.role || "-") + ')</td></tr>';
+} else {
+  loadRooms();
+}
   })();

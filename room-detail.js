@@ -80,6 +80,7 @@ async function loadRoomDetail() {
       `${API_BASE_URL}/rooms/${encodeURIComponent(roomNumber)}`,
       {
         method: "GET",
+        credentials: "include",
         headers: apiHeaders(),
       },
     );
@@ -264,6 +265,7 @@ async function loadRoomSchedule(roomNumber, selectedDate) {
     `${API_BASE_URL}/${encodeURIComponent(roomNumber)}/schedule?date=${encodeURIComponent(selectedDate)}`,
     {
       method: "GET",
+      credentials: "include",
       headers: apiHeaders(),
     },
   );

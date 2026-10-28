@@ -76,11 +76,6 @@ loginForm.addEventListener('submit', async function (event) {
 
         const user = data.user || {};
 
-        // JWT
-        localStorage.setItem(
-            'authToken',
-            data.token
-        );
 
         // ข้อมูล User
         localStorage.setItem(

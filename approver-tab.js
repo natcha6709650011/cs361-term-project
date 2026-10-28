@@ -3,10 +3,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!approverTab) return;
 
-    const token = localStorage.getItem("authToken");
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
 
     // ยังไม่ได้ login → ซ่อน
-    if (!token) {
+    if (!loggedIn) {
         approverTab.hidden = true;
         return;
     }
@@ -16,9 +16,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions",
             {
                 method: "GET",
+                credentials: "include",
                 headers: {
-                    "Accept": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Accept": "application/json"
                 }
             }
         );

@@ -60,18 +60,15 @@
   }
 
   async function apiRequest(path, options = {}) {
-    if (!config.baseUrl || typeof config.getAccessToken !== "function") {
+    if (!config.baseUrl) {
       throw new BookingServiceError("Booking API configuration is incomplete", { code: "AUTH_NOT_READY" });
     }
 
-    const token = await config.getAccessToken();
-    if (!token) throw new BookingServiceError("Please sign in again", { code: "AUTH_REQUIRED", status: 401 });
-
     const response = await fetch(`${config.baseUrl}${path}`, {
       ...options,
+      credentials: "include",
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${token}`,
         ...(options.body ? { "Content-Type": "application/json" } : {}),
         ...options.headers,
       },

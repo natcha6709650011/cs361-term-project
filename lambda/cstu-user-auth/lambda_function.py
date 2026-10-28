@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import time
 import urllib.request
@@ -141,18 +141,30 @@ MOCK_USERS = {
 # RESPONSE
 # =========================================================
 
-def response(status_code, body):
+def response(status_code, body, cookie=None):
+
+    headers = {
+        "Content-Type": "application/json",
+            "Application-Key": os.environ["TU_API_KEY"],
+        "Access-Control-Allow-Origin":
+            os.environ.get(
+                "FRONTEND_ORIGIN",
+                "*"
+            ),
+        "Access-Control-Allow-Headers":
+            "Content-Type,Authorization",
+        "Access-Control-Allow-Methods":
+            "OPTIONS,POST",
+        "Access-Control-Allow-Credentials":
+            "true"
+    }
+
+    if cookie:
+        headers["Set-Cookie"] = cookie
 
     return {
         "statusCode": status_code,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers":
-                "Content-Type,Authorization",
-            "Access-Control-Allow-Methods":
-                "OPTIONS,POST"
-        },
+        "headers": headers,
         "body": json.dumps(
             body,
             ensure_ascii=False
@@ -218,186 +230,90 @@ def parse_student_info(tu_data):
 
 def get_mock_user(username, password):
 
-    mock_user = MOCK_USERS.get(username)
+    user = MOCK_USERS.get(username)
 
-    if not mock_user:
+    if not user:
         return None
 
-    if mock_user["password"] != password:
-        return "INVALID_PASSWORD"
+    if user["password"] != password:
+        return None
 
-    return mock_user
+    return user
 
 
 # =========================================================
-# SAVE / UPDATE USER
+# TU API
 # =========================================================
 
-def save_user(user):
+def get_tu_user(username, password):
 
-    conn = None
+    # -----------------------------------------------------
+    # URL ของ TU API
+    # -----------------------------------------------------
+
+    url = os.environ.get(
+        "TU_API_URL",
+        ""
+    )
+
+    if not url:
+        raise Exception(
+            "TU_API_URL is not configured"
+        )
+
+    # -----------------------------------------------------
+    # Request
+    # -----------------------------------------------------
+
+    payload = json.dumps({
+        "UserName": username,
+        "PassWord": password
+    }).encode("utf-8")
+
+    request = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Application-Key": os.environ["TU_API_KEY"]
+        },
+        method="POST"
+    )
 
     try:
 
-        conn = pymysql.connect(
-            host=os.environ["DB_HOST"],
-            user=os.environ["DB_USER"],
-            password=os.environ["DB_PASSWORD"],
-            database=os.environ["DB_NAME"],
-            port=int(
-                os.environ.get(
-                    "DB_PORT",
-                    3306
-                )
-            ),
-            connect_timeout=10
-        )
+        with urllib.request.urlopen(
+            request,
+            timeout=10
+        ) as response_data:
 
-        with conn.cursor() as cursor:
+            raw_data = response_data.read()
 
-            cursor.execute(
-                """
-                SELECT user_id
-                FROM users
-                WHERE username = %s
-                LIMIT 1
-                """,
-                (user["username"],)
+            return json.loads(
+                raw_data.decode("utf-8")
             )
 
-            existing_user = cursor.fetchone()
-
-            if existing_user:
-
-                cursor.execute(
-                    """
-                    UPDATE users
-                    SET
-                        user_type = %s,
-                        displayname_th = %s,
-                        displayname_en = %s,
-                        email = %s,
-                        faculty = %s,
-                        program = %s,
-                        education_level = %s,
-                        program_type = %s,
-                        department = %s,
-                        organization = %s,
-                        tu_status = %s,
-                        status_id = %s,
-                        status_work = %s,
-                        status_emp = %s,
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE username = %s
-                    """,
-                    (
-                        user.get("user_type"),
-                        user.get("displayname_th"),
-                        user.get("displayname_en"),
-                        user.get("email"),
-                        user.get("faculty"),
-                        user.get("program"),
-                        user.get("education_level"),
-                        user.get("program_type"),
-                        user.get("department"),
-                        user.get("organization"),
-                        user.get("tu_status"),
-                        user.get("status_id"),
-                        user.get("status_work"),
-                        user.get("status_emp"),
-                        user.get("username")
-                    )
-                )
-
-                print(
-                    "User updated:",
-                    user["username"]
-                )
-
-            else:
-
-                cursor.execute(
-                    """
-                    INSERT INTO users
-                    (
-                        username,
-                        user_type,
-                        displayname_th,
-                        displayname_en,
-                        email,
-                        faculty,
-                        program,
-                        education_level,
-                        program_type,
-                        department,
-                        organization,
-                        tu_status,
-                        status_id,
-                        status_work,
-                        status_emp
-                    )
-                    VALUES
-                    (
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s
-                    )
-                    """,
-                    (
-                        user.get("username"),
-                        user.get("user_type"),
-                        user.get("displayname_th"),
-                        user.get("displayname_en"),
-                        user.get("email"),
-                        user.get("faculty"),
-                        user.get("program"),
-                        user.get("education_level"),
-                        user.get("program_type"),
-                        user.get("department"),
-                        user.get("organization"),
-                        user.get("tu_status"),
-                        user.get("status_id"),
-                        user.get("status_work"),
-                        user.get("status_emp")
-                    )
-                )
-
-                print(
-                    "New user inserted:",
-                    user["username"]
-                )
-
-            conn.commit()
-
-    except Exception as db_error:
+    except urllib.error.HTTPError as e:
 
         print(
-            "RDS ERROR:",
-            str(db_error)
+            "TU API HTTP Error:",
+            e.code
         )
 
-        raise
+        return None
 
-    finally:
+    except Exception as e:
 
-        if conn:
-            conn.close()
+        print(
+            "TU API Error:",
+            str(e)
+        )
+
+        return None
 
 
 # =========================================================
-# GET USER FROM DB
+# GET USER FROM DATABASE
 # =========================================================
 
 def get_user_from_db(username):
@@ -414,11 +330,11 @@ def get_user_from_db(username):
             port=int(
                 os.environ.get(
                     "DB_PORT",
-                    3306
+                    "3306"
                 )
             ),
-            connect_timeout=10,
-            cursorclass=pymysql.cursors.DictCursor
+            cursorclass=
+                pymysql.cursors.DictCursor
         )
 
         with conn.cursor() as cursor:
@@ -426,7 +342,6 @@ def get_user_from_db(username):
             cursor.execute(
                 """
                 SELECT
-                    user_id,
                     username,
                     user_type,
                     displayname_th,
@@ -450,6 +365,113 @@ def get_user_from_db(username):
             )
 
             return cursor.fetchone()
+
+    finally:
+
+        if conn:
+            conn.close()
+
+
+# =========================================================
+# SAVE / UPDATE USER
+# =========================================================
+
+def save_user_to_db(user):
+
+    conn = None
+
+    try:
+
+        conn = pymysql.connect(
+            host=os.environ["DB_HOST"],
+            user=os.environ["DB_USER"],
+            password=os.environ["DB_PASSWORD"],
+            database=os.environ["DB_NAME"],
+            port=int(
+                os.environ.get(
+                    "DB_PORT",
+                    "3306"
+                )
+            ),
+            cursorclass=
+                pymysql.cursors.DictCursor
+        )
+
+        with conn.cursor() as cursor:
+
+            cursor.execute(
+                """
+                INSERT INTO users (
+                    username,
+                    user_type,
+                    displayname_th,
+                    displayname_en,
+                    email,
+                    faculty,
+                    program,
+                    education_level,
+                    program_type,
+                    department,
+                    organization,
+                    tu_status,
+                    status_id,
+                    status_work,
+                    status_emp
+                )
+                VALUES (
+                    %s,%s,%s,%s,%s,
+                    %s,%s,%s,%s,%s,
+                    %s,%s,%s,%s,%s
+                )
+                ON DUPLICATE KEY UPDATE
+                    user_type = VALUES(user_type),
+                    displayname_th =
+                        VALUES(displayname_th),
+                    displayname_en =
+                        VALUES(displayname_en),
+                    email =
+                        VALUES(email),
+                    faculty =
+                        VALUES(faculty),
+                    program =
+                        VALUES(program),
+                    education_level =
+                        VALUES(education_level),
+                    program_type =
+                        VALUES(program_type),
+                    department =
+                        VALUES(department),
+                    organization =
+                        VALUES(organization),
+                    tu_status =
+                        VALUES(tu_status),
+                    status_id =
+                        VALUES(status_id),
+                    status_work =
+                        VALUES(status_work),
+                    status_emp =
+                        VALUES(status_emp)
+                """,
+                (
+                    user["username"],
+                    user["user_type"],
+                    user["displayname_th"],
+                    user["displayname_en"],
+                    user["email"],
+                    user["faculty"],
+                    user["program"],
+                    user["education_level"],
+                    user["program_type"],
+                    user["department"],
+                    user["organization"],
+                    user["tu_status"],
+                    user["status_id"],
+                    user["status_work"],
+                    user["status_emp"]
+                )
+            )
+
+            conn.commit()
 
     finally:
 
@@ -589,98 +611,32 @@ def lambda_handler(event, context):
                 }
             )
 
-        print(
-            "Login attempt:",
-            username
-        )
-
 
         # =================================================
-        # 1. ตรวจสอบ MOCK USER ก่อน
+        # ตรวจสอบ MOCK USER
         # =================================================
 
-        mock_result = get_mock_user(
+        mock_user = get_mock_user(
             username,
             password
         )
 
-        if mock_result == "INVALID_PASSWORD":
+        if mock_user:
 
-            return response(
-                401,
-                {
-                    "status": False,
-                    "message":
-                        "Invalid username or password"
-                }
-            )
-
-
-        # =================================================
-        # 2. ถ้าเป็น MOCK USER
-        #    ไม่ต้องเรียก TU API
-        # =================================================
-
-        if mock_result:
-
-            user = mock_result.copy()
-
-            print(
-                "Using MOCK user:",
-                username
-            )
-
-            save_user(user)
+            user = mock_user
 
         else:
 
-            # =================================================
-            # 3. ไม่ใช่ mock -> เรียก TU API จริง
-            # =================================================
+            # =============================================
+            # เรียก TU API
+            # =============================================
 
-            tu_api_url = os.environ["TU_API_URL"]
-            tu_api_key = os.environ["TU_API_KEY"]
-
-            request_data = json.dumps(
-                {
-                    "UserName": username,
-                    "PassWord": password
-                }
-            ).encode("utf-8")
-
-            request = urllib.request.Request(
-                tu_api_url,
-                data=request_data,
-                method="POST"
+            tu_data = get_tu_user(
+                username,
+                password
             )
 
-            request.add_header(
-                "Content-Type",
-                "application/json"
-            )
-
-            request.add_header(
-                "Application-Key",
-                tu_api_key
-            )
-
-            try:
-
-                with urllib.request.urlopen(
-                    request,
-                    timeout=10
-                ) as res:
-
-                    tu_data = json.loads(
-                        res.read().decode("utf-8")
-                    )
-
-            except urllib.error.HTTPError as api_error:
-
-                print(
-                    "TU API HTTP ERROR:",
-                    api_error.code
-                )
+            if not tu_data:
 
                 return response(
                     401,
@@ -691,57 +647,15 @@ def lambda_handler(event, context):
                     }
                 )
 
-            except Exception as api_error:
 
-                print(
-                    "TU API ERROR:",
-                    str(api_error)
+            # =============================================
+            # แปลงข้อมูลนักศึกษา
+            # =============================================
+
+            education_info = \
+                parse_student_info(
+                    tu_data
                 )
-
-                return response(
-                    500,
-                    {
-                        "status": False,
-                        "message":
-                            "Unable to connect to TU API"
-                    }
-                )
-
-
-            print(
-                "TU API response:",
-                tu_data
-            )
-
-
-            # =================================================
-            # ตรวจสอบ TU API Login
-            # =================================================
-
-            if not tu_data.get("status"):
-
-                return response(
-                    401,
-                    {
-                        "status": False,
-                        "message":
-                            tu_data.get(
-                                "message",
-                                "Invalid username or password"
-                            )
-                    }
-                )
-
-
-            # =================================================
-            # TU API -> Student
-            # =================================================
-
-            user_type = "student"
-
-            parsed = parse_student_info(
-                tu_data
-            )
 
 
             user = {
@@ -753,7 +667,7 @@ def lambda_handler(event, context):
                     ),
 
                 "user_type":
-                    user_type,
+                    "student",
 
                 "displayname_th":
                     tu_data.get(
@@ -776,19 +690,19 @@ def lambda_handler(event, context):
                     ),
 
                 "program":
-                    parsed.get(
+                    education_info[
                         "program"
-                    ),
+                    ],
 
                 "education_level":
-                    parsed.get(
+                    education_info[
                         "education_level"
-                    ),
+                    ],
 
                 "program_type":
-                    parsed.get(
+                    education_info[
                         "program_type"
-                    ),
+                    ],
 
                 "department":
                     tu_data.get(
@@ -807,36 +721,26 @@ def lambda_handler(event, context):
 
                 "status_id":
                     tu_data.get(
-                        "statusid"
+                        "status_id"
                     ),
 
                 "status_work":
-                    tu_data.get(
-                        "StatusWork"
-                    ),
+                    None,
 
                 "status_emp":
-                    tu_data.get(
-                        "StatusEmp"
-                    )
+                    None
             }
 
 
-            print(
-                "Parsed student:",
+            # =============================================
+            # บันทึกข้อมูล User
+            # =============================================
+
+            save_user_to_db(
                 user
             )
 
 
-            # =================================================
-            # เก็บข้อมูล API ลง DB
-            # =================================================
-
-            save_user(user)
-
-
-        # =================================================
-        # อ่านข้อมูลล่าสุดจาก DB
         # =================================================
         # DB เป็น source of truth สำหรับสิทธิ์
         # =================================================
@@ -900,6 +804,17 @@ def lambda_handler(event, context):
         # Response
         # =================================================
 
+        session_cookie = (
+            "session_token="
+            + token
+            + "; "
+            + "HttpOnly; "
+            + "Secure; "
+            + "SameSite=None; "
+            + "Path=/; "
+            + "Max-Age=604800"
+        )
+
         return response(
             200,
             {
@@ -907,9 +822,6 @@ def lambda_handler(event, context):
 
                 "message":
                     "Login successful",
-
-                "token":
-                    token,
 
                 "user": {
 
@@ -961,7 +873,8 @@ def lambda_handler(event, context):
                     "status_emp":
                         db_user["status_emp"]
                 }
-            }
+            },
+            cookie=session_cookie
         )
 
 
@@ -980,3 +893,5 @@ def lambda_handler(event, context):
                     "Internal server error"
             }
         )
+
+

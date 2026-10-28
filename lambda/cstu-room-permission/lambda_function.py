@@ -321,11 +321,22 @@ def deny():
 
 def get_token(event):
     headers = event.get("headers") or {}
-    authorization = headers.get("authorization") or headers.get("Authorization")
-    if not authorization or not authorization.startswith("Bearer "):
-        return None
-    return authorization[7:].strip() or None
 
+    cookie_header = (
+        headers.get("cookie")
+        or headers.get("Cookie")
+    )
+
+    if not cookie_header:
+        return None
+
+    for cookie in cookie_header.split(";"):
+        cookie = cookie.strip()
+
+        if cookie.startswith("session_token="):
+            return cookie[len("session_token="):].strip() or None
+
+    return None
 
 def verify_token(token):
     import jwt  

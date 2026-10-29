@@ -280,6 +280,8 @@
     });
   });
 </script>
+
+<script>
 async function loadRooms() {
   try {
     const response = await fetch(ROOMS_API_URL, {
@@ -306,5 +308,6 @@ async function loadRooms() {
 }
 
 loadRooms();
+</script>
   </body>
 </html>

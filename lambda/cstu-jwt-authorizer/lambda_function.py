@@ -14,7 +14,6 @@ EXPECTED_KID = "d47c0efedabc6b33"
 
 def lambda_handler(event, context):
 
-    print("EVENT:", json.dumps(event))
 
     try:
 
@@ -59,7 +58,6 @@ def lambda_handler(event, context):
 
         unverified_header = jwt.get_unverified_header(token)
 
-        print("JWT header:", unverified_header)
 
         if unverified_header.get("kid") != EXPECTED_KID:
             print("Invalid kid")
@@ -76,10 +74,10 @@ def lambda_handler(event, context):
         payload = jwt.decode(
             token,
             public_key,
-            algorithms=["RS256"]
+            algorithms=["RS256"],
+            options={"require": ["exp"]}
         )
 
-        print("JWT payload:", payload)
 
         # =========================
         # Check expiration
@@ -102,9 +100,6 @@ def lambda_handler(event, context):
         # protected APIs.
         user_type = payload.get("user_type")
 
-        print("Authenticated user:", username)
-        print("Role:", role)
-        print("Type:", user_type)
 
         # =========================
         # Allow
@@ -123,12 +118,12 @@ def lambda_handler(event, context):
 
     except jwt.InvalidTokenError as e:
 
-        print("Invalid JWT:", str(e))
+        print("Invalid JWT")
         return deny()
 
     except Exception as e:
 
-        print("ERROR:", str(e))
+        print("Authorizer internal error")
         return deny()
 
 
@@ -157,3 +152,8 @@ def deny():
     return {
         "isAuthorized": False
     }
+
+
+
+
+

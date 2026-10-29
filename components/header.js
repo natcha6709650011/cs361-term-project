@@ -210,9 +210,35 @@ function setupDropdown() {
 // Logout
 // ------------------------------------------------------
 
-function logoutUser() {
 
-    localStorage.removeItem("tuUser");
 
-    window.location.href = "login.html";
+async function logoutUser() {
+    const AUTH_API_URL =
+        "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/auth/logout";
+
+    try {
+        const response = await fetch(AUTH_API_URL, {
+            method: "POST",
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            console.error(
+                "Logout API failed:",
+                response.status,
+                await response.text()
+            );
+        } else {
+            console.log("Logout API succeeded:", response.status);
+        }
+    } catch (error) {
+        console.error("Logout network error:", error);
+    } finally {
+        localStorage.removeItem("tuUser");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("username");
+        localStorage.removeItem("isLoggedIn");
+
+        window.location.href = "login.html";
+    }
 }

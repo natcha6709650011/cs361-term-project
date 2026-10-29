@@ -153,16 +153,29 @@
     event.preventDefault();
     resetFormMessage();
 
-    const purpose = getElement("#booking-purpose")?.value.trim() || "";
-    const participantInput = getElement("#booking-participants");
-    const participants = Number(participantInput?.value);
+    // ต้อง Login ก่อนส่งคำขอจองห้อง
+    const storedUser = localStorage.getItem("tuUser");
 
-    if (!purpose) {
-      showFormMessage("กรุณาระบุวัตถุประสงค์การใช้ห้อง");
-      getElement("#booking-purpose")?.focus();
-      return;
+    if (!storedUser) {
+    const goLogin = confirm(
+        "กรุณาเข้าสู่ระบบก่อนจองห้อง\n\nต้องการไปหน้าเข้าสู่ระบบหรือไม่?"
+    );
+
+    if (goLogin) {
+        window.location.href = "login.html";
     }
 
+    return;
+}
+const purpose = getElement("#booking-purpose")?.value.trim() || "";
+const participantInput = getElement("#booking-participants");
+const participants = Number(participantInput?.value);
+
+if (!purpose) {
+    showFormMessage("กรุณาระบุวัตถุประสงค์การใช้ห้อง");
+    getElement("#booking-purpose")?.focus();
+    return;
+}
     if (!Number.isInteger(participants) || participants < 1) {
       showFormMessage("กรุณาระบุจำนวนผู้เข้าร่วมอย่างน้อย 1 คน");
       participantInput?.focus();

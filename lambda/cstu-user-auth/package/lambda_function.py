@@ -582,6 +582,31 @@ def create_token(user):
 def lambda_handler(event, context):
 
     try:
+                # Handle logout
+        http_method = event.get("httpMethod", "")
+        request_path = event.get("path", "")
+
+        if event.get("requestContext", {}).get("http", {}).get("method"):
+            http_method = event["requestContext"]["http"]["method"]
+
+        if event.get("rawPath"):
+            request_path = event["rawPath"]
+
+        if http_method == "POST" and request_path.rstrip("/").endswith("/logout"):
+            cookie = (
+                "session_token=; "
+                "HttpOnly; Secure; SameSite=None; "
+                "Path=/; Max-Age=0"
+            )
+
+            return response(
+                200,
+                {
+                    "status": True,
+                    "message": "Logged out"
+                },
+                cookie=cookie
+            )
 
         # =================================================
         # รับ username / password

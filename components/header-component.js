@@ -149,17 +149,34 @@
       const logoutButton =
         userMenu.querySelector('.logout-button');
 
-      logoutButton.addEventListener('click', () => {
+      
+logoutButton.addEventListener('click', async () => {
+    const AUTH_API_URL =
+        "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/auth/logout";
 
-        // ลบข้อมูล Login ทั้งหมด เพื่อไม่ให้ JWT หรือสถานะเดิมค้างอยู่
+    try {
+        const response = await fetch(AUTH_API_URL, {
+            method: "POST",
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            console.error("Logout API failed:", response.status);
+        } else {
+            console.log("Logout API succeeded:", response.status);
+        }
+    } catch (error) {
+        console.error("Logout network error:", error);
+    } finally {
         localStorage.removeItem('tuUser');
         localStorage.removeItem('authToken');
         localStorage.removeItem('username');
         localStorage.removeItem('isLoggedIn');
 
-        // กลับไป Login เพื่อรับ JWT ชุดใหม่
         window.location.href = 'login.html';
-      });
+    }
+});
+
 
       // ปิด dropdown เมื่อคลิกข้างนอก
       document.addEventListener('click', (event) => {

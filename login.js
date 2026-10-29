@@ -1,4 +1,4 @@
-const loginForm = document.getElementById('loginForm');
+﻿const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 const API_BASE_URL = window.location.port === '5501'
     ? '/api/v1'
@@ -15,25 +15,21 @@ loginForm.addEventListener('submit', async function (event) {
     const password =
         document.getElementById('password').value;
 
-    // ตรวจสอบข้อมูล
+    // à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸‚à¹‰à¸­à¸¡à¸¹à¸¥
     if (!username || !password) {
 
         loginError.textContent =
-            'กรุณากรอก username และ password';
+            'à¸à¸£à¸¸à¸“à¸²à¸à¸£à¸­à¸ username à¹à¸¥à¸° password';
 
         loginError.style.display = 'block';
 
         return;
     }
 
-    // ซ่อน error เดิม
+    // à¸‹à¹ˆà¸­à¸™ error à¹€à¸”à¸´à¸¡
     loginError.style.display = 'none';
 
     try {
-
-        console.log('Sending login request:', {
-            username: username
-        });
 
         const response = await fetch(
             LOGIN_API_URL,
@@ -55,15 +51,12 @@ loginForm.addEventListener('submit', async function (event) {
 
         const data = await response.json();
 
-        console.log('API Status:', response.status);
-        console.log('API Response:', data);
-
-        // Login ไม่สำเร็จ
+        // Login à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ
         if (!response.ok || !data.status) {
 
             loginError.textContent =
                 data.message ||
-                'Username หรือ Password ไม่ถูกต้อง';
+                'Username à¸«à¸£à¸·à¸­ Password à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡';
 
             loginError.style.display = 'block';
 
@@ -71,13 +64,13 @@ loginForm.addEventListener('submit', async function (event) {
         }
 
         // ==========================================
-        // Login สำเร็จ
+        // Login à¸ªà¸³à¹€à¸£à¹‡à¸ˆ
         // ==========================================
 
         const user = data.user || {};
 
 
-        // ข้อมูล User
+        // à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ User
         localStorage.setItem(
             'tuUser',
             JSON.stringify(user)
@@ -89,7 +82,7 @@ loginForm.addEventListener('submit', async function (event) {
             user.username || username
         );
 
-        // สถานะ Login
+        // à¸ªà¸–à¸²à¸™à¸° Login
         localStorage.setItem(
             'isLoggedIn',
             'true'
@@ -99,18 +92,8 @@ loginForm.addEventListener('submit', async function (event) {
         // Debug
         // ==========================================
 
-        console.log(
-            'User:',
-            user
-        );
-
-        console.log(
-            'Saved tuUser:',
-            localStorage.getItem('tuUser')
-        );
-
         // ==========================================
-        // ไปหน้าแรก
+        // à¹„à¸›à¸«à¸™à¹‰à¸²à¹à¸£à¸
         // ==========================================
 
         window.location.href = 'index.html';
@@ -123,7 +106,7 @@ loginForm.addEventListener('submit', async function (event) {
         );
 
         loginError.textContent =
-            'ไม่สามารถเชื่อมต่อระบบ Login ได้';
+            'à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¹€à¸Šà¸·à¹ˆà¸­à¸¡à¸•à¹ˆà¸­à¸£à¸°à¸šà¸š Login à¹„à¸”à¹‰';
 
         loginError.style.display = 'block';
     }

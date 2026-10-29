@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import time
 import urllib.request
@@ -145,7 +145,6 @@ def response(status_code, body, cookie=None):
 
     headers = {
         "Content-Type": "application/json",
-            "Application-Key": os.environ["TU_API_KEY"],
         "Access-Control-Allow-Origin":
             os.environ.get(
                 "FRONTEND_ORIGIN",
@@ -245,25 +244,16 @@ def get_mock_user(username, password):
 # TU API
 # =========================================================
 
+
 def get_tu_user(username, password):
-
-    # -----------------------------------------------------
-    # URL ของ TU API
-    # -----------------------------------------------------
-
-    url = os.environ.get(
-        "TU_API_URL",
-        ""
-    )
+    url = os.environ.get("TU_API_URL", "")
+    tu_api_key = os.environ.get("TU_API_KEY", "")
 
     if not url:
-        raise Exception(
-            "TU_API_URL is not configured"
-        )
+        raise Exception("TU_API_URL is not configured")
 
-    # -----------------------------------------------------
-    # Request
-    # -----------------------------------------------------
+    if not tu_api_key:
+        raise Exception("TU_API_KEY is not configured")
 
     payload = json.dumps({
         "UserName": username,
@@ -275,42 +265,23 @@ def get_tu_user(username, password):
         data=payload,
         headers={
             "Content-Type": "application/json",
-            "Application-Key": os.environ["TU_API_KEY"]
+            "Application-Key": tu_api_key
         },
         method="POST"
     )
 
     try:
-
-        with urllib.request.urlopen(
-            request,
-            timeout=10
-        ) as response_data:
-
+        with urllib.request.urlopen(request, timeout=10) as response_data:
             raw_data = response_data.read()
-
-            return json.loads(
-                raw_data.decode("utf-8")
-            )
+            return json.loads(raw_data.decode("utf-8"))
 
     except urllib.error.HTTPError as e:
-
-        print(
-            "TU API HTTP Error:",
-            e.code
-        )
-
+        print("TU API HTTP Error:", e.code)
         return None
 
     except Exception as e:
-
-        print(
-            "TU API Error:",
-            str(e)
-        )
-
+        print("TU API Error:", str(e))
         return None
-
 
 # =========================================================
 # GET USER FROM DATABASE
@@ -583,6 +554,31 @@ def create_token(user):
 def lambda_handler(event, context):
 
     try:
+                # Handle logout
+        http_method = event.get("httpMethod", "")
+        request_path = event.get("path", "")
+
+        if event.get("requestContext", {}).get("http", {}).get("method"):
+            http_method = event["requestContext"]["http"]["method"]
+
+        if event.get("rawPath"):
+            request_path = event["rawPath"]
+
+        if http_method == "POST" and request_path.rstrip("/").endswith("/logout"):
+            cookie = (
+                "session_token=; "
+                "HttpOnly; Secure; SameSite=None; "
+                "Path=/; Max-Age=0"
+            )
+
+            return response(
+                200,
+                {
+                    "status": True,
+                    "message": "Logged out"
+                },
+                cookie=cookie
+            )
 
         # =================================================
         # รับ username / password
@@ -893,5 +889,3 @@ def lambda_handler(event, context):
                     "Internal server error"
             }
         )
-
-

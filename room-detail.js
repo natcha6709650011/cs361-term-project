@@ -259,6 +259,11 @@ async function loadRoomSchedule(roomNumber, selectedDate) {
     return;
   }
 
+  if (currentRoom?.isClosed) {
+    renderClosedSchedule();
+    return;
+  }
+
   setScheduleMessage("loading", "กำลังโหลด", "กำลังตรวจสอบสถานะห้อง");
 
   const response = await fetch(
@@ -283,13 +288,19 @@ async function loadRoomSchedule(roomNumber, selectedDate) {
 
 function setScheduleMessage(state, title, description) {
   document.querySelectorAll("[data-time-slot]").forEach((slot) => {
-    slot.classList.remove("is-booked", "is-pending", "is-free", "is-loading", "is-error");
+    slot.classList.remove("is-booked", "is-pending", "is-free", "is-loading", "is-error", "is-closed");
     slot.classList.add(`is-${state}`);
     const statusTitle = slot.querySelector("b");
     const statusDescription = slot.querySelector("small");
     if (statusTitle) statusTitle.textContent = title;
     if (statusDescription) statusDescription.textContent = description;
     updateScheduleSlotAction(slot, state);
+  });
+}
+
+function renderClosedSchedule() {
+  document.querySelectorAll("[data-time-slot]").forEach((slot) => {
+    updateScheduleSlot(slot, "closed");
   });
 }
 
@@ -333,6 +344,7 @@ function updateScheduleSlot(slot, status) {
     "is-free",
     "is-loading",
     "is-error",
+    "is-closed",
   );
 
   slot.classList.add(`is-${status}`);
@@ -340,7 +352,12 @@ function updateScheduleSlot(slot, status) {
   const statusTitle = slot.querySelector("b");
   const statusDescription = slot.querySelector("small");
 
-  if (status === "booked") {
+  if (status === "closed") {
+    if (statusTitle) statusTitle.textContent = "ปิด";
+    if (statusDescription) {
+      statusDescription.textContent = "ปิดการจองห้อง";
+    }
+  } else if (status === "booked") {
     if (statusTitle) statusTitle.textContent = "จองแล้ว";
     if (statusDescription) {
       statusDescription.textContent = "มีการใช้งาน";
@@ -516,6 +533,9 @@ function displayRoomDetail(room) {
     building,
     size: roomSize,
     imageUrl,
+    isClosed: [room?.is_bookable, room?.is_active].some(
+      (value) => value === false || value === 0 || value === "0",
+    ),
   };
 
   // =========================

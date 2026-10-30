@@ -1,5 +1,5 @@
 (function () {
-    const API_BASE_URL = "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1";
+    const API_BASE_URL = "/api";
   
     // คอลัมน์ตามกลุ่มผู้ใช้ใน room_policies (teacher + staff รวมเป็น employee แล้ว)
     const COLUMNS = [
@@ -50,6 +50,7 @@
       try {
         // สิทธิ์อ่านจากฐานข้อมูล เดียวกับที่ header ใช้แสดงเมนู "จัดการห้อง"
         const perm = await getJson("/me/permissions");
+        
         if (!(perm && perm.user && perm.user.is_facility_admin === true)) {
           return showMessage("หน้านี้สำหรับเจ้าหน้าที่ดูแลสถานที่เท่านั้น");
         }

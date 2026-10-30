@@ -410,8 +410,11 @@ async function updateApproverMenu() {
     if (!loggedIn) return;
 
     try {
+        // Local (dev-server.js): /api/v1/<*> | Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
+        const apiBaseUrl = window.location.port === "5501" ? "/api/v1" : "/api";
+
         const response = await fetch(
-            "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions",
+            `${apiBaseUrl}/me/permissions`,
             {
                 credentials: "include"
             }

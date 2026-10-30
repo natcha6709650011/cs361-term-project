@@ -151,8 +151,9 @@
 
       
 logoutButton.addEventListener('click', async () => {
+    // Local (dev-server.js): /api/v1/<*> | Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
     const AUTH_API_URL =
-        "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/auth/logout";
+        (window.location.port === "5501" ? "/api/v1" : "/api") + "/auth/logout";
 
     try {
         const response = await fetch(AUTH_API_URL, {
@@ -233,8 +234,9 @@ const facilityAdminTab = header.querySelector('#facility-admin-tab');
 const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
 if (isLoggedIn) {
+  // Local (dev-server.js): /api/v1/<*> | Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
   fetch(
-    'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/me/permissions',
+    (window.location.port === '5501' ? '/api/v1' : '/api') + '/me/permissions',
     {
       credentials: 'include'
     }

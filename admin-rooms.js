@@ -1,6 +1,8 @@
 (function () {
-    const ROOMS_LIST_URL = "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/rooms";
-    const MANAGE_BASE_URL = "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com"; // PATCH /rooms/{id}[/status]
+    // Local (dev-server.js): /api/v1/<*> | Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
+    const API_BASE_URL = window.location.port === "5501" ? "/api/v1" : "/api";
+    const ROOMS_LIST_URL = `${API_BASE_URL}/rooms`;
+    const MANAGE_BASE_URL = API_BASE_URL; // PATCH /rooms/{id}[/status]
   
     const $ = (id) => document.getElementById(id);
     const rowsEl = $("roomRows"), statusEl = $("adminStatus"), modal = $("roomModal"), menu = $("rowMenu");

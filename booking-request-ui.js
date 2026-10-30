@@ -64,9 +64,11 @@
 
   function updateSummary() {
     const purpose = getElement("#booking-purpose")?.value.trim();
+    const note = getElement("#booking-note")?.value.trim();
     const participants = getElement("#booking-participants")?.value;
 
     setText("[data-summary-purpose]", purpose || "-");
+    setText("[data-summary-note]", note || "-");
     setText(
       "[data-summary-participants]",
       participants ? `${participants} คน` : "-",
@@ -79,6 +81,7 @@
     const displayDate = formatDate(date);
     const roomImage = getElement("[data-booking-room-image]");
     const purpose = getElement("#booking-purpose");
+    const note = getElement("#booking-note");
     const participants = getElement("#booking-participants");
 
     document.querySelectorAll("[data-booking-room-name]").forEach((element) => {
@@ -101,6 +104,9 @@
     }
 
     if (purpose) purpose.value = "";
+    if (note) {
+      note.value = "";
+    }
     if (participants) {
       participants.value = "";
       participants.max = room.capacity || "";
@@ -168,6 +174,7 @@
     return;
 }
 const purpose = getElement("#booking-purpose")?.value.trim() || "";
+const note = getElement("#booking-note")?.value.trim() || "";
 const participantInput = getElement("#booking-participants");
 const participants = Number(participantInput?.value);
 
@@ -201,6 +208,7 @@ if (!purpose) {
         startTime: bookingContext.startTime,
         endTime: bookingContext.endTime,
         purpose,
+        note,
         participants,
       });
 
@@ -254,6 +262,9 @@ if (!purpose) {
     form.addEventListener("submit", handleSubmit);
     getElement("#booking-purpose")?.addEventListener("input", (event) => {
       setText("[data-purpose-count]", String(event.target.value.length));
+      updateSummary();
+    });
+    getElement("#booking-note")?.addEventListener("change", () => {
       updateSummary();
     });
     getElement("#booking-participants")?.addEventListener("input", updateSummary);

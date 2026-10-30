@@ -167,6 +167,7 @@
     setText("[data-detail-time]", `${booking.startTime} - ${booking.endTime}`);
     setText("[data-detail-type]", booking.roomType || "ไม่ระบุ");
     setText("[data-detail-purpose]", booking.purpose);
+    setText("[data-detail-note]", booking.note || "-");
     setText("[data-detail-participants]", `${booking.participants} คน`);
 
     const status = document.querySelector("[data-detail-status]");
@@ -208,6 +209,7 @@
     setText("[data-edit-room]", booking.room);
     syncDatePicker("#edit-booking-date", booking.date);
     document.querySelector("#edit-booking-purpose").value = booking.purpose;
+    document.querySelector("#edit-booking-note").value = booking.note || "";
     document.querySelector("#edit-booking-participants").value = booking.participants;
     syncTimePicker("#edit-booking-start", booking.startTime);
     syncTimePicker("#edit-booking-end", booking.endTime);
@@ -292,6 +294,7 @@
       }
 
       const purpose = document.querySelector("#edit-booking-purpose").value.trim();
+      const note = document.querySelector("#edit-booking-note").value.trim();
       const participants = Number(document.querySelector("#edit-booking-participants").value);
 
       if (!purpose || !Number.isInteger(participants) || participants < 1) {
@@ -313,6 +316,7 @@
           startTime,
           endTime,
           purpose,
+          note,
           participants,
         });
         const index = bookingData.findIndex((item) => item.id === result.booking.id);

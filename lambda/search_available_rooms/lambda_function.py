@@ -27,6 +27,7 @@ def get_query_parameters(event):
         "end_time": query.get("endTime"),
         "min_capacity": query.get("minCapacity"),
         "room_type": query.get("roomType"),
+        "amenities": query.get("amenities"),
     }
 
 
@@ -38,6 +39,7 @@ def validate_input(params):
     end_time_value = params["end_time"]
     min_capacity_value = params["min_capacity"]
     room_type_value = params["room_type"]
+    amenities_value = params["amenities"]
 
     # -----------------------------
     # Date - optional
@@ -123,6 +125,28 @@ def validate_input(params):
         except (ValueError, TypeError):
             errors["roomType"] = "ประเภทห้องไม่ถูกต้อง"
 
+    # -----------------------------
+    # Amenities - optional comma-separated list
+    # Each selected amenity must be present in a matching room.
+    # -----------------------------
+    amenities = []
+
+    if amenities_value:
+        allowed_amenities = {
+            "โปรเจคเตอร์",
+            "คอมพิวเตอร์",
+            "ทีวี",
+            "ปลั๊กไฟ",
+        }
+        amenities = [
+            item.strip()
+            for item in str(amenities_value).split(",")
+            if item.strip()
+        ]
+
+        if not amenities or any(item not in allowed_amenities for item in amenities):
+            errors["amenities"] = "รายการอุปกรณ์ไม่ถูกต้อง"
+
     if errors:
         return errors, None
 
@@ -132,6 +156,7 @@ def validate_input(params):
         "end_time": end_time,
         "min_capacity": min_capacity,
         "room_type": room_type,
+        "amenities": amenities,
     }
 
 
@@ -201,6 +226,18 @@ def search_available_rooms(connection, params):
         )
 
         values.append(params["room_type"])
+
+    # ----------------------------------------
+    # Required amenities
+    # JSON_SEARCH checks the `item` of every amenities_json element.
+    # Adding one condition per selected item means the room must have all of them.
+    # ----------------------------------------
+
+    for amenity in params["amenities"]:
+        conditions.append(
+            "JSON_SEARCH(r.amenities_json, 'one', %s, NULL, '$[*].item') IS NOT NULL"
+        )
+        values.append(amenity)
 
     # ----------------------------------------
     # Booking availability

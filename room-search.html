@@ -240,6 +240,18 @@
           </svg>
           ค้นหาห้องว่าง
         </button>
+        <fieldset class="form-field equipment-filter" aria-describedby="equipment-filter-help">
+          <legend>อุปกรณ์ที่ต้องการ <em>(ถ้ามี)</em></legend>
+          <p id="equipment-filter-help" class="equipment-filter__help">
+            เลือกได้มากกว่า 1 รายการ ระบบจะแสดงเฉพาะห้องที่มีอุปกรณ์ครบ
+          </p>
+          <div class="equipment-filter__options">
+            <label><input type="checkbox" name="amenities" value="โปรเจคเตอร์" /> โปรเจคเตอร์</label>
+            <label><input type="checkbox" name="amenities" value="คอมพิวเตอร์" /> คอมพิวเตอร์</label>
+            <label><input type="checkbox" name="amenities" value="ทีวี" /> ทีวี</label>
+            <label><input type="checkbox" name="amenities" value="ปลั๊กไฟ" /> ปลั๊กไฟ</label>
+          </div>
+        </fieldset>
       </form>
       <p
         class="form-message"
@@ -251,7 +263,7 @@
       <section class="results-section" aria-labelledby="results-heading">
         <div class="results-heading">
           <h2 id="results-heading">ผลการค้นหา</h2>
-          <p id="result-count">เลือกเงื่อนไขแล้วกดค้นหาห้องว่าง</p>
+          <p id="result-count">เลือกเงื่อนไขแล้วระบบจะแสดงห้องว่างให้ทันที</p>
         </div>
 
         <div id="search-loading" class="search-state" hidden aria-live="polite">
@@ -266,7 +278,7 @@
               <path d="m15.25 15.25 4.5 4.5"></path></svg
           ></span>
           <h3>ไม่พบห้องว่าง</h3>
-          <p>ลองเปลี่ยนวันที่ เวลา ความจุ หรือประเภทห้อง</p>
+          <p>ลองเปลี่ยนวันที่ เวลา ความจุ ประเภทห้อง หรืออุปกรณ์</p>
         </div>
 
         <div

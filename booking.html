@@ -125,6 +125,7 @@
             <div><dt>เวลา</dt><dd data-detail-time></dd></div>
             <div><dt>ประเภทห้อง</dt><dd data-detail-type></dd></div>
             <div><dt>วัตถุประสงค์</dt><dd data-detail-purpose></dd></div>
+            <div><dt>หมายเหตุเพิ่มเติม</dt><dd data-detail-note></dd></div>
             <div><dt>จำนวนผู้เข้าร่วม</dt><dd data-detail-participants></dd></div>
             <div data-detail-reason-row hidden><dt>เหตุผลที่ปฏิเสธ</dt><dd data-detail-reason></dd></div>
           </dl>
@@ -172,6 +173,7 @@
             </label>
           </div>
           <label>วัตถุประสงค์การใช้ห้อง<textarea id="edit-booking-purpose" maxlength="200" required></textarea></label>
+          <label>หมายเหตุเพิ่มเติม <span class="booking-optional-label">(ถ้ามี)</span><textarea id="edit-booking-note" maxlength="500" placeholder="เช่น ขอใช้โปรเจกเตอร์ 1 เครื่อง"></textarea></label>
           <label>จำนวนผู้เข้าร่วมโดยประมาณ<div class="booking-number-input"><input id="edit-booking-participants" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required aria-label="จำนวนผู้เข้าร่วมโดยประมาณ" /><span aria-hidden="true">คน</span></div></label>
           <p class="booking-dialog__message" id="booking-edit-message" role="alert" hidden></p>
           <footer class="booking-dialog__actions booking-dialog__actions--form">

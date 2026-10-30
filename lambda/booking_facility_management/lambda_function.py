@@ -306,7 +306,7 @@ def assert_no_conflict(cursor, room_id, start_time, end_time, exclude_booking_id
 def pending_approvals(cursor):
     cursor.execute("""
         SELECT b.booking_id, b.room_id, r.room_number, b.user_id,
-               b.title, b.start_time, b.end_time, b.status, b.booking_source, b.created_at
+               b.title, b.request_note, b.start_time, b.end_time, b.status, b.booking_source, b.created_at
         FROM bookings b JOIN rooms r ON r.room_id=b.room_id
         WHERE b.status='pending' AND b.booking_source='USER_REQUEST' AND b.user_id IS NOT NULL
         ORDER BY b.created_at ASC, b.booking_id ASC

@@ -17,7 +17,7 @@ function renderRows(items) {
   $('count').textContent = `${items.length} รายการที่รออนุมัติ`;
 
   if (!items.length) {
-    renderEmptyRow(tbody, 6, 'ไม่มีคำขอที่รออนุมัติ');
+    renderEmptyRow(tbody, 7, 'ไม่มีคำขอที่รออนุมัติ');
     return;
   }
 
@@ -30,6 +30,7 @@ function renderRows(items) {
       item.booking_id,
       item.room_number ?? item.room_id,
       item.title,
+      item.request_note || '-',
       `${formatDateTime(item.start_time)} – ${formatDateTime(item.end_time)}`,
     ]);
 

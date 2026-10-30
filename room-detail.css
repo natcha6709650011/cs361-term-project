@@ -612,6 +612,10 @@ body {
 .booking-field > span b {
   color: var(--red);
 }
+.booking-field__optional {
+  color: #667085;
+  font-weight: 500;
+}
 .booking-field input,
 .booking-field textarea {
   width: 100%;
@@ -632,6 +636,20 @@ body {
 .booking-field textarea {
   min-height: 102px;
   padding: 11px 14px 26px;
+  resize: vertical;
+}
+.booking-field--purpose textarea {
+  min-height: 82px;
+}
+.booking-field--note,
+.booking-field--participants {
+  margin-top: 12px;
+}
+.booking-field--note textarea {
+  min-height: 70px;
+  max-height: 120px;
+  padding-block: 10px;
+  overflow-y: auto;
   resize: vertical;
 }
 .booking-field input:focus,

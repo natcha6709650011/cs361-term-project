@@ -274,20 +274,31 @@
                 </label>
               </div>
 
-              <label class="booking-field">
+              <label class="booking-field booking-field--purpose">
                 <span>วัตถุประสงค์การใช้ห้อง <b aria-hidden="true">*</b></span>
                 <textarea
                   id="booking-purpose"
                   name="purpose"
                   maxlength="200"
-                  rows="4"
+                  rows="3"
                   placeholder="เช่น จัดประชุม อบรม สัมมนา กิจกรรมชมรม ฯลฯ"
                   required
                 ></textarea>
                 <small class="booking-field__count"><span data-purpose-count>0</span>/200</small>
               </label>
 
-              <label class="booking-field">
+              <label class="booking-field booking-field--note">
+                <span>หมายเหตุเพิ่มเติม <span class="booking-field__optional">(ถ้ามี)</span></span>
+                <textarea
+                  id="booking-note"
+                  name="note"
+                  maxlength="500"
+                  rows="2"
+                  placeholder="เช่น ขอใช้โปรเจกเตอร์ 1 เครื่อง หรือต้องการจัดเตรียมห้องก่อนเวลา"
+                ></textarea>
+              </label>
+
+              <label class="booking-field booking-field--participants">
                 <span>จำนวนผู้เข้าร่วมโดยประมาณ <b aria-hidden="true">*</b></span>
                 <div class="booking-number-input">
                   <input
@@ -322,6 +333,7 @@
                 <div><dt>เวลา</dt><dd data-summary-time>-</dd></div>
                 <div><dt>จำนวนผู้เข้าร่วม</dt><dd data-summary-participants>-</dd></div>
                 <div><dt>วัตถุประสงค์</dt><dd data-summary-purpose>-</dd></div>
+                <div><dt>หมายเหตุ</dt><dd data-summary-note>-</dd></div>
                 <div><dt>ประเภทห้อง</dt><dd data-summary-type>-</dd></div>
                 <div><dt>อาคาร</dt><dd data-summary-building>-</dd></div>
                 <div><dt>ชั้น</dt><dd data-summary-floor>-</dd></div>

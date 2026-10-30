@@ -139,6 +139,7 @@ def parse_booking_values(payload, *, partial=False):
     errors = {}
 
     purpose = payload.get("purpose")
+    note = payload.get("note")
     participants = payload.get("participants")
     date_value = payload.get("date")
     start_time = payload.get("startTime")
@@ -162,6 +163,11 @@ def parse_booking_values(payload, *, partial=False):
             errors["purpose"] = "กรุณาระบุวัตถุประสงค์"
         elif len(purpose) > 150:
             errors["purpose"] = "วัตถุประสงค์ยาวได้ไม่เกิน 150 ตัวอักษร"
+
+    if note is not None:
+        note = str(note).strip()
+        if len(note) > 500:
+            errors["note"] = "หมายเหตุยาวได้ไม่เกิน 500 ตัวอักษร"
 
     participant_count = None
     if participants is not None:
@@ -191,6 +197,7 @@ def parse_booking_values(payload, *, partial=False):
 
     return {
         "purpose": purpose,
+        "note": note,
         "participants": participant_count,
         "start_time": starts_at,
         "end_time": ends_at,
@@ -207,6 +214,7 @@ def booking_to_json(row):
         "startTime": row["start_time"].strftime("%H:%M"),
         "endTime": row["end_time"].strftime("%H:%M"),
         "purpose": row["title"],
+        "note": row.get("request_note") or "",
         "participants": row.get("participant_count"),
         "status": row["status"].upper(),
     }
@@ -216,7 +224,7 @@ def get_owned_booking(cursor, booking_id, user_id, *, for_update=False):
     lock = " FOR UPDATE" if for_update else ""
     cursor.execute(
         f"""
-        SELECT b.booking_id, b.room_id, b.user_id, b.title, b.participant_count,
+        SELECT b.booking_id, b.room_id, b.user_id, b.title, b.request_note, b.participant_count,
                b.start_time, b.end_time, b.status, r.room_number, r.capacity,
                r.room_type_id, rt.type_name AS room_type_name
         FROM bookings b
@@ -346,7 +354,7 @@ def fixed_schedule_conflict_response(conflict):
 def get_booking(cursor, booking_id, user_id):
     cursor.execute(
         """
-        SELECT b.booking_id, b.title, b.participant_count, b.start_time, b.end_time,
+        SELECT b.booking_id, b.title, b.request_note, b.participant_count, b.start_time, b.end_time,
                b.status, r.room_number, rt.type_name AS room_type_name
         FROM bookings b
         INNER JOIN rooms r ON r.room_id = b.room_id
@@ -362,7 +370,7 @@ def list_my_bookings(connection, user_id):
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT b.booking_id, b.title, b.participant_count, b.start_time,
+            SELECT b.booking_id, b.title, b.request_note, b.participant_count, b.start_time,
                    b.end_time, b.status, r.room_number, rt.type_name AS room_type_name
             FROM bookings b
             INNER JOIN rooms r ON r.room_id = b.room_id
@@ -426,11 +434,11 @@ def create_booking(connection, user, payload):
             cursor.execute(
                 """
                 INSERT INTO bookings
-                    (room_id, user_id, title, participant_count, start_time, end_time, status)
-                VALUES (%s, %s, %s, %s, %s, %s, 'pending')
+                    (room_id, user_id, title, request_note, participant_count, start_time, end_time, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending')
                 """,
                 (
-                    room["room_id"], user["user_id"], values["purpose"],
+                    room["room_id"], user["user_id"], values["purpose"], values["note"],
                     values["participants"], values["start_time"], values["end_time"],
                 ),
             )
@@ -463,6 +471,7 @@ def update_booking(connection, user, booking_id, payload):
 
             merged = {
                 "purpose": payload.get("purpose", booking["title"]),
+                "note": payload.get("note", booking.get("request_note") or ""),
                 "participants": payload.get("participants", booking["participant_count"]),
                 "date": payload.get("date", booking["start_time"].strftime("%Y-%m-%d")),
                 "startTime": payload.get("startTime", booking["start_time"].strftime("%H:%M")),
@@ -498,11 +507,11 @@ def update_booking(connection, user, booking_id, payload):
             cursor.execute(
                 """
                 UPDATE bookings
-                SET title = %s, participant_count = %s, start_time = %s, end_time = %s,
+                SET title = %s, request_note = %s, participant_count = %s, start_time = %s, end_time = %s,
                     status = %s
                 WHERE booking_id = %s AND user_id = %s
                 """,
-                (values["purpose"], values["participants"], values["start_time"], values["end_time"], new_status, booking_id, user["user_id"]),
+                (values["purpose"], values["note"], values["participants"], values["start_time"], values["end_time"], new_status, booking_id, user["user_id"]),
             )
             updated = get_booking(cursor, booking_id, user["user_id"])
         connection.commit()

@@ -14,7 +14,7 @@
 
 .admin-card { border-radius: 16px; background: #fff; box-shadow: 0 2px 10px rgb(23 32 51 / 12%); overflow: hidden; }
 .admin-table-wrap { overflow-x: auto; }
-.admin-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.admin-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 760px; }
 .admin-table th { padding: 18px 20px; background: #f5f5f5; text-align: left; font-size: 15px; font-weight: 700; }
 .admin-table td { padding: 18px 20px; border-top: 1px solid #e2e6eb; }
 .admin-table td:first-child { font-weight: 700; }
@@ -81,3 +81,11 @@
 .closures ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
 .closures li { padding: 10px 12px; border: 1px solid #e2e6eb; border-radius: 10px; background: #f8f9fb; }
 .closures li small { display: block; margin-top: 2px; color: #6b7280; }
+
+.perm-table { min-width: 720px; }
+.perm-table th, .perm-table td { padding: 16px 20px; }
+.perm-table td:first-child { font-weight: 600; }
+.perm-box { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid #172033; border-radius: 5px; background: #fff; color: #98a2b3; font-size: 14px; line-height: 1; vertical-align: middle; }
+.perm-box.is-on { background: #172033; }
+.perm-box.is-on svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.perm-box.is-na { border-style: dashed; border-color: #cbd2dc; }

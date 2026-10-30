@@ -47,9 +47,9 @@
         <tr data-id="${r.room_id}">
           <td>${esc(r.room_number)}</td><td>${esc(r.room_type)}</td>
           <td class="c">${r.capacity ?? "-"}</td><td class="c">${esc(r.floor)}</td>
-          <td class="c">${onOff(r.is_active)}</td><td class="c">${onOff(r.is_bookable)}</td>
+          <td class="c">${onOff(r.is_bookable)}</td>
           <td class="c"><button type="button" class="dots" data-dots aria-label="เมนูห้อง ${esc(r.room_number)}" aria-haspopup="true">•••</button></td>
-        </tr>`).join("") : '<tr><td colspan="7" class="admin-empty">ไม่พบห้องที่ตรงกับเงื่อนไข</td></tr>';
+        </tr>`).join("") : '<tr><td colspan="6" class="admin-empty">ไม่พบห้องที่ตรงกับเงื่อนไข</td></tr>';
     }
   
     async function loadRooms() {
@@ -57,7 +57,7 @@
         const data = await api(ROOMS_LIST_URL);
         rooms = Array.isArray(data) ? data : data.rooms || [];
         fillFilters(); render();
-      } catch (e) { rowsEl.innerHTML = `<tr><td colspan="7" class="admin-empty">${esc(e.message)}</td></tr>`; }
+      } catch (e) { rowsEl.innerHTML = `<tr><td colspan="6" class="admin-empty">${esc(e.message)}</td></tr>`; }
     }
     ["input", "change"].forEach((ev) => document.querySelector(".admin-filters").addEventListener(ev, render));
   
@@ -96,7 +96,6 @@
             <dt>ประเภทห้อง</dt><dd>${esc(r.room_type) || "-"}</dd>
             <dt>ชั้น</dt><dd>${esc(r.floor) || "-"}</dd>
             <dt>ความจุ</dt><dd>${r.capacity != null ? r.capacity + " คน" : "-"}</dd>
-            <dt>เปิดใช้งาน</dt><dd>${onOff(r.is_active)}</dd>
             <dt>เปิดให้จอง</dt><dd>${onOff(r.is_bookable)}</dd>
             <dt>ผู้ดูแลห้อง</dt><dd>${esc(r.caretaker_name) || "-"}</dd>
             <dt>อุปกรณ์</dt><dd>${items.length ? `<span class="chips">${items.map((i) => `<span class="chip">${esc(i)}</span>`).join("")}</span>` : "-"}</dd>
@@ -109,7 +108,6 @@
           <dl class="detail">
             <dt>ห้อง</dt><dd>${esc(r.room_number)}</dd>
             <dt>ประเภทห้อง</dt><dd>${esc(r.room_type) || "-"}</dd>
-            <dt>เปิดใช้งาน</dt><dd>${onOff(r.is_active)}</dd>
           </dl>
           <label class="switch"><input type="checkbox" id="fBookable" ${r.is_bookable ? "checked" : ""} /><span class="switch__track"></span>เปิดให้จอง</label>
           <label id="fReasonWrap" hidden>เหตุผลที่เปิด/ปิดให้จอง (จำเป็น)<textarea id="fReason" maxlength="500" rows="3" placeholder="เช่น โปรเจกเตอร์ชำรุด อยู่ระหว่างซ่อม"></textarea></label>
@@ -169,6 +167,23 @@
         render(); btn.disabled = false; draw2(e.message, true);
       }
     }
+    const meaningful = (t) => /[\p{L}\p{N}]/u.test(String(t ?? ""));
+    function thaiTime(v) {
+      if (!v) return "";
+      const raw = String(v).trim();
+      const iso = raw.replace(" ", "T");
+      const d = new Date(/(Z|[+-]\d{2}:?\d{2})$/i.test(iso) ? iso : iso + "Z");
+      if (isNaN(d)) return raw.slice(0, 16);
+      const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(d).map((x) => [x.type, x.value]));
+      return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`;
+    }
+    function closureItem(c) {
+      const opened = c.status !== "CLOSED";
+      const head = opened && meaningful(c.opening_reason) ? c.opening_reason : opened ? "" : c.reason;
+      const when = thaiTime((opened && c.opened_at) || c.closed_at);
+      const closeReason = opened ? `เหตุผลที่ปิด: ${esc(c.reason)} · ` : "";
+      return `<li><b class="${opened ? "on" : "off"}">${opened ? "เปิดแล้ว" : "ปิดอยู่"}</b>${head ? " — " + esc(head) : ""}<small>${closeReason}${opened ? "เปิดเมื่อ" : "ปิดเมื่อ"} ${esc(when)}</small></li>`;
+    }
     async function loadClosures(room) {
       const box = $("mClosures");
       if (!box) return;
@@ -177,7 +192,7 @@
         if (current !== room || !$("mClosures")) return;
         const items = (d.items || []).slice(0, 5);
         $("mClosures").innerHTML = items.length
-          ? "<h3>ประวัติการปิด–เปิดห้อง</h3><ul>" + items.map((c) => `<li><b class="${c.status === "CLOSED" ? "off" : "on"}">${c.status === "CLOSED" ? "ปิดอยู่" : "เปิดแล้ว"}</b> — ${esc(c.reason)}<small>${esc(String(c.closed_at || "").slice(0, 16))}${c.opening_reason ? " · เหตุผลที่เปิด: " + esc(c.opening_reason) : ""}</small></li>`).join("") + "</ul>"
+          ? "<h3>ประวัติการปิด–เปิดห้อง</h3><ul>" + items.map((c) => closureItem(c)).join("") + "</ul>"
           : "";
       } catch (e) {}
     }
@@ -198,9 +213,9 @@
   
     fillFilters();
     if (!loggedIn || !user) {
-  rowsEl.innerHTML = '<tr><td colspan="7" class="admin-empty">กรุณา<a href="login.html">เข้าสู่ระบบ</a>ด้วยบัญชีเจ้าหน้าที่ดูแลสถานที่ (facility_admin) ก่อน</td></tr>';
+  rowsEl.innerHTML = '<tr><td colspan="6" class="admin-empty">กรุณา<a href="login.html">เข้าสู่ระบบ</a>ด้วยบัญชีเจ้าหน้าที่ดูแลสถานที่ (facility_admin) ก่อน</td></tr>';
 } else if (!isAdmin) {
-  rowsEl.innerHTML = '<tr><td colspan="7" class="admin-empty">หน้านี้สำหรับเจ้าหน้าที่ดูแลสถานที่เท่านั้น (บัญชีนี้ role: ' + esc(user.role || "-") + ')</td></tr>';
+  rowsEl.innerHTML = '<tr><td colspan="6" class="admin-empty">หน้านี้สำหรับเจ้าหน้าที่ดูแลสถานที่เท่านั้น (บัญชีนี้ role: ' + esc(user.role || "-") + ')</td></tr>';
 } else {
   loadRooms();
 }

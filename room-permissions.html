@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>สิทธิ์การจองห้อง | CS Thammasat</title>
+    <link rel="stylesheet" href="room-types.css?v=2" />
+    <link rel="stylesheet" href="admin-rooms.css" />
+  </head>
+  <body>
+    <div data-site-header></div>
+
+    <main class="admin">
+      <div class="admin-head">
+        <h1>สิทธิ์การจองห้อง</h1>
+      </div>
+      <p id="permStatus" class="admin__status is-error" role="status" hidden></p>
+
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table perm-table">
+            <thead>
+              <tr id="permHead">
+                <th>ประเภทห้อง</th>
+              </tr>
+            </thead>
+            <tbody id="permRows"><tr><td colspan="5" class="admin-empty">กำลังโหลด...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <script src="components/header-component.js"></script>
+    <script src="room-permissions.js"></script>
+    <script src="page-loader.js"></script>
+  </body>
+</html>

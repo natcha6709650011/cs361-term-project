@@ -50,9 +50,19 @@
   อนุมัติการจอง
 </a>
 
-<a href="admin-rooms.html" id="facility-admin-tab" hidden>
-  จัดการห้อง
-</a>
+<div class="nav-dropdown" id="facility-admin-tab" hidden>
+  <button class="dropdown-toggle" type="button" aria-expanded="false" aria-controls="facility-admin-menu">
+    จัดการห้อง
+    <svg aria-hidden="true" viewBox="0 0 16 10">
+      <path d="m2 2 6 6 6-6" />
+    </svg>
+  </button>
+
+  <div class="dropdown-menu" id="facility-admin-menu">
+    <a href="admin-rooms.html">รายการห้อง</a>
+    <a href="room-permissions.html">สิทธิ์การจองห้อง</a>
+  </div>
+</div>
 
         <!-- User เดิมของ V2 -->
         <a class="user-link" href="profile.html">
@@ -305,6 +315,9 @@ if (isLoggedIn) {
     dropdownButton.classList.add('active');
   }
 
+  if (['admin-rooms.html', 'room-permissions.html'].includes(currentPage)) {
+    header.querySelector('#facility-admin-tab .dropdown-toggle').classList.add('active');
+  }
 
   // =========================================================
   // MOBILE MENU - ของเดิม
@@ -331,29 +344,38 @@ if (isLoggedIn) {
   // ROOM DROPDOWN - ของเดิม
   // =========================================================
 
-  dropdownButton.addEventListener('click', () => {
+  const dropdowns = header.querySelectorAll('.nav-dropdown');
 
-    const isOpen =
-      dropdown.classList.toggle('open');
+  dropdowns.forEach((item) => {
+    const button = item.querySelector('.dropdown-toggle');
 
-    dropdownButton.setAttribute(
-      'aria-expanded',
-      String(isOpen)
-    );
+    button.addEventListener('click', () => {
+      const isOpen = item.classList.toggle('open');
+
+      button.setAttribute('aria-expanded', String(isOpen));
+
+      // เปิดเมนูหนึ่ง ให้อีกเมนูปิด
+      dropdowns.forEach((other) => {
+        if (other !== item) {
+          other.classList.remove('open');
+          other
+            .querySelector('.dropdown-toggle')
+            .setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
   });
 
-
   document.addEventListener('click', (event) => {
+    dropdowns.forEach((item) => {
+      if (!item.contains(event.target)) {
+        item.classList.remove('open');
 
-    if (!dropdown.contains(event.target)) {
-
-      dropdown.classList.remove('open');
-
-      dropdownButton.setAttribute(
-        'aria-expanded',
-        'false'
-      );
-    }
+        item
+          .querySelector('.dropdown-toggle')
+          .setAttribute('aria-expanded', 'false');
+      }
+    });
   });
 
 })();

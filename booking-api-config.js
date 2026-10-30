@@ -1,7 +1,8 @@
 // Booking API configuration. Keep token handling in one place so every
 // booking action is authenticated as the currently signed-in user.
 (function configureBookingApi() {
-  const remoteBaseUrl = "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com";
+  // Production goes through the Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
+  const remoteBaseUrl = "/api";
 
   window.BOOKING_API_CONFIG = {
     mode: "api",

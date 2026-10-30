@@ -2,7 +2,7 @@
 const loginError = document.getElementById('loginError');
 const API_BASE_URL = window.location.port === '5501'
     ? '/api/v1'
-    : 'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1';
+    : '/api'; // Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
 const LOGIN_API_URL = `${API_BASE_URL}/auth/login`;
 
 loginForm.addEventListener('submit', async function (event) {
@@ -106,7 +106,7 @@ loginForm.addEventListener('submit', async function (event) {
         );
 
         loginError.textContent =
-            'à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¹€à¸Šà¸·à¹ˆà¸­à¸¡à¸•à¹ˆà¸­à¸£à¸°à¸šà¸š Login à¹„à¸”à¹‰';
+            'ไม่สามารถเชื่อมต่อระบบ Login ได้';
 
         loginError.style.display = 'block';
     }

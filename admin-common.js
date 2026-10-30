@@ -7,8 +7,8 @@
 
 // รูปแบบเดียวกับ booking-api-config.js:
 // เปิดผ่าน dev-server.js (port 5501) จะเรียกผ่าน proxy /api เพื่อเลี่ยง CORS
-const REMOTE_API_URL =
-  'https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com';
+// Production เรียกผ่าน Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
+const REMOTE_API_URL = '/api';
 
 const API_BASE_URL =
   window.location.port === '5501' ? '/api' : REMOTE_API_URL;
@@ -81,7 +81,8 @@ async function api(path, options = {}) {
 /* ---------- Permissions (จากตาราง user_roles ผ่าน /me/permissions) ---------- */
 
 async function loadPermissions() {
-  const data = await api('/v1/me/permissions');
+  // ไม่ใส่ /v1 เพราะ Amplify rewrite เติม /v1 ให้แล้ว (ป้องกัน /v1/v1/)
+  const data = await api('/me/permissions');
 
   return data.user || {};
 }

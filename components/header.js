@@ -213,8 +213,9 @@ function setupDropdown() {
 
 
 async function logoutUser() {
+    // Local (dev-server.js): /api/v1/<*> | Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
     const AUTH_API_URL =
-        "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/auth/logout";
+        (window.location.port === "5501" ? "/api/v1" : "/api") + "/auth/logout";
 
     try {
         const response = await fetch(AUTH_API_URL, {

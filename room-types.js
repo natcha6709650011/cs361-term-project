@@ -1,6 +1,6 @@
 const ROOMS_API_URL = window.location.port === "5501"
   ? "/api/v1/rooms"
-  : "https://7i1mw8hw5l.execute-api.us-east-1.amazonaws.com/v1/rooms";
+  : "/api/rooms"; // Amplify rewrite: /api/<*> -> API Gateway /v1/<*>
 
 const typePage =
   document.body.dataset.roomType ||

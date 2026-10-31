@@ -85,7 +85,9 @@
 .perm-table { min-width: 720px; }
 .perm-table th, .perm-table td { padding: 16px 20px; }
 .perm-table td:first-child { font-weight: 600; }
-.perm-box { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid #172033; border-radius: 5px; background: #fff; color: #98a2b3; font-size: 14px; line-height: 1; vertical-align: middle; }
-.perm-box.is-on { background: #172033; }
-.perm-box.is-on svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.perm-box.is-na { border-style: dashed; border-color: #cbd2dc; }
+.perm-check { width: 20px; height: 20px; margin: 0; accent-color: #172033; cursor: pointer; vertical-align: middle; }
+.admin-table.perm-table td.is-changed { background: #fff6dd; }
+.perm-save { height: 45px; padding: 0 24px; border: 0; border-radius: 12px; background: #ffb02e; color: #fff; font: inherit; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgb(23 32 51 / 18%); }
+.perm-save:hover:not(:disabled) { background: #f29d0f; }
+.perm-save:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+.perm-save[hidden] { display: none; }

@@ -62,7 +62,7 @@ def response(code, body):
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": CORS_ORIGIN,
             "Access-Control-Allow-Headers": "Content-Type,Authorization",
-            "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+            "Access-Control-Allow-Methods": "GET,POST,PATCH,PUT,OPTIONS",
         },
         "body": json.dumps(body, ensure_ascii=False, default=_json_default),
     }
@@ -649,6 +649,48 @@ def list_room_closures(cursor, query):
         " ORDER BY rc.closed_at DESC, rc.closure_id DESC LIMIT 200", args)
     return cursor.fetchall()
 
+POLICY_USER_TYPES = ("undergraduate", "master", "doctoral", "employee")
+
+def update_room_policies(cursor, data):
+    """PUT /room-policies  (FACILITY_ADMIN)
+    Body: {"changes": [{"room_type_id": 3, "user_type": "master", "is_allowed": true}, ...]}
+    บันทึกเฉพาะช่องที่เปลี่ยน (สร้างแถวใหม่ถ้ายังไม่มี) ใน transaction เดียว
+    """
+    changes = data.get("changes")
+    if not isinstance(changes, list) or not changes:
+        raise ApiError(400, "changes ต้องเป็นรายการที่ไม่ว่าง")
+    if len(changes) > 200:
+        raise ApiError(400, "ส่งการเปลี่ยนแปลงได้ครั้งละไม่เกิน 200 รายการ")
+
+    normalized = {}
+    for index, item in enumerate(changes):
+        if not isinstance(item, dict):
+            raise ApiError(400, f"changes[{index}] ต้องเป็น JSON object")
+        room_type_id = item.get("room_type_id")
+        user_type = item.get("user_type")
+        is_allowed = item.get("is_allowed")
+        if isinstance(room_type_id, bool) or not isinstance(room_type_id, int) or room_type_id <= 0:
+            raise ApiError(400, f"changes[{index}].room_type_id ต้องเป็นจำนวนเต็มบวก")
+        if user_type not in POLICY_USER_TYPES:
+            raise ApiError(400, f"changes[{index}].user_type ต้องเป็นหนึ่งใน {', '.join(POLICY_USER_TYPES)}")
+        if not isinstance(is_allowed, bool):
+            raise ApiError(400, f"changes[{index}].is_allowed ต้องเป็น true หรือ false")
+        normalized[(room_type_id, user_type)] = is_allowed
+
+    room_type_ids = sorted({key[0] for key in normalized})
+    placeholders = ",".join(["%s"] * len(room_type_ids))
+    cursor.execute(f"SELECT room_type_id FROM room_types WHERE room_type_id IN ({placeholders})", room_type_ids)
+    found = {int(row["room_type_id"]) for row in cursor.fetchall()}
+    missing = [value for value in room_type_ids if value not in found]
+    if missing:
+        raise ApiError(404, "ไม่พบประเภทห้อง", {"missing_room_type_ids": missing})
+
+    for (room_type_id, user_type), is_allowed in normalized.items():
+        cursor.execute("""INSERT INTO room_policies (room_type_id, user_type, is_allowed)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE is_allowed=VALUES(is_allowed)""",
+            (room_type_id, user_type, is_allowed))
+    return {"message": "บันทึกสิทธิ์การจองห้องแล้ว", "updated": len(normalized)}
 
 def lambda_handler(event, context):
     method, path = get_method_path(event or {})
@@ -695,6 +737,12 @@ def lambda_handler(event, context):
             if method == "POST" and match:
                 require_role(cursor, actor_id, "FACILITY_ADMIN")
                 result = change_room_closure(cursor, actor_id, int(match.group(1)), body_json(event))
+                connection.commit()
+                return response(200, result)
+
+            if method == "PUT" and path == "/room-policies":
+                require_role(cursor, actor_id, "FACILITY_ADMIN")
+                result = update_room_policies(cursor, body_json(event))
                 connection.commit()
                 return response(200, result)
 

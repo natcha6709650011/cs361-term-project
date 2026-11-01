@@ -4,6 +4,13 @@
     APPROVED: "อนุมัติแล้ว",
     REJECTED: "ปฏิเสธ",
     CANCELLED: "ยกเลิก",
+    NO_SHOW: "ไม่มาใช้ห้อง (No-show)",
+  };
+  const attendanceLabels = {
+    NOT_CHECKED_IN: "ยังไม่ Check-in",
+    CHECKED_IN: "Check-in แล้ว",
+    NO_SHOW: "No-show",
+    COMPLETED: "สิ้นสุดการใช้งาน",
   };
   let activeStatus = "ALL";
   let activeBookingId = null;
@@ -79,6 +86,14 @@
     });
   }
 
+  function canCheckIn(booking) {
+    if (booking.status !== "APPROVED" || (booking.attendanceStatus || "NOT_CHECKED_IN") !== "NOT_CHECKED_IN") return false;
+    const startsAt = new Date(`${booking.date}T${booking.startTime}:00`);
+    const now = new Date();
+    const cutoff = new Date(startsAt.getTime() + 30 * 60 * 1000);
+    return now >= startsAt && now < cutoff;
+  }
+
   function renderBookings() {
     if (isLoading) return;
     const body = document.querySelector("#my-bookings-body");
@@ -101,9 +116,14 @@
         <td>${booking.roomType || "ไม่ระบุ"}</td>
         <td>${booking.purpose}</td>
         <td>${booking.participants}</td>
-        <td><span class="booking-status booking-status--${booking.status.toLowerCase()}">${statusLabels[booking.status]}</span></td>
+        <td>
+          <span class="booking-status booking-status--${booking.status.toLowerCase()}">${statusLabels[booking.status] || booking.status}</span>
+          ${booking.status === "APPROVED" ? `<small class="booking-attendance">${attendanceLabels[booking.attendanceStatus || "NOT_CHECKED_IN"] || ""}</small>` : ""}
+        </td>
         <td class="booking-row-actions">
           <button class="booking-detail-button" type="button" data-booking-detail="${booking.id}">ดูรายละเอียด</button>
+          ${canCheckIn(booking) ? `<button class="booking-checkin-button" type="button" data-booking-checkin="${booking.id}">Check-in</button>` : ""}
+          ${(booking.attendanceStatus || "") === "CHECKED_IN" ? `<button class="booking-finish-button" type="button" data-booking-finish="${booking.id}">สิ้นสุดการใช้ห้อง</button>` : ""}
           ${canManage ? `<div class="booking-action-menu"><button class="booking-more-button" type="button" data-booking-menu="${booking.id}" aria-label="จัดการรายการ ${booking.room}" aria-expanded="false">⋯</button><div class="booking-action-popover" hidden><button type="button" data-booking-edit="${booking.id}">แก้ไข</button><button type="button" data-booking-cancel="${booking.id}">ยกเลิก</button></div></div>` : ""}
         </td>
       `;
@@ -169,9 +189,13 @@
     setText("[data-detail-purpose]", booking.purpose);
     setText("[data-detail-note]", booking.note || "-");
     setText("[data-detail-participants]", `${booking.participants} คน`);
+    setText("[data-detail-attendance]", attendanceLabels[booking.attendanceStatus || "NOT_CHECKED_IN"] || "-");
+    setText("[data-detail-checkin-time]", booking.checkedInAt || "-");
+    setText("[data-detail-usage-start]", booking.actualUsageStart || "-");
+    setText("[data-detail-usage-end]", booking.actualUsageEnd || "-");
 
     const status = document.querySelector("[data-detail-status]");
-    status.textContent = statusLabels[booking.status];
+    status.textContent = statusLabels[booking.status] || booking.status;
     status.className = `booking-status booking-status--${booking.status.toLowerCase()}`;
 
     const reasonRow = document.querySelector("[data-detail-reason-row]");
@@ -242,7 +266,32 @@
   }
 
   function setupActions() {
-    document.querySelector("#my-bookings-body").addEventListener("click", (event) => {
+    document.querySelector("#my-bookings-body").addEventListener("click", async (event) => {
+      const checkIn = event.target.closest("[data-booking-checkin]");
+      const finish = event.target.closest("[data-booking-finish]");
+      if (checkIn || finish) {
+        const button = checkIn || finish;
+        const id = checkIn ? checkIn.dataset.bookingCheckin : finish.dataset.bookingFinish;
+        button.disabled = true;
+        const originalText = button.textContent;
+        button.textContent = checkIn ? "กำลัง Check-in..." : "กำลังบันทึก...";
+        try {
+          const result = checkIn
+            ? await window.BookingService.checkInBooking(id)
+            : await window.BookingService.endActualUsage(id);
+          const index = bookingData.findIndex((item) => String(item.id) === String(id));
+          if (index !== -1) bookingData[index] = result.booking;
+          updateCounts();
+          renderBookings();
+        } catch (error) {
+          console.error("Unable to update room usage:", error);
+          window.alert(error.message || "ไม่สามารถบันทึกการใช้งานได้ กรุณาลองใหม่");
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+        return;
+      }
+
       const detail = event.target.closest("[data-booking-detail]");
       const menu = event.target.closest("[data-booking-menu]");
       const edit = event.target.closest("[data-booking-edit]");

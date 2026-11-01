@@ -142,6 +142,45 @@
     return { booking: clone(booking), isMock: true };
   }
 
+  async function checkInBooking(id) {
+    if (config.mode === "api") {
+      const response = await apiRequest(`/bookings/${encodeURIComponent(id)}/check-in`, {
+        method: "POST",
+      });
+      return { booking: unwrap(response, "booking") };
+    }
+
+    await wait();
+    const booking = getMockBookings().find((item) => String(item.id) === String(id));
+    if (!booking) throw new BookingServiceError("Booking was not found", { code: "NOT_FOUND", status: 404 });
+    if (booking.status !== "APPROVED") throw new BookingServiceError("รายการนี้ยังไม่ได้รับอนุมัติ", { code: "NOT_APPROVED", status: 409 });
+    const now = new Date();
+    const startsAt = new Date(`${booking.date}T${booking.startTime}:00`);
+    const cutoff = new Date(startsAt.getTime() + 30 * 60 * 1000);
+    if (now < startsAt || now >= cutoff) throw new BookingServiceError("อยู่นอกช่วงเวลา Check-in (30 นาที)", { code: "CHECKIN_WINDOW_CLOSED", status: 409 });
+    booking.attendanceStatus = "CHECKED_IN";
+    booking.checkedInAt = now.toISOString();
+    booking.actualUsageStart = now.toISOString();
+    return { booking: clone(booking), isMock: true };
+  }
+
+  async function endActualUsage(id) {
+    if (config.mode === "api") {
+      const response = await apiRequest(`/bookings/${encodeURIComponent(id)}/usage/end`, {
+        method: "POST",
+      });
+      return { booking: unwrap(response, "booking") };
+    }
+
+    await wait();
+    const booking = getMockBookings().find((item) => String(item.id) === String(id));
+    if (!booking) throw new BookingServiceError("Booking was not found", { code: "NOT_FOUND", status: 404 });
+    if (booking.attendanceStatus !== "CHECKED_IN") throw new BookingServiceError("กรุณา Check-in ก่อน", { code: "NOT_CHECKED_IN", status: 409 });
+    booking.attendanceStatus = "COMPLETED";
+    booking.actualUsageEnd = new Date().toISOString();
+    return { booking: clone(booking), isMock: true };
+  }
+
   async function cancelBooking(id) {
     if (config.mode === "api") {
       const response = await apiRequest(`/bookings/${encodeURIComponent(id)}`, { method: "DELETE" });
@@ -156,5 +195,13 @@
     return { booking: clone(booking), isMock: true };
   }
 
-  window.BookingService = { getMyBookings, createBooking, updateBooking, cancelBooking, BookingServiceError };
+  window.BookingService = {
+    getMyBookings,
+    createBooking,
+    updateBooking,
+    cancelBooking,
+    checkInBooking,
+    endActualUsage,
+    BookingServiceError,
+  };
 })();

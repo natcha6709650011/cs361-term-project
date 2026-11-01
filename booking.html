@@ -43,6 +43,7 @@
           <button type="button" role="tab" aria-selected="false" data-status-filter="APPROVED">อนุมัติแล้ว <span data-count="APPROVED"></span></button>
           <button type="button" role="tab" aria-selected="false" data-status-filter="REJECTED">ปฏิเสธ <span data-count="REJECTED"></span></button>
           <button type="button" role="tab" aria-selected="false" data-status-filter="CANCELLED">ยกเลิก <span data-count="CANCELLED"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-status-filter="NO_SHOW">No-show <span data-count="NO_SHOW"></span></button>
         </div>
 
         <div class="booking-table-wrap" data-booking-table-wrap>
@@ -127,6 +128,10 @@
             <div><dt>วัตถุประสงค์</dt><dd data-detail-purpose></dd></div>
             <div><dt>หมายเหตุเพิ่มเติม</dt><dd data-detail-note></dd></div>
             <div><dt>จำนวนผู้เข้าร่วม</dt><dd data-detail-participants></dd></div>
+            <div><dt>สถานะการเข้าใช้</dt><dd data-detail-attendance></dd></div>
+            <div><dt>เวลา Check-in</dt><dd data-detail-checkin-time>-</dd></div>
+            <div><dt>เวลาเริ่มใช้งานจริง</dt><dd data-detail-usage-start>-</dd></div>
+            <div><dt>เวลาสิ้นสุดใช้งานจริง</dt><dd data-detail-usage-end>-</dd></div>
             <div data-detail-reason-row hidden><dt>เหตุผลที่ปฏิเสธ</dt><dd data-detail-reason></dd></div>
           </dl>
         </div>

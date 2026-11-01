@@ -160,3 +160,25 @@ tbody tr:last-child td { border-bottom: 0; }
 .booking-conflict-panel__actions .dialog-button { flex: 1; min-height: 48px; }
 @media (max-width: 1060px) { .booking-heading { align-items: flex-start; flex-direction: column; } .booking-tools { width: 100%; } .booking-search { flex: 1; } }
 @media (max-width: 700px) { .booking-page { padding: 22px 18px 42px; } .booking-heading h1 { font-size: 26px; } .booking-heading p { font-size: 14px; } .booking-tools { flex-wrap: wrap; } .booking-search { flex: 1 1 100%; width: 100%; } .booking-date-filter { flex: 1; } .booking-new-button { flex: 1; } .booking-status-tabs button { min-width: auto; padding: 11px 13px; } .booking-footer { grid-template-columns: 1fr; padding: 28px 8vw; } .booking-footer > div:first-child { padding: 0 0 18px; border-right: 0; border-bottom: 1px solid #9ca3af; } .booking-dialog { padding: 12px; } .booking-dialog__header, .booking-dialog__body, .booking-dialog__actions { padding-right: 18px; padding-left: 18px; } .booking-dialog__header h2 { font-size: 19px; } .booking-detail-list div { grid-template-columns: 1fr; gap: 2px; } .booking-edit-form__times { grid-template-columns: 1fr; } .booking-dialog__actions { flex-direction: column-reverse; } .dialog-button { width: 100%; } .booking-dialog__actions--form { margin-right: -18px; margin-bottom: -23px; margin-left: -18px; } .booking-cancel-panel__body, .booking-conflict-panel__body { padding-right: 18px; padding-left: 18px; } .booking-cancel-panel__actions, .booking-conflict-panel__actions { flex-direction: row; padding-right: 18px; padding-left: 18px; } .booking-cancel-panel__actions .dialog-button, .booking-conflict-panel__actions .dialog-button { width: auto; } .booking-v2-picker .date-menu { right: auto; left: 0; width: min(300px, 75vw); } }
+
+
+/* V4 Check-in / Actual Usage */
+.booking-attendance { display: block; margin-top: 5px; color: #697586; font-size: 12px; }
+.booking-checkin-button,
+.booking-finish-button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  font: 700 12px/1 "Noto Sans Thai", Arial, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.booking-checkin-button { background: #168653; }
+.booking-checkin-button:hover { background: #116b42; }
+.booking-finish-button { background: #475467; }
+.booking-finish-button:hover { background: #344054; }
+.booking-checkin-button:disabled,
+.booking-finish-button:disabled { opacity: .6; cursor: wait; }
+.booking-status--no_show { background: #f1e8ff; color: #6941a5; }

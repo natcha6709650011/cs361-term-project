@@ -44,7 +44,7 @@ def response(status_code, body):
 
 
 def connect_database():
-    return pymysql.connect(
+    connection = pymysql.connect(
         host=os.environ["DB_HOST"],
         user=os.environ["DB_USER"],
         password=os.environ["DB_PASSWORD"],
@@ -57,6 +57,10 @@ def connect_database():
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=False,
     )
+    # The application stores booking DATETIME values as Thailand local time.
+    with connection.cursor() as cursor:
+        cursor.execute("SET time_zone = '+07:00'")
+    return connection
 
 
 def get_method(event):
@@ -217,6 +221,11 @@ def booking_to_json(row):
         "note": row.get("request_note") or "",
         "participants": row.get("participant_count"),
         "status": row["status"].upper(),
+        "attendanceStatus": (row.get("attendance_status") or "NOT_CHECKED_IN").upper(),
+        "checkedInAt": row.get("checked_in_at").isoformat(sep=" ") if row.get("checked_in_at") else None,
+        "actualUsageStart": row.get("actual_usage_start").isoformat(sep=" ") if row.get("actual_usage_start") else None,
+        "actualUsageEnd": row.get("actual_usage_end").isoformat(sep=" ") if row.get("actual_usage_end") else None,
+        "noShowAt": row.get("no_show_at").isoformat(sep=" ") if row.get("no_show_at") else None,
     }
 
 
@@ -225,8 +234,9 @@ def get_owned_booking(cursor, booking_id, user_id, *, for_update=False):
     cursor.execute(
         f"""
         SELECT b.booking_id, b.room_id, b.user_id, b.title, b.request_note, b.participant_count,
-               b.start_time, b.end_time, b.status, r.room_number, r.capacity,
-               r.room_type_id, rt.type_name AS room_type_name
+               b.start_time, b.end_time, b.status, b.attendance_status,
+               b.checked_in_at, b.actual_usage_start, b.actual_usage_end, b.no_show_at,
+               r.room_number, r.capacity, r.room_type_id, rt.type_name AS room_type_name
         FROM bookings b
         INNER JOIN rooms r ON r.room_id = b.room_id
         INNER JOIN room_types rt ON rt.room_type_id = r.room_type_id
@@ -371,7 +381,9 @@ def list_my_bookings(connection, user_id):
         cursor.execute(
             """
             SELECT b.booking_id, b.title, b.request_note, b.participant_count, b.start_time,
-                   b.end_time, b.status, r.room_number, rt.type_name AS room_type_name
+                   b.end_time, b.status, b.attendance_status, b.checked_in_at,
+                   b.actual_usage_start, b.actual_usage_end, b.no_show_at,
+                   r.room_number, rt.type_name AS room_type_name
             FROM bookings b
             INNER JOIN rooms r ON r.room_id = b.room_id
             INNER JOIN room_types rt ON rt.room_type_id = r.room_type_id
@@ -548,6 +560,104 @@ def cancel_booking(connection, user, booking_id):
         raise
 
 
+
+def check_in_booking(connection, user, booking_id):
+    """Only the owner can check in to an approved booking, within its 30-minute grace period."""
+    try:
+        with connection.cursor() as cursor:
+            booking = get_owned_booking(cursor, booking_id, user["user_id"], for_update=True)
+            if not booking:
+                connection.rollback()
+                return response(404, {"error": "Booking not found", "message": "ไม่พบรายการจองของคุณ"})
+            if booking["status"] != "approved":
+                connection.rollback()
+                return response(409, {"error": "Booking not approved", "message": "Check-in ได้เฉพาะรายการที่อนุมัติแล้ว"})
+            if booking.get("attendance_status") == "CHECKED_IN" or booking.get("checked_in_at"):
+                connection.rollback()
+                return response(409, {"error": "Already checked in", "message": "รายการนี้ Check-in แล้ว"})
+            cursor.execute("SELECT NOW() AS current_time")
+            now = cursor.fetchone()["current_time"]
+            cutoff = booking["start_time"] + timedelta(minutes=30)
+            if now < booking["start_time"]:
+                connection.rollback()
+                return response(409, {"error": "Too early", "message": "ยังไม่ถึงเวลาเริ่มจอง กรุณา Check-in เมื่อถึงเวลาเริ่มต้น"})
+            if now >= cutoff:
+                cursor.execute(
+                    """UPDATE bookings
+                       SET status='no_show', attendance_status='NO_SHOW', no_show_at=COALESCE(no_show_at, NOW())
+                       WHERE booking_id=%s AND status='approved'
+                         AND attendance_status='NOT_CHECKED_IN'""",
+                    (booking_id,),
+                )
+                connection.commit()
+                return response(409, {"error": "Check-in window expired", "message": "เกินเวลา Check-in 30 นาที รายการนี้ถูกบันทึกเป็น No-show แล้ว"})
+            cursor.execute(
+                """UPDATE bookings
+                   SET attendance_status='CHECKED_IN',
+                       checked_in_at=NOW(),
+                       actual_usage_start=NOW()
+                   WHERE booking_id=%s AND user_id=%s
+                     AND status='approved'
+                     AND attendance_status='NOT_CHECKED_IN'""",
+                (booking_id, user["user_id"]),
+            )
+            if cursor.rowcount != 1:
+                connection.rollback()
+                return response(409, {"error": "Check-in failed", "message": "ไม่สามารถ Check-in ได้ กรุณาโหลดรายการใหม่"})
+            cursor.execute(
+                """SELECT b.booking_id, b.title, b.request_note, b.participant_count,
+                          b.start_time, b.end_time, b.status, b.attendance_status,
+                          b.checked_in_at, b.actual_usage_start, b.actual_usage_end, b.no_show_at,
+                          r.room_number, rt.type_name AS room_type_name
+                   FROM bookings b JOIN rooms r ON r.room_id=b.room_id
+                   JOIN room_types rt ON rt.room_type_id=r.room_type_id
+                   WHERE b.booking_id=%s AND b.user_id=%s""",
+                (booking_id, user["user_id"]),
+            )
+            updated = cursor.fetchone()
+        connection.commit()
+        return response(200, {"booking": booking_to_json(updated), "message": "Check-in สำเร็จ"})
+    except Exception:
+        connection.rollback()
+        raise
+
+
+def end_actual_usage(connection, user, booking_id):
+    """Record when the owner finishes using the room."""
+    try:
+        with connection.cursor() as cursor:
+            booking = get_owned_booking(cursor, booking_id, user["user_id"], for_update=True)
+            if not booking:
+                connection.rollback()
+                return response(404, {"error": "Booking not found", "message": "ไม่พบรายการจองของคุณ"})
+            if booking.get("attendance_status") != "CHECKED_IN":
+                connection.rollback()
+                return response(409, {"error": "Not checked in", "message": "ต้อง Check-in ก่อนจึงจะสิ้นสุดการใช้งานได้"})
+            cursor.execute(
+                """UPDATE bookings
+                   SET attendance_status='COMPLETED', actual_usage_end=NOW()
+                   WHERE booking_id=%s AND user_id=%s
+                     AND attendance_status='CHECKED_IN'""",
+                (booking_id, user["user_id"]),
+            )
+            cursor.execute(
+                """SELECT b.booking_id, b.title, b.request_note, b.participant_count,
+                          b.start_time, b.end_time, b.status, b.attendance_status,
+                          b.checked_in_at, b.actual_usage_start, b.actual_usage_end, b.no_show_at,
+                          r.room_number, rt.type_name AS room_type_name
+                   FROM bookings b JOIN rooms r ON r.room_id=b.room_id
+                   JOIN room_types rt ON rt.room_type_id=r.room_type_id
+                   WHERE b.booking_id=%s AND b.user_id=%s""",
+                (booking_id, user["user_id"]),
+            )
+            updated = cursor.fetchone()
+        connection.commit()
+        return response(200, {"booking": booking_to_json(updated), "message": "บันทึก Actual Usage แล้ว"})
+    except Exception:
+        connection.rollback()
+        raise
+
+
 def get_booking_id(event):
     value = (event.get("pathParameters") or {}).get("booking_id")
     try:
@@ -583,6 +693,11 @@ def lambda_handler(event, context):
             return create_booking(connection, user, parse_json_body(event))
 
         booking_id = get_booking_id(event)
+        path_lower = path.lower()
+        if method == "POST" and booking_id is not None and path_lower.endswith(f"/bookings/{booking_id}/check-in"):
+            return check_in_booking(connection, user, booking_id)
+        if method == "POST" and booking_id is not None and path_lower.endswith(f"/bookings/{booking_id}/usage/end"):
+            return end_actual_usage(connection, user, booking_id)
         if booking_id is None:
             return response(404, {"error": "Not found", "message": "ไม่พบเส้นทาง API"})
         if method == "PATCH":

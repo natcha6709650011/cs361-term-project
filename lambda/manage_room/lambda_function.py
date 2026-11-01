@@ -61,9 +61,14 @@ def get_request_info(event):
         .get("path")
         or ""
     ).rstrip("/")
-
-    path_parameters = event.get("pathParameters") or {}
-    room_id = path_parameters.get("room_id")
+# Remove API Gateway stage prefix (e.g. /v1)
+    stage = event.get("requestContext", {}).get("stage")
+    if stage and stage != "$default":
+        stage_prefix = f"/{stage}"
+        if path.startswith(stage_prefix + "/"):
+            path = path[len(stage_prefix):]
+            path_parameters = event.get("pathParameters") or {}
+            room_id = path_parameters.get("room_id")
 
     # รองรับกรณี API Gateway ไม่ส่ง pathParameters มาให้
     parts = path.strip("/").split("/")

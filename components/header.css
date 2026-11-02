@@ -392,3 +392,22 @@
 .user-link {
   position: relative;
 }
+/* Keep all navigation menu labels on one line */
+.main-nav {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.main-nav > a,
+.main-nav .dropdown-toggle {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Keep dropdown labels and arrow on the same line */
+.main-nav .dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}

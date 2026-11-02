@@ -1,3 +1,4 @@
+
 (() => {
   const componentScript = document.currentScript;
   const componentDirectory = new URL('./', componentScript.src);
@@ -47,8 +48,12 @@
         <a href="guidelines.html">ข้อปฏิบัติ</a>
         <a href="contact.html">ติดต่อเรา</a>
         <a href="approval.html" id="approver-tab" hidden>
-  อนุมัติการจอง
-</a>
+          อนุมัติการจอง
+        </a>
+
+        <a href="admin-bookings.html" id="admin-bookings-tab" hidden>
+          ติดตามการจอง
+        </a>
 
 <div class="nav-dropdown" id="facility-admin-tab" hidden>
   <button class="dropdown-toggle" type="button" aria-expanded="false" aria-controls="facility-admin-menu">
@@ -238,8 +243,10 @@ logoutButton.addEventListener('click', async () => {
       <span class="user-name">เข้าสู่ระบบ</span>
     `;
   }
+
 const approverTab = header.querySelector('#approver-tab');
 const facilityAdminTab = header.querySelector('#facility-admin-tab');
+const adminBookingsTab = header.querySelector('#admin-bookings-tab');
 
 const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
@@ -266,6 +273,14 @@ if (isLoggedIn) {
         approverTab.hidden = !(data.user?.is_approver === true);
       }
 
+      // เมนูติดตามการจอง: APPROVER หรือ FACILITY_ADMIN
+      if (adminBookingsTab) {
+        adminBookingsTab.hidden = !(
+          data.user?.is_approver === true ||
+          data.user?.is_facility_admin === true
+        );
+      }
+
       // ปุ่มจัดการห้อง
       if (facilityAdminTab) {
         facilityAdminTab.hidden = !(data.user?.is_facility_admin === true);
@@ -276,10 +291,12 @@ if (isLoggedIn) {
 
       if (approverTab) approverTab.hidden = true;
       if (facilityAdminTab) facilityAdminTab.hidden = true;
+      if (adminBookingsTab) adminBookingsTab.hidden = true;
     });
 } else {
   if (approverTab) approverTab.hidden = true;
   if (facilityAdminTab) facilityAdminTab.hidden = true;
+  if (adminBookingsTab) adminBookingsTab.hidden = true;
 }
 
   // =========================================================

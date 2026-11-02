@@ -393,8 +393,68 @@ def list_my_bookings(connection, user_id):
             (user_id,),
         )
         return [booking_to_json(row) for row in cursor.fetchall()]
+def list_admin_bookings(connection, user):
+    with connection.cursor() as cursor:
+        # Check whether user has APPROVER or FACILITY_ADMIN role
+        cursor.execute(
+            """
+            SELECT r.role_name
+            FROM user_roles ur
+            JOIN roles r ON r.role_id = ur.role_id
+            WHERE ur.user_id = %s
+              AND r.role_name IN ('APPROVER', 'FACILITY_ADMIN')
+            LIMIT 1
+            """,
+            (user["user_id"],)
+        )
 
+        if not cursor.fetchone():
+            return response(
+                403,
+                {
+                    "error": "Forbidden",
+                    "message": "คุณไม่มีสิทธิ์เข้าถึงข้อมูลการจอง"
+                }
+            )
 
+        # Get all bookings with booker and room information
+        cursor.execute(
+            """
+            SELECT
+                b.booking_id,
+                b.user_id,
+                b.title,
+                b.request_note,
+                b.participant_count,
+                b.start_time,
+                b.end_time,
+                b.status,
+                b.attendance_status,
+                b.checked_in_at,
+                b.actual_usage_start,
+                b.actual_usage_end,
+                b.no_show_at,
+                r.room_number,
+                rt.type_name AS room_type_name,
+                u.username AS booker_username
+            FROM bookings b
+            JOIN users u ON u.user_id = b.user_id
+            JOIN rooms r ON r.room_id = b.room_id
+            JOIN room_types rt ON rt.room_type_id = r.room_type_id
+            ORDER BY b.start_time DESC
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        bookings = []
+        for row in rows:
+            booking = booking_to_json(row)
+            booking["bookerUsername"] = row["booker_username"]
+            bookings.append(booking)
+
+        return response(200, {"bookings": bookings})
+        
 def create_booking(connection, user, payload):
     values, errors = parse_booking_values(payload)
     if errors:
@@ -575,8 +635,8 @@ def check_in_booking(connection, user, booking_id):
             if booking.get("attendance_status") == "CHECKED_IN" or booking.get("checked_in_at"):
                 connection.rollback()
                 return response(409, {"error": "Already checked in", "message": "รายการนี้ Check-in แล้ว"})
-            cursor.execute("SELECT NOW() AS current_time")
-            now = cursor.fetchone()["current_time"]
+            cursor.execute("SELECT NOW() AS server_now")
+            now = cursor.fetchone()["server_now"]
             cutoff = booking["start_time"] + timedelta(minutes=30)
             if now < booking["start_time"]:
                 connection.rollback()
@@ -689,6 +749,8 @@ def lambda_handler(event, context):
         path = get_path(event).rstrip("/")
         if method == "GET" and path.endswith("/bookings/me"):
             return response(200, {"bookings": list_my_bookings(connection, user["user_id"])})
+        if method == "GET" and path.endswith("/admin/bookings"):
+            return list_admin_bookings(connection, user)
         if method == "POST" and path.endswith("/bookings"):
             return create_booking(connection, user, parse_json_body(event))
 

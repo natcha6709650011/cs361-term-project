@@ -21,15 +21,20 @@
   }
 
   const clone = (value) => JSON.parse(JSON.stringify(value));
-  const wait = (milliseconds = 250) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+  const wait = (milliseconds = 250) =>
+    new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
   function getMockBookings() {
     if (mockBookings === null) {
       if (!Array.isArray(window.MY_BOOKINGS_MOCK)) {
-        throw new BookingServiceError("Mock booking data is unavailable", { code: "DATA_UNAVAILABLE" });
+        throw new BookingServiceError("Mock booking data is unavailable", {
+          code: "DATA_UNAVAILABLE",
+        });
       }
+
       mockBookings = clone(window.MY_BOOKINGS_MOCK);
     }
+
     return mockBookings;
   }
 
@@ -42,17 +47,24 @@
   }
 
   function findMockConflict({ id, room, date, startTime, endTime }) {
-    const activeBookings = getMockBookings().filter((booking) =>
-      booking.id !== id &&
-      ["PENDING", "APPROVED"].includes(booking.status),
+    const activeBookings = getMockBookings().filter(
+      (booking) =>
+        booking.id !== id &&
+        ["PENDING", "APPROVED"].includes(booking.status),
     );
-    const fixedSchedules = Array.isArray(window.MY_BOOKING_CONFLICTS) ? window.MY_BOOKING_CONFLICTS : [];
 
-    return [...activeBookings, ...fixedSchedules].find((item) =>
-      roomKey(item.room) === roomKey(room) &&
-      item.date === date &&
-      timesOverlap(startTime, endTime, item.startTime, item.endTime),
-    ) || null;
+    const fixedSchedules = Array.isArray(window.MY_BOOKING_CONFLICTS)
+      ? window.MY_BOOKING_CONFLICTS
+      : [];
+
+    return (
+      [...activeBookings, ...fixedSchedules].find(
+        (item) =>
+          roomKey(item.room) === roomKey(room) &&
+          item.date === date &&
+          timesOverlap(startTime, endTime, item.startTime, item.endTime),
+      ) || null
+    );
   }
 
   function unwrap(payload, key) {
@@ -61,7 +73,9 @@
 
   async function apiRequest(path, options = {}) {
     if (!config.baseUrl) {
-      throw new BookingServiceError("Booking API configuration is incomplete", { code: "AUTH_NOT_READY" });
+      throw new BookingServiceError("Booking API configuration is incomplete", {
+        code: "AUTH_NOT_READY",
+      });
     }
 
     const response = await fetch(`${config.baseUrl}${path}`, {
@@ -75,6 +89,7 @@
     });
 
     const payload = await response.json().catch(() => ({}));
+
     if (response.status === 409) {
       throw new BookingServiceError("Selected time is unavailable", {
         code: "BOOKING_CONFLICT",
@@ -82,13 +97,18 @@
         details: payload,
       });
     }
+
     if (!response.ok) {
-      throw new BookingServiceError(payload?.message || "Booking request failed", {
-        code: "BOOKING_REQUEST_FAILED",
-        status: response.status,
-        details: payload,
-      });
+      throw new BookingServiceError(
+        payload?.message || "Booking request failed",
+        {
+          code: "BOOKING_REQUEST_FAILED",
+          status: response.status,
+          details: payload,
+        },
+      );
     }
+
     return payload;
   }
 
@@ -109,7 +129,11 @@
         method: "POST",
         body: JSON.stringify(payload),
       });
-      return { success: true, booking: unwrap(response, "booking") };
+
+      return {
+        success: true,
+        booking: unwrap(response, "booking"),
+      };
     }
 
     await wait();
@@ -118,18 +142,36 @@
 
   async function updateBooking(id, payload) {
     if (config.mode === "api") {
-      const response = await apiRequest(`/bookings/${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
-      return { booking: unwrap(response, "booking") };
+      const response = await apiRequest(
+        `/bookings/${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        },
+      );
+
+      return {
+        booking: unwrap(response, "booking"),
+      };
     }
 
     await wait();
-    const booking = getMockBookings().find((item) => item.id === id);
-    if (!booking) throw new BookingServiceError("Booking was not found", { code: "NOT_FOUND", status: 404 });
 
-    const conflict = findMockConflict({ id, room: booking.room, ...payload });
+    const booking = getMockBookings().find((item) => item.id === id);
+
+    if (!booking) {
+      throw new BookingServiceError("Booking was not found", {
+        code: "NOT_FOUND",
+        status: 404,
+      });
+    }
+
+    const conflict = findMockConflict({
+      id,
+      room: booking.room,
+      ...payload,
+    });
+
     if (conflict) {
       throw new BookingServiceError("Selected time is unavailable", {
         code: "BOOKING_CONFLICT",
@@ -139,60 +181,105 @@
     }
 
     Object.assign(booking, payload);
-    return { booking: clone(booking), isMock: true };
+
+    return {
+      booking: clone(booking),
+      isMock: true,
+    };
   }
 
   async function checkInBooking(id) {
     if (config.mode === "api") {
-      const response = await apiRequest(`/bookings/${encodeURIComponent(id)}/check-in`, {
-        method: "POST",
-      });
-      return { booking: unwrap(response, "booking") };
+      const response = await apiRequest(
+        `/bookings/${encodeURIComponent(id)}/check-in`,
+        {
+          method: "POST",
+        },
+      );
+
+      return {
+        booking: unwrap(response, "booking"),
+      };
     }
 
     await wait();
-    const booking = getMockBookings().find((item) => String(item.id) === String(id));
-    if (!booking) throw new BookingServiceError("Booking was not found", { code: "NOT_FOUND", status: 404 });
-    if (booking.status !== "APPROVED") throw new BookingServiceError("รายการนี้ยังไม่ได้รับอนุมัติ", { code: "NOT_APPROVED", status: 409 });
+
+    const booking = getMockBookings().find(
+      (item) => String(item.id) === String(id),
+    );
+
+    if (!booking) {
+      throw new BookingServiceError("Booking was not found", {
+        code: "NOT_FOUND",
+        status: 404,
+      });
+    }
+
+    if (booking.status !== "APPROVED") {
+      throw new BookingServiceError("รายการนี้ยังไม่ได้รับอนุมัติ", {
+        code: "NOT_APPROVED",
+        status: 409,
+      });
+    }
+
     const now = new Date();
     const startsAt = new Date(`${booking.date}T${booking.startTime}:00`);
+    const endsAt = new Date(`${booking.date}T${booking.endTime}:00`);
     const cutoff = new Date(startsAt.getTime() + 30 * 60 * 1000);
-    if (now < startsAt || now >= cutoff) throw new BookingServiceError("อยู่นอกช่วงเวลา Check-in (30 นาที)", { code: "CHECKIN_WINDOW_CLOSED", status: 409 });
+
+    if (now < startsAt || now >= cutoff || now >= endsAt) {
+      throw new BookingServiceError(
+        "อยู่นอกช่วงเวลา Check-in (ภายใน 30 นาทีหลังเวลาเริ่มจอง)",
+        {
+          code: "CHECKIN_WINDOW_CLOSED",
+          status: 409,
+        },
+      );
+    }
+
     booking.attendanceStatus = "CHECKED_IN";
     booking.checkedInAt = now.toISOString();
     booking.actualUsageStart = now.toISOString();
-    return { booking: clone(booking), isMock: true };
-  }
 
-  async function endActualUsage(id) {
-    if (config.mode === "api") {
-      const response = await apiRequest(`/bookings/${encodeURIComponent(id)}/usage/end`, {
-        method: "POST",
-      });
-      return { booking: unwrap(response, "booking") };
-    }
-
-    await wait();
-    const booking = getMockBookings().find((item) => String(item.id) === String(id));
-    if (!booking) throw new BookingServiceError("Booking was not found", { code: "NOT_FOUND", status: 404 });
-    if (booking.attendanceStatus !== "CHECKED_IN") throw new BookingServiceError("กรุณา Check-in ก่อน", { code: "NOT_CHECKED_IN", status: 409 });
-    booking.attendanceStatus = "COMPLETED";
-    booking.actualUsageEnd = new Date().toISOString();
-    return { booking: clone(booking), isMock: true };
+    return {
+      booking: clone(booking),
+      isMock: true,
+    };
   }
 
   async function cancelBooking(id) {
     if (config.mode === "api") {
-      const response = await apiRequest(`/bookings/${encodeURIComponent(id)}`, { method: "DELETE" });
-      return { booking: unwrap(response, "booking") };
+      const response = await apiRequest(
+        `/bookings/${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      return {
+        booking: unwrap(response, "booking"),
+      };
     }
 
     await wait();
-    const booking = getMockBookings().find((item) => item.id === id);
-    if (!booking) throw new BookingServiceError("Booking was not found", { code: "NOT_FOUND", status: 404 });
+
+    const booking = getMockBookings().find(
+      (item) => item.id === id,
+    );
+
+    if (!booking) {
+      throw new BookingServiceError("Booking was not found", {
+        code: "NOT_FOUND",
+        status: 404,
+      });
+    }
 
     booking.status = "CANCELLED";
-    return { booking: clone(booking), isMock: true };
+
+    return {
+      booking: clone(booking),
+      isMock: true,
+    };
   }
 
   window.BookingService = {
@@ -201,7 +288,6 @@
     updateBooking,
     cancelBooking,
     checkInBooking,
-    endActualUsage,
     BookingServiceError,
   };
 })();

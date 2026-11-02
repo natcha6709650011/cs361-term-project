@@ -1,12 +1,14 @@
-"""Scheduled V4 job: mark approved bookings as No-show 30 minutes after start.
+"""Scheduled V4 booking lifecycle job.
 
 Configure an EventBridge schedule (rate(1 minute)) to invoke this Lambda.
-Required environment variables: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME.
-The row lock and conditional UPDATE make retries and concurrent invocations safe.
+- APPROVED bookings without Check-in become NO_SHOW after the 30-minute grace period.
+- CHECKED_IN bookings become COMPLETED automatically when end_time is reached.
+No user-operated Check-out endpoint or timestamp is used.
 """
+
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pymysql
 
@@ -25,17 +27,21 @@ def connect_database():
         read_timeout=10,
         write_timeout=10,
     )
+
     # Booking DATETIME values are stored in Thailand local time.
     with connection.cursor() as cursor:
         cursor.execute("SET time_zone = '+07:00'")
+
     return connection
 
 
 def lambda_handler(event, context):
     connection = connect_database()
+
     try:
         with connection.cursor() as cursor:
-            # Lock only rows that have passed the grace period and were never checked in.
+            # Find approved bookings that passed the 30-minute
+            # Check-in grace period without being checked in.
             cursor.execute(
                 """
                 SELECT booking_id
@@ -48,9 +54,17 @@ def lambda_handler(event, context):
                 FOR UPDATE
                 """
             )
-            booking_ids = [row["booking_id"] for row in cursor.fetchall()]
+
+            booking_ids = [
+                row["booking_id"]
+                for row in cursor.fetchall()
+            ]
+
             if booking_ids:
-                placeholders = ",".join(["%s"] * len(booking_ids))
+                placeholders = ",".join(
+                    ["%s"] * len(booking_ids)
+                )
+
                 cursor.execute(
                     f"""
                     UPDATE bookings
@@ -63,20 +77,43 @@ def lambda_handler(event, context):
                     """,
                     booking_ids,
                 )
-                updated = cursor.rowcount
+
+                marked_no_show = cursor.rowcount
             else:
-                updated = 0
+                marked_no_show = 0
+
+            # Automatically complete bookings that were checked in
+            # and have reached their reservation end time.
+            # No manual Check-out is required.
+            cursor.execute(
+                """
+                UPDATE bookings
+                SET attendance_status = 'COMPLETED'
+                WHERE status = 'approved'
+                  AND attendance_status = 'CHECKED_IN'
+                  AND end_time <= NOW()
+                """
+            )
+
+            marked_completed = cursor.rowcount
+
         connection.commit()
+
         return {
             "statusCode": 200,
             "body": json.dumps({
-                "message": "No-show scan completed",
-                "marked_no_show": updated,
-                "checked_at": datetime.now().isoformat(timespec="seconds"),
+                "message": "Booking lifecycle scan completed",
+                "marked_no_show": marked_no_show,
+                "marked_completed": marked_completed,
+                "checked_at": datetime.now().isoformat(
+                    timespec="seconds"
+                ),
             }),
         }
+
     except Exception:
         connection.rollback()
         raise
+
     finally:
         connection.close()

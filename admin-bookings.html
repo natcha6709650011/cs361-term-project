@@ -7,36 +7,69 @@
     <link rel="stylesheet" href="room-types.css?v=2" />
     <link rel="stylesheet" href="admin-bookings.css" />
   </head>
+
   <body>
     <style>
       .main-nav > a[href="index.html"],
-      .main-nav > a[href="admin-bookings.html"] { display: inline-block !important; }
+      .main-nav > a[href="admin-bookings.html"] {
+        display: inline-block !important;
+      }
     </style>
+
     <div data-site-header></div>
 
     <main class="admin">
       <div class="admin-head">
         <div>
           <h1>ติดตามการจอง</h1>
-          <p class="admin-subtitle">ตรวจสอบข้อมูลการจองและสถานะการเข้าใช้งานห้อง (อ่านอย่างเดียว)</p>
+          <p class="admin-subtitle">
+            ตรวจสอบข้อมูลการจองและสถานะการเข้าใช้งานห้อง (อ่านอย่างเดียว)
+          </p>
         </div>
-        <button type="button" class="btn btn--primary" id="refreshBtn">รีเฟรชข้อมูล</button>
+
+        <button
+          type="button"
+          class="btn btn--primary"
+          id="refreshBtn"
+        >
+          รีเฟรชข้อมูล
+        </button>
       </div>
 
       <p id="adminStatus" class="admin__status" role="status" hidden></p>
 
       <section class="monitor-summary" aria-label="สรุปรายการ">
-        <div class="summary-card"><span>รายการทั้งหมด</span><strong id="totalCount">—</strong></div>
-        <div class="summary-card"><span>รออนุมัติ</span><strong id="pendingCount">—</strong></div>
-        <div class="summary-card"><span>อนุมัติแล้ว</span><strong id="approvedCount">—</strong></div>
-        <div class="summary-card"><span>ไม่มาใช้งาน</span><strong id="noShowCount">—</strong></div>
+        <div class="summary-card">
+          <span>รายการทั้งหมด</span>
+          <strong id="totalCount">—</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>รออนุมัติ</span>
+          <strong id="pendingCount">—</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>อนุมัติแล้ว</span>
+          <strong id="approvedCount">—</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>ไม่มาใช้งาน</span>
+          <strong id="noShowCount">—</strong>
+        </div>
       </section>
 
       <div class="monitor-filters">
         <label class="admin-search">
           <span aria-hidden="true">⌕</span>
-          <input type="search" id="fSearch" placeholder="ค้นหาผู้จองหรือเลขห้อง" />
+          <input
+            type="search"
+            id="fSearch"
+            placeholder="ค้นหาผู้จองหรือเลขห้อง"
+          />
         </label>
+
         <select id="fStatus" aria-label="สถานะการจอง">
           <option value="">สถานะการจองทั้งหมด</option>
           <option value="PENDING">รออนุมัติ</option>
@@ -45,6 +78,7 @@
           <option value="CANCELLED">ยกเลิก</option>
           <option value="NO_SHOW">ไม่มาใช้งาน</option>
         </select>
+
         <select id="fAttendance" aria-label="สถานะการเข้าใช้งาน">
           <option value="">สถานะเข้าใช้งานทั้งหมด</option>
           <option value="NOT_CHECKED_IN">ยังไม่ Check-in</option>
@@ -52,6 +86,7 @@
           <option value="COMPLETED">ใช้งานเสร็จแล้ว</option>
           <option value="NO_SHOW">ไม่มาใช้งาน</option>
         </select>
+
         <input type="date" id="fDate" aria-label="วันที่จอง" />
       </div>
 
@@ -68,17 +103,25 @@
                 <th>สถานะเข้าใช้งาน</th>
                 <th>เวลา Check-in</th>
                 <th>เริ่มใช้งานจริง</th>
-                <th>สิ้นสุดใช้งานจริง</th>
                 <th>เวลาบันทึก No-show</th>
               </tr>
             </thead>
+
             <tbody id="bookingRows">
-              <tr><td colspan="10" class="admin-empty">กำลังโหลดข้อมูล...</td></tr>
+              <tr>
+                <td colspan="9" class="admin-empty">
+                  กำลังโหลดข้อมูล...
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <p class="monitor-footnote">หน้านี้ใช้สำหรับตรวจสอบข้อมูลเท่านั้น ไม่สามารถแก้ไข อนุมัติ หรือ Check-in แทนผู้จองได้</p>
+
+      <p class="monitor-footnote">
+        หน้านี้ใช้สำหรับตรวจสอบข้อมูลเท่านั้น ไม่สามารถแก้ไข อนุมัติ
+        หรือ Check-in แทนผู้จองได้
+      </p>
     </main>
 
     <script src="components/header-component.js"></script>

@@ -50,7 +50,99 @@ Parameters:
     Default: admin
     Description: Database username
 
-Resources: {}
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Database password supplied at deployment time
+
+Resources:
+  PyMySqlLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub '${AWS::StackName}-pymysql'
+      Description: Shared PyMySQL dependency for RDS-backed Lambda functions
+      ContentUri: ../pymysql-layer/
+      CompatibleRuntimes:
+        - python3.13
+      CompatibleArchitectures:
+        - x86_64
+      RetentionPolicy: Retain
+
+  GetRoomsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/get_rooms/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      MemorySize: 128
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms
+
+  GetDetailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/get_detail/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      MemorySize: 128
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms/{room_number}
+
+  GetRoomScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/get_room_schedule/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      MemorySize: 128
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms/{room_number}/schedule
+
+  SearchAvailableRoomsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/search_available_rooms/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms/available
 
 Outputs:
   DatabaseHost:

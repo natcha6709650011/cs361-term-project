@@ -1,3 +1,4 @@
+
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
@@ -12,39 +13,31 @@ Parameters:
       - dev
       - test
       - prod
-    Description: Deployment environment
 
   DBHost:
     Type: String
-    Description: RDS MySQL endpoint
+    Default: cstu-room-database.cefikyua88rq.us-east-1.rds.amazonaws.com
 
   DBName:
     Type: String
     Default: cstu_room_db
-    Description: Database name
 
   DBPort:
     Type: Number
     Default: 3306
-    Description: RDS MySQL port
 
   DBUser:
     Type: String
     Default: admin
-    Description: Database username
 
-  DBPasswordSecretArn:
+  DBPassword:
     Type: String
-    Description: ARN of the Secrets Manager secret containing DB password
-
-  DBPasswordSecretJsonKey:
-    Type: String
-    Default: password
-    Description: JSON key containing the DB password
+    NoEcho: true
+    Description: RDS MySQL password. Do not commit this value.
 
   ImageBucketName:
     Type: String
-    Description: S3 bucket used for room images
+    Default: cstu-room-images1
 
 Globals:
   Function:
@@ -68,7 +61,21 @@ Resources:
           DB_NAME: !Ref DBName
           DB_PORT: !Ref DBPort
           DB_USER: !Ref DBUser
-          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:${DBPasswordSecretJsonKey}}}'
+          DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-07bbfe69921bf522b
+        SubnetIds:
+          - subnet-089b9d28eaf352d8b
+          - subnet-0fccb724bebd3081a
+          - subnet-0d8487dc29aa0a0de
+          - subnet-0e31c80e3ed16057a
+          - subnet-0fa733b2a03abd4b0
+          - subnet-014ada63684a48c9a
+          - subnet-08567a765615b987e
+          - subnet-0a4138a1f2100a82b
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
 
   RoomConfigurationFunction:
     Type: AWS::Serverless::Function
@@ -83,7 +90,21 @@ Resources:
           DB_NAME: !Ref DBName
           DB_PORT: !Ref DBPort
           DB_USER: !Ref DBUser
-          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:${DBPasswordSecretJsonKey}}}'
+          DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-07bbfe69921bf522b
+        SubnetIds:
+          - subnet-089b9d28eaf352d8b
+          - subnet-0fccb724bebd3081a
+          - subnet-0d8487dc29aa0a0de
+          - subnet-0e31c80e3ed16057a
+          - subnet-0fa733b2a03abd4b0
+          - subnet-014ada63684a48c9a
+          - subnet-08567a765615b987e
+          - subnet-0a4138a1f2100a82b
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
 
   RoomImageUploadFunction:
     Type: AWS::Serverless::Function

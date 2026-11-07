@@ -6,4 +6,4 @@ region = "us-east-1"
 resolve_s3 = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-parameter_overrides = "Environment=dev"
+parameter_overrides = "Environment=dev DBHost=cstu-room-database.cefikyua88rq.us-east-1.rds.amazonaws.com DBName=cstu_room_db DBPort=3306 DBUser=admin ImageBucketName=cstu-room-images1"

@@ -1,0 +1,70 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  Shared Infrastructure as Code for CSTU Room Booking V5
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        DB_HOST: !Ref DBHost
+        DB_NAME: !Ref DBName
+        DB_PORT: !Ref DBPort
+        DB_USER: !Ref DBUser
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    Description: Deployment environment
+
+  DBHost:
+    Type: String
+    Default: cstu-room-database.cefikyua88rq.us-east-1.rds.amazonaws.com
+    Description: CSTU RDS MySQL endpoint
+
+  DBName:
+    Type: String
+    Default: cstu_room_db
+    Description: Database name
+
+  DBPort:
+    Type: Number
+    Default: 3306
+    Description: RDS MySQL port
+
+  DBUser:
+    Type: String
+    Default: admin
+    Description: Database username
+
+Resources: {}
+
+Outputs:
+  DatabaseHost:
+    Description: RDS MySQL endpoint
+    Value: !Ref DBHost
+
+  DatabaseName:
+    Description: Database name
+    Value: !Ref DBName
+
+  DatabasePort:
+    Description: Database port
+    Value: !Ref DBPort
+
+  DeploymentEnvironment:
+    Description: Deployment environment
+    Value: !Ref Environment

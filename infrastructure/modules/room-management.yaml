@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  CSTU Room Booking V5 - Room Management Module
+  Person 4: Manage rooms, configure rooms, and upload room images.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    Description: Deployment environment
+
+  DBHost:
+    Type: String
+    Description: RDS MySQL endpoint
+
+  DBName:
+    Type: String
+    Default: cstu_room_db
+    Description: Database name
+
+  DBPort:
+    Type: Number
+    Default: 3306
+    Description: RDS MySQL port
+
+  DBUser:
+    Type: String
+    Default: admin
+    Description: Database username
+
+  DBPasswordSecretArn:
+    Type: String
+    Description: ARN of the Secrets Manager secret containing DB password
+
+  DBPasswordSecretJsonKey:
+    Type: String
+    Default: password
+    Description: JSON key containing the DB password
+
+  ImageBucketName:
+    Type: String
+    Description: S3 bucket used for room images
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+    Timeout: 15
+    MemorySize: 128
+
+Resources:
+  ManageRoomFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub cstu-v5-manage-room-${Environment}
+      CodeUri: ../../lambda/manage_room/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          DB_HOST: !Ref DBHost
+          DB_NAME: !Ref DBName
+          DB_PORT: !Ref DBPort
+          DB_USER: !Ref DBUser
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:${DBPasswordSecretJsonKey}}}'
+
+  RoomConfigurationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub cstu-v5-room-configuration-${Environment}
+      CodeUri: ../../lambda/room_configuration/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          DB_HOST: !Ref DBHost
+          DB_NAME: !Ref DBName
+          DB_PORT: !Ref DBPort
+          DB_USER: !Ref DBUser
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:${DBPasswordSecretJsonKey}}}'
+
+  RoomImageUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub cstu-v5-room-image-upload-${Environment}
+      CodeUri: ../../lambda/room_image_upload/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          IMAGE_BUCKET: !Ref ImageBucketName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${ImageBucketName}/*
+
+Outputs:
+  ManageRoomFunctionArn:
+    Description: Manage room Lambda ARN
+    Value: !GetAtt ManageRoomFunction.Arn
+
+  RoomConfigurationFunctionArn:
+    Description: Room configuration Lambda ARN
+    Value: !GetAtt RoomConfigurationFunction.Arn
+
+  RoomImageUploadFunctionArn:
+    Description: Room image upload Lambda ARN
+    Value: !GetAtt RoomImageUploadFunction.Arn

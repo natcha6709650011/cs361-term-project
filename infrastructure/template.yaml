@@ -50,7 +50,198 @@ Parameters:
     Default: admin
     Description: Database username
 
-Resources: {}
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Database password supplied at deployment time
+
+  NoShowScheduleState:
+    Type: String
+    Default: DISABLED
+    AllowedValues:
+      - ENABLED
+      - DISABLED
+    Description: >
+      State of the booking No-show / auto-complete schedule. Keep DISABLED while the
+      V4 schedule still runs against the same database; set ENABLED at cut-over.
+
+Resources:
+  PyMySqlLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub '${AWS::StackName}-pymysql'
+      Description: Shared PyMySQL dependency for RDS-backed Lambda functions
+      ContentUri: ../pymysql-layer/
+      CompatibleRuntimes:
+        - python3.13
+      CompatibleArchitectures:
+        - x86_64
+      RetentionPolicy: Retain
+
+  GetRoomsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/get_rooms/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      MemorySize: 128
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms
+
+  GetDetailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/get_detail/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      MemorySize: 128
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms/{room_number}
+
+  GetRoomScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/get_room_schedule/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      MemorySize: 128
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms/{room_number}/schedule
+
+  SearchAvailableRoomsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/search_available_rooms/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: room-information-search
+      ApiRoute: GET /rooms/available
+
+  BookingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/booking/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: booking-lifecycle
+      Authorizer: cstu-jwt-authorizer
+      ApiRoutes:
+        - GET /bookings/me
+        - GET /admin/bookings
+        - POST /bookings
+        - PATCH /bookings/{booking_id}
+        - DELETE /bookings/{booking_id}
+        - POST /bookings/{booking_id}/check-in
+        - POST /bookings/{booking_id}/usage/end
+
+  BookingFacilityManagementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/booking_facility_management/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: booking-lifecycle
+      Authorizer: cstu-jwt-authorizer
+      ApiRoutes:
+        - GET /approvals/pending
+        - POST /approvals/{booking_id}/decision
+        - GET /admin/rooms
+        - GET /room-closures
+        - POST /rooms/{room_id}/availability
+        - PUT /room-policies
+        - GET /facility-schedule-rules
+        - POST /facility-schedule-rules
+        - POST /facility-schedule-rules/{schedule_id}/exceptions
+        - GET /facility-schedules
+        - POST /facility-schedules
+        - PATCH /facility-schedules/{schedule_id}
+        - POST /facility-schedules/{schedule_id}/cancel
+
+  BookingNoShowFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/booking_no_show/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 128
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        NoShowSchedule:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub '${AWS::StackName}-booking-no-show'
+            Description: Mark NO_SHOW after 30-minute grace period and auto-complete checked-in bookings
+            ScheduleExpression: rate(1 minute)
+            State: !Ref NoShowScheduleState
+            RetryPolicy:
+              MaximumRetryAttempts: 0
+    Metadata:
+      Owner: booking-lifecycle
+      Trigger: EventBridge Scheduler rate(1 minute)
 
 Outputs:
   DatabaseHost:

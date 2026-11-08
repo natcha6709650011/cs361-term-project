@@ -1,14 +1,22 @@
+
 import os
 import unittest
 import yaml
 
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 TEMPLATE_PATH = os.path.join(
     PROJECT_ROOT,
     "infrastructure",
     "modules",
     "room-management.yaml"
+)
+
+MAIN_TEMPLATE_PATH = os.path.join(
+    PROJECT_ROOT,
+    "infrastructure",
+    "template.yaml"
 )
 
 
@@ -40,6 +48,14 @@ class TestRoomManagementTemplate(unittest.TestCase):
             )
 
         cls.resources = cls.template["Resources"]
+
+        with open(MAIN_TEMPLATE_PATH, "r", encoding="utf-8") as file:
+            cls.main_template = yaml.load(
+                file,
+                Loader=CloudFormationLoader
+            )
+
+        cls.main_resources = cls.main_template["Resources"]
 
     def test_sam_transform_exists(self):
         self.assertEqual(
@@ -122,15 +138,22 @@ class TestRoomManagementTemplate(unittest.TestCase):
             )
         )
 
-    def test_requirements_files_exist(self):
-        for folder in ["manage_room", "room_configuration"]:
-            path = os.path.join(
-                PROJECT_ROOT,
-                "lambda",
-                folder,
-                "requirements.txt"
+    def test_pymysql_layer_is_configured(self):
+        resources = self.main_resources
+
+        self.assertIn("PyMySqlLayer", resources)
+
+        for function_name in [
+            "ManageRoomFunction",
+            "RoomConfigurationFunction"
+        ]:
+            function = resources[function_name]
+            layers = function["Properties"].get("Layers", [])
+
+            self.assertTrue(
+                any("PyMySqlLayer" in str(layer) for layer in layers),
+                f"{function_name} must reference PyMySqlLayer"
             )
-            self.assertTrue(os.path.isfile(path))
 
 
 if __name__ == "__main__":

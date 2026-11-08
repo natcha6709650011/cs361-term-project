@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 .aws-sam/
+# AWS deployment artifacts and local template snapshots
+/infrastructure/packaged.yaml
+/aws-current-template.json
+/aws-current-template.yaml

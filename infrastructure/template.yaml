@@ -55,6 +55,7 @@ Parameters:
     NoEcho: true
     Description: Database password supplied at deployment time
 
+
   NoShowScheduleState:
     Type: String
     Default: DISABLED
@@ -64,6 +65,21 @@ Parameters:
     Description: >
       State of the booking No-show / auto-complete schedule. Keep DISABLED while the
       V4 schedule still runs against the same database; set ENABLED at cut-over.
+
+  VpcSecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Default: sg-07bbfe69921bf522b
+    Description: Security groups for Lambda functions accessing RDS
+
+  VpcSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Default: subnet-089b9d28eaf352d8b,subnet-0fccb724bebd3081a,subnet-0d8487dc29aa0a0de,subnet-0e31c80e3ed16057a,subnet-0fa733b2a03abd4b0,subnet-014ada63684a48c9a,subnet-08567a765615b987e,subnet-0a4138a1f2100a82b
+    Description: Subnets for Lambda functions accessing RDS
+
+  ImageBucketName:
+    Type: String
+    Default: cstu-room-images1
+    Description: S3 bucket for room images
 
 Resources:
   PyMySqlLayer:
@@ -91,8 +107,12 @@ Resources:
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms
@@ -110,8 +130,12 @@ Resources:
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms/{room_number}
@@ -129,8 +153,12 @@ Resources:
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms/{room_number}/schedule
@@ -148,8 +176,12 @@ Resources:
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms/available
@@ -167,8 +199,12 @@ Resources:
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
     Metadata:
       Owner: booking-lifecycle
       Authorizer: cstu-jwt-authorizer
@@ -194,8 +230,12 @@ Resources:
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
     Metadata:
       Owner: booking-lifecycle
       Authorizer: cstu-jwt-authorizer
@@ -227,8 +267,12 @@ Resources:
       Environment:
         Variables:
           DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
       Events:
         NoShowSchedule:
           Type: ScheduleV2
@@ -242,6 +286,73 @@ Resources:
     Metadata:
       Owner: booking-lifecycle
       Trigger: EventBridge Scheduler rate(1 minute)
+
+  ManageRoomFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'cstu-v5-manage-room-${Environment}'
+      CodeUri: ../lambda/manage_room/
+      Handler: lambda_function.lambda_handler
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+    Metadata:
+      Owner: room-management
+      ApiRoutes:
+        - PATCH /rooms/{room_id}
+        - PATCH /rooms/{room_id}/status
+
+  RoomConfigurationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'cstu-v5-room-configuration-${Environment}'
+      CodeUri: ../lambda/room_configuration/
+      Handler: lambda_function.lambda_handler
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+    Metadata:
+      Owner: room-management
+      ApiRoutes:
+        - GET /room-types
+        - GET /rooms/{room_number}/connections
+
+  RoomImageUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'cstu-v5-room-image-upload-${Environment}'
+      CodeUri: ../lambda/room_image_upload/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          IMAGE_BUCKET: !Ref ImageBucketName
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub 'arn:${AWS::Partition}:s3:::${ImageBucketName}/*'
+    Metadata:
+      Owner: room-management
+      ApiRoutes:
+        - POST /rooms/{room_id}/image-upload
 
 Outputs:
   DatabaseHost:
@@ -259,3 +370,15 @@ Outputs:
   DeploymentEnvironment:
     Description: Deployment environment
     Value: !Ref Environment
+
+  ManageRoomFunctionArn:
+    Description: Manage room Lambda ARN
+    Value: !GetAtt ManageRoomFunction.Arn
+
+  RoomConfigurationFunctionArn:
+    Description: Room configuration Lambda ARN
+    Value: !GetAtt RoomConfigurationFunction.Arn
+
+  RoomImageUploadFunctionArn:
+    Description: Room image upload Lambda ARN
+    Value: !GetAtt RoomImageUploadFunction.Arn

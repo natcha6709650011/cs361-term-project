@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 set -e
-# Load SAM CLI path for Git Bash
+
+# Load SAM CLI path for Git Bash on Windows
 export PATH="$PATH:/c/Program Files/Amazon/AWSSAMCLI/bin"
 
 echo "======================================"
@@ -18,11 +19,9 @@ echo ""
 echo "[2/2] Running Unit Tests..."
 
 python -m pip install -r tests/requirements-test.txt
+python -m pip install pytest
 
-python -m unittest discover \
-  -s tests \
-  -p "test_room_management_template.py" \
-  -v
+python -m pytest tests/test_room_management_template.py -v
 
 echo ""
 echo "======================================"

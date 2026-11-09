@@ -1,188 +1,458 @@
 
+"""Static tests for V5 Authentication & Security SAM resources.
+
+Run from the repository root:
+    py -3 tests/test_security_template.py -v
+"""
+
+from pathlib import Path
 import re
 import unittest
-from pathlib import Path
-
-import yaml
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[1]
+TEMPLATE_PATH = ROOT_DIR / "infrastructure" / "template.yaml"
 
-TEMPLATE_PATH = (
-    PROJECT_ROOT
-    / "infrastructure"
-    / "modules"
-    / "room-management.yaml"
-)
+MODULE_FUNCTIONS = {
+    "UserAuthFunction": {
+        "code_uri": "../lambda/cstu-user-auth/",
+        "timeout": 30,
+        "memory": 256,
+        "owner": "authentication-security",
+        "requirements": {
+            "pyjwt", "pymysql", "cryptography", "boto3"
+        },
+    },
+    "JwtAuthorizerFunction": {
+        "code_uri": "../lambda/cstu-jwt-authorizer/",
+        "timeout": 10,
+        "memory": 128,
+        "owner": "authentication-security",
+        "requirements": {
+            "pyjwt", "cryptography"
+        },
+    },
+    "CstuRoomPermissionFunction": {
+        "code_uri": "../lambda/cstu-room-permission/",
+        "timeout": 30,
+        "memory": 256,
+        "owner": "authentication-security",
+        "requirements": {
+            "pyjwt", "pymysql", "cryptography"
+        },
+    },
+}
 
+REQUIRED_ENV = {
+    "UserAuthFunction": [
+        "DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'",
+        "TU_API_URL: !Ref TuApiUrl",
+        "TU_API_KEY_SECRET_ARN: !Ref TuApiKeySecret",
+        "JWT_PRIVATE_KEY_SECRET_ARN: !Ref JwtPrivateKeySecret",
+        "FRONTEND_ORIGIN: !Ref FrontendOrigin",
+    ],
+    "CstuRoomPermissionFunction": [
+        "DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'",
+    ],
+}
 
-class CloudFormationLoader(yaml.SafeLoader):
-    pass
+REQUIRED_SECRETS = [
+    "JwtPrivateKeySecret",
+    "TuApiKeySecret",
+]
 
-
-def unknown_tag_constructor(loader, tag_suffix, node):
-    if isinstance(node, yaml.ScalarNode):
-        return loader.construct_scalar(node)
-
-    if isinstance(node, yaml.SequenceNode):
-        return loader.construct_sequence(node)
-
-    return loader.construct_mapping(node)
-
-
-CloudFormationLoader.add_multi_constructor(
-    "!", unknown_tag_constructor
-)
+REQUIRED_OUTPUTS = [
+    "UserAuthFunctionArn",
+    "JwtAuthorizerFunctionArn",
+    "CstuRoomPermissionFunctionArn",
+    "JwtAuthorizerUri",
+    "RoomPermissionAuthorizerUri",
+    "JwtPrivateKeySecretArn",
+    "TuApiKeySecretArn",
+]
 
 
 class SecurityTemplateTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open(TEMPLATE_PATH, "r", encoding="utf-8") as file:
-            cls.template = yaml.load(
-                file,
-                Loader=CloudFormationLoader
+        if not TEMPLATE_PATH.is_file():
+            raise FileNotFoundError(
+                f"SAM template not found: {TEMPLATE_PATH}"
             )
 
-        cls.parameters = cls.template["Parameters"]
-        cls.resources = cls.template["Resources"]
+        cls.template = TEMPLATE_PATH.read_text(encoding="utf-8")
 
-    def test_database_password_is_protected(self):
-        """DB password must use NoEcho and must not have a default value."""
-        password = self.parameters["DBPassword"]
+    def resource_body(self, resource_name):
+        pattern = (
+            rf"(?ms)^  {re.escape(resource_name)}:\n"
+            rf"(?P<body>.*?)"
+            rf"(?=^  [A-Za-z][A-Za-z0-9]*:\s*$"
+            rf"|^[A-Za-z][A-Za-z0-9]*:\s*$|\Z)"
+        )
 
-        self.assertEqual(password["Type"], "String")
-        self.assertTrue(password.get("NoEcho", False))
-        self.assertNotIn("Default", password)
+        match = re.search(pattern, self.template)
 
-    def test_database_password_is_not_hardcoded(self):
-        """Database password must be referenced from a parameter."""
-        for function_name in [
-            "ManageRoomFunction",
-            "RoomConfigurationFunction"
-        ]:
-            variables = self.resources[function_name][
-                "Properties"
-            ]["Environment"]["Variables"]
+        self.assertIsNotNone(
+            match,
+            f"Missing resource: {resource_name}"
+        )
 
-            self.assertEqual(
-                variables["DB_PASSWORD"],
-                "DBPassword"
-            )
+        return match.group("body")
 
-    def test_database_lambdas_have_vpc_configuration(self):
-        """Database-connected Lambdas must have VPC configuration."""
-        for function_name in [
-            "ManageRoomFunction",
-            "RoomConfigurationFunction"
-        ]:
-            properties = self.resources[function_name]["Properties"]
+    def section_body(self, section_name):
+        pattern = (
+            rf"(?ms)^{re.escape(section_name)}:\n"
+            rf"(?P<body>.*?)"
+            rf"(?=^[A-Za-z][A-Za-z0-9]*:\s*$|\Z)"
+        )
 
-            self.assertIn("VpcConfig", properties)
+        match = re.search(pattern, self.template)
 
-            vpc_config = properties["VpcConfig"]
+        self.assertIsNotNone(
+            match,
+            f"Missing section: {section_name}"
+        )
 
-            self.assertTrue(vpc_config["SecurityGroupIds"])
-            self.assertTrue(vpc_config["SubnetIds"])
+        return match.group("body")
 
-    def test_database_lambdas_have_vpc_iam_permission(self):
-        """Database-connected Lambdas need VPC execution permissions."""
-        for function_name in [
-            "ManageRoomFunction",
-            "RoomConfigurationFunction"
-        ]:
-            policies = self.resources[function_name][
-                "Properties"
-            ]["Policies"]
-
-            self.assertIn(
-                "AWSLambdaVPCAccessExecutionRole",
-                policies
-            )
-
-    def test_image_upload_has_scoped_s3_permission(self):
-        """Image upload must only write to the configured bucket."""
-        properties = self.resources[
-            "RoomImageUploadFunction"
-        ]["Properties"]
-
-        policies = properties["Policies"]
-
-        s3_statements = []
-
-        for policy in policies:
-            if isinstance(policy, dict):
-                s3_statements.extend(
-                    policy.get("Statement", [])
+    def test_security_lambda_resources_exist(self):
+        for name in MODULE_FUNCTIONS:
+            with self.subTest(resource=name):
+                body = self.resource_body(name)
+                self.assertIn(
+                    "Type: AWS::Serverless::Function",
+                    body
                 )
 
-        put_object_statements = [
-            statement
-            for statement in s3_statements
-            if "s3:PutObject" in statement.get("Action", [])
-        ]
+    def test_lambda_configuration(self):
+        for name, config in MODULE_FUNCTIONS.items():
+            with self.subTest(resource=name):
+                body = self.resource_body(name)
 
-        self.assertTrue(
-            put_object_statements,
-            "Missing s3:PutObject permission"
+                self.assertIn(
+                    f"CodeUri: {config['code_uri']}",
+                    body
+                )
+                self.assertIn(
+                    "Handler: lambda_function.lambda_handler",
+                    body
+                )
+                self.assertIn("Runtime: python3.13", body)
+                self.assertIn(
+                    f"Timeout: {config['timeout']}",
+                    body
+                )
+                self.assertIn(
+                    f"MemorySize: {config['memory']}",
+                    body
+                )
+                self.assertIn(
+                    f"Owner: {config['owner']}",
+                    body
+                )
+
+    def test_source_handler_exists(self):
+        for name, config in MODULE_FUNCTIONS.items():
+            with self.subTest(resource=name):
+                folder = (
+                    config["code_uri"]
+                    .removeprefix("../")
+                )
+
+                source = (
+                    ROOT_DIR / folder / "lambda_function.py"
+                )
+
+                self.assertTrue(
+                    source.is_file(),
+                    f"Missing Lambda source: {source}"
+                )
+
+                source_text = source.read_text(
+                    encoding="utf-8"
+                )
+
+                self.assertRegex(
+                    source_text,
+                    r"(?m)^def lambda_handler\(event, context\):"
+                )
+
+    def test_dependencies_are_complete(self):
+        for name, config in MODULE_FUNCTIONS.items():
+            with self.subTest(resource=name):
+                folder = config["code_uri"].removeprefix("../")
+                requirements = (
+                    ROOT_DIR / folder / "requirements.txt"
+                )
+
+                self.assertTrue(
+                    requirements.is_file(),
+                    f"Missing requirements.txt: {requirements}"
+                )
+
+                packages = set()
+
+                for line in requirements.read_text(
+                    encoding="utf-8"
+                ).splitlines():
+
+                    # Remove UTF-8 BOM and surrounding whitespace
+                    line = line.strip().lstrip("\ufeff")
+
+                    if not line or line.startswith("#"):
+                        continue
+
+                    package = re.split(
+                        r"[<=>~!]",
+                        line,
+                        maxsplit=1
+                    )[0].lower().replace("-", "_")
+
+                    packages.add(package)
+
+                self.assertTrue(
+                    config["requirements"] <= packages,
+                    f"Missing dependencies: "
+                    f"{config['requirements'] - packages}"
+                )
+
+    def test_public_keys_exist(self):
+        for folder in [
+            "cstu-jwt-authorizer",
+            "cstu-room-permission",
+        ]:
+            with self.subTest(folder=folder):
+                public_key = (
+                    ROOT_DIR / "lambda" / folder / "public.pem"
+                )
+
+                self.assertTrue(
+                    public_key.is_file(),
+                    f"Missing public.pem in {folder}"
+                )
+
+                self.assertGreater(
+                    public_key.stat().st_size,
+                    0
+                )
+
+    def test_public_keys_are_identical(self):
+        key_a = (
+            ROOT_DIR / "lambda" / "cstu-jwt-authorizer" / "public.pem"
         )
-
-        for statement in put_object_statements:
-            self.assertEqual(statement["Effect"], "Allow")
-
-            resource = statement["Resource"]
-
-            self.assertEqual(
-                resource,
-                "arn:${AWS::Partition}:s3:::${ImageBucketName}/*"
-            )
-
-    def test_image_upload_does_not_have_broad_s3_permission(self):
-        """Image upload must not receive unrestricted S3 permissions."""
-        policies = self.resources[
-            "RoomImageUploadFunction"
-        ]["Properties"]["Policies"]
-
-        for policy in policies:
-            if not isinstance(policy, dict):
-                continue
-
-            for statement in policy.get("Statement", []):
-                actions = statement.get("Action", [])
-
-                if isinstance(actions, str):
-                    actions = [actions]
-
-                self.assertNotIn("s3:*", actions)
-
-    def test_image_bucket_environment_variable(self):
-        """Image upload must reference the configured bucket."""
-        variables = self.resources[
-            "RoomImageUploadFunction"
-        ]["Properties"]["Environment"]["Variables"]
+        key_b = (
+            ROOT_DIR / "lambda" / "cstu-room-permission" / "public.pem"
+        )
 
         self.assertEqual(
-            variables["IMAGE_BUCKET"],
-            "ImageBucketName"
+            key_a.read_bytes(),
+            key_b.read_bytes(),
+            "Public Keys must be identical"
         )
 
-    def test_no_plaintext_credentials_in_template(self):
-        """Template must not contain hardcoded AWS access keys."""
-        template_text = TEMPLATE_PATH.read_text(
-            encoding="utf-8"
-        )
+    def test_kid_is_consistent(self):
+        expected = {}
 
-        self.assertIsNone(
-            re.search(r"AKIA[0-9A-Z]{16}", template_text)
-        )
+        patterns = {
+            "UserAuthFunction": r'KID\s*=\s*["\']([^"\']+)["\']',
+            "JwtAuthorizerFunction":
+                r'EXPECTED_KID\s*=\s*["\']([^"\']+)["\']',
+            "CstuRoomPermissionFunction":
+                r'EXPECTED_KID\s*=\s*["\']([^"\']+)["\']',
+        }
 
-        self.assertIsNone(
-            re.search(
-                r"aws_secret_access_key\s*[:=]\s*\S+",
-                template_text,
-                re.IGNORECASE
+        for name, config in MODULE_FUNCTIONS.items():
+            folder = config["code_uri"].removeprefix("../")
+            source = (
+                ROOT_DIR / folder / "lambda_function.py"
+            ).read_text(encoding="utf-8")
+
+            match = re.search(patterns[name], source)
+
+            self.assertIsNotNone(
+                match,
+                f"Missing KID in {name}"
             )
+
+            expected[name] = match.group(1)
+
+        self.assertEqual(
+            len(set(expected.values())),
+            1,
+            f"KID mismatch: {expected}"
+        )
+
+        self.assertRegex(
+            expected["UserAuthFunction"],
+            r"^[a-f0-9]{16}$"
+        )
+
+    def test_secret_resources_exist(self):
+        for name in REQUIRED_SECRETS:
+            with self.subTest(secret=name):
+                body = self.resource_body(name)
+
+                self.assertIn(
+                    "Type: AWS::SecretsManager::Secret",
+                    body
+                )
+                self.assertIn("DeletionPolicy: Retain", body)
+                self.assertNotRegex(
+                    body,
+                    r"(?m)^\s*SecretString:"
+                )
+
+    def test_auth_environment_variables(self):
+        body = self.resource_body("UserAuthFunction")
+
+        for variable in REQUIRED_ENV["UserAuthFunction"]:
+            with self.subTest(variable=variable):
+                self.assertIn(variable, body)
+
+    def test_mock_login_disabled_by_default_and_dev_only(self):
+        parameters = self.section_body("Parameters")
+        conditions = self.section_body("Conditions")
+        auth_body = self.resource_body("UserAuthFunction")
+
+        self.assertIn("MockLoginEnabled:", parameters)
+        self.assertIn("Default: 'false'", parameters)
+
+        self.assertIn("AllowMockLogin: !And", conditions)
+        self.assertIn(
+            "!Equals [!Ref Environment, dev]",
+            conditions
+        )
+        self.assertIn(
+            "!Equals [!Ref MockLoginEnabled, 'true']",
+            conditions
+        )
+
+        self.assertIn(
+            "MOCK_LOGIN_ENABLED: !If [AllowMockLogin, 'true', 'false']",
+            auth_body
+        )
+
+    def test_mock_login_requires_explicit_environment_flag(self):
+        source = (
+            ROOT_DIR
+            / "lambda"
+            / "cstu-user-auth"
+            / "lambda_function.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            'if os.environ.get("MOCK_LOGIN_ENABLED", "false").lower() == "true":',
+            source
+        )
+
+    def test_permission_database_environment(self):
+        body = self.resource_body("CstuRoomPermissionFunction")
+
+        for variable in REQUIRED_ENV["CstuRoomPermissionFunction"]:
+            with self.subTest(variable=variable):
+                self.assertIn(variable, body)
+
+        globals_body = self.section_body("Globals")
+
+        for variable in [
+            "DB_HOST: !Ref DBHost",
+            "DB_NAME: !Ref DBName",
+            "DB_PORT: !Ref DBPort",
+            "DB_USER: !Ref DBUser",
+        ]:
+            with self.subTest(variable=variable):
+                self.assertIn(variable, globals_body)
+
+    def test_auth_iam_is_least_privilege(self):
+        body = self.resource_body("UserAuthFunction")
+
+        self.assertIn(
+            "AWSLambdaBasicExecutionRole",
+            body
+        )
+        self.assertIn(
+            "secretsmanager:GetSecretValue",
+            body
+        )
+        self.assertIn(
+            "- !Ref JwtPrivateKeySecret",
+            body
+        )
+        self.assertIn(
+            "- !Ref TuApiKeySecret",
+            body
+        )
+
+        self.assertNotIn(
+            "Resource: '*'",
+            body
+        )
+        self.assertNotIn(
+            "Action: '*'",
+            body
+        )
+
+    def test_other_lambdas_do_not_receive_secret_access(self):
+        for name in [
+            "JwtAuthorizerFunction",
+            "CstuRoomPermissionFunction",
+        ]:
+            with self.subTest(resource=name):
+                body = self.resource_body(name)
+
+                self.assertIn(
+                    "AWSLambdaBasicExecutionRole",
+                    body
+                )
+                self.assertNotIn(
+                    "secretsmanager:GetSecretValue",
+                    body
+                )
+
+    def test_private_key_is_not_in_lambda_source(self):
+        lambda_dir = ROOT_DIR / "lambda"
+
+        private_keys = list(
+            lambda_dir.rglob("private.pem")
+        )
+
+        self.assertEqual(
+            private_keys,
+            [],
+            f"Private Key found in Lambda source: {private_keys}"
+        )
+
+    
+    
+   
+    def test_database_password_is_not_hardcoded(self):
+        parameters = self.section_body("Parameters")
+        match = re.search(
+            r"(?ms)^  DBPasswordSecretArn:\n(?P<body>.*?)(?=^  [A-Za-z][A-Za-z0-9]*:\s*$|\Z)",
+            parameters
+        )
+        self.assertIsNotNone(match, "Missing DBPasswordSecretArn parameter")
+        self.assertIn("Type: String", match.group("body"))
+        self.assertNotIn("Default:", match.group("body"))
+
+
+
+
+    def test_outputs_exist(self):
+        outputs = self.section_body("Outputs")
+
+        for name in REQUIRED_OUTPUTS:
+            with self.subTest(output=name):
+                self.assertRegex(
+                    outputs,
+                    rf"(?m)^  {re.escape(name)}:"
+                )
+
+    def test_secret_values_are_not_hardcoded_in_template(self):
+        self.assertNotRegex(
+            self.template,
+            r"-----BEGIN (?:RSA )?PRIVATE KEY-----"
         )
 
 

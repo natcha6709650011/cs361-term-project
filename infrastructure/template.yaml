@@ -1,10 +1,7 @@
-
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-
 Description: >
   Shared Infrastructure as Code for CSTU Room Booking V5
-
 Globals:
   Function:
     Runtime: python3.13
@@ -19,7 +16,6 @@ Globals:
         DB_NAME: !Ref DBName
         DB_PORT: !Ref DBPort
         DB_USER: !Ref DBUser
-
 Parameters:
   Environment:
     Type: String
@@ -29,33 +25,21 @@ Parameters:
       - test
       - prod
     Description: Deployment environment
-
   DBHost:
     Type: String
-    Default: cstu-room-database.cefikyua88rq.us-east-1.rds.amazonaws.com
     Description: CSTU RDS MySQL endpoint
-
   DBName:
     Type: String
     Default: cstu_room_db
     Description: Database name
-
   DBPort:
     Type: Number
     Default: 3306
     Description: RDS MySQL port
-
   DBUser:
     Type: String
     Default: admin
     Description: Database username
-
-  DBPassword:
-    Type: String
-    NoEcho: true
-    Description: Database password supplied at deployment time
-
-
   NoShowScheduleState:
     Type: String
     Default: DISABLED
@@ -65,34 +49,179 @@ Parameters:
     Description: >
       State of the booking No-show / auto-complete schedule. Keep DISABLED while the
       V4 schedule still runs against the same database; set ENABLED at cut-over.
-
   VpcSecurityGroupIds:
     Type: List<AWS::EC2::SecurityGroup::Id>
-    Default: sg-07bbfe69921bf522b
     Description: Security groups for Lambda functions accessing RDS
-
   VpcSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
-    Default: subnet-089b9d28eaf352d8b,subnet-0fccb724bebd3081a,subnet-0d8487dc29aa0a0de,subnet-0e31c80e3ed16057a,subnet-0fa733b2a03abd4b0,subnet-014ada63684a48c9a,subnet-08567a765615b987e,subnet-0a4138a1f2100a82b
     Description: Subnets for Lambda functions accessing RDS
-
   ImageBucketName:
     Type: String
-    Default: cstu-room-images1
     Description: S3 bucket for room images
+  FrontendOrigin:
+    Type: String
+    Description: Exact HTTPS origin of the deployed frontend (no trailing slash)
+  TuApiUrl:
+    Type: String
+    Description: TU API login endpoint base URL
+  DBPasswordSecretArn:
+    Type: String
+    Description: ARN of the RDS Secrets Manager secret containing the password
+  MockLoginEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: Enable mock login only for development
+Conditions:
+  AllowMockLogin: !And
+    - !Equals [!Ref Environment, dev]
+    - !Equals [!Ref MockLoginEnabled, 'true']
 
 Resources:
+  JwtPrivateKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: Private signing key for CSTU authentication
+
+  TuApiKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: TU API key for CSTU authentication
+
   PyMySqlLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
       LayerName: !Sub '${AWS::StackName}-pymysql'
       Description: Shared PyMySQL dependency for RDS-backed Lambda functions
-      ContentUri: ../pymysql-layer/
+      ContentUri: ../pymysql-layer/python/
       CompatibleRuntimes:
         - python3.13
       CompatibleArchitectures:
         - x86_64
       RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: python3.13
+      BuildArchitecture: x86_64
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: '$default'
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref FrontendOrigin
+        AllowHeaders:
+          - content-type
+          - authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowCredentials: true
+        MaxAge: 300
+      Auth:
+        Authorizers:
+          JwtRequestAuthorizer:
+            FunctionArn: !GetAtt JwtAuthorizerFunction.Arn
+            AuthorizerPayloadFormatVersion: '2.0'
+            EnableSimpleResponses: true
+            Identity:
+              Headers:
+                - Cookie
+              ReauthorizeEvery: 0
+
+  UserAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/cstu-user-auth/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
+          TU_API_URL: !Ref TuApiUrl
+          TU_API_KEY_SECRET_ARN: !Ref TuApiKeySecret
+          JWT_PRIVATE_KEY_SECRET_ARN: !Ref JwtPrivateKeySecret
+          FRONTEND_ORIGIN: !Ref FrontendOrigin
+          MOCK_LOGIN_ENABLED: !If [AllowMockLogin, 'true', 'false']
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource:
+                - !Ref JwtPrivateKeySecret
+                - !Ref TuApiKeySecret
+      Events:
+        Login:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /login
+            Method: POST
+            PayloadFormatVersion: '2.0'
+        Logout:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /logout
+            Method: POST
+            PayloadFormatVersion: '2.0'
+    Metadata:
+      Owner: authentication-security
+
+  JwtAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/cstu-jwt-authorizer/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 10
+      MemorySize: 128
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: authentication-security
+
+  CstuRoomPermissionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/cstu-room-permission/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Layers:
+        - !Ref PyMySqlLayer
+      Environment:
+        Variables:
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
+      VpcConfig:
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+        SubnetIds: !Ref VpcSubnetIds
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+    Metadata:
+      Owner: authentication-security
 
   GetRoomsFunction:
     Type: AWS::Serverless::Function
@@ -106,17 +235,24 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        GetRooms:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms
+            Method: GET
+            PayloadFormatVersion: '2.0'
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms
-
   GetDetailFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -129,17 +265,24 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        GetRoomDetail:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_number}
+            Method: GET
+            PayloadFormatVersion: '2.0'
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms/{room_number}
-
   GetRoomScheduleFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -152,17 +295,24 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        GetRoomSchedule:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_number}/schedule
+            Method: GET
+            PayloadFormatVersion: '2.0'
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms/{room_number}/schedule
-
   SearchAvailableRoomsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -175,17 +325,24 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        SearchAvailableRooms:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/available
+            Method: GET
+            PayloadFormatVersion: '2.0'
     Metadata:
       Owner: room-information-search
       ApiRoute: GET /rooms/available
-
   BookingFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -198,13 +355,77 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        GetMyBookings:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /bookings/me
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        GetAdminBookings:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /admin/bookings
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        CreateBooking:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /bookings
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        UpdateBooking:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /bookings/{booking_id}
+            Method: PATCH
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        DeleteBooking:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /bookings/{booking_id}
+            Method: DELETE
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        CheckInBooking:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /bookings/{booking_id}/check-in
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        EndBookingUsage:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /bookings/{booking_id}/usage/end
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
     Metadata:
       Owner: booking-lifecycle
       Authorizer: cstu-jwt-authorizer
@@ -216,7 +437,6 @@ Resources:
         - DELETE /bookings/{booking_id}
         - POST /bookings/{booking_id}/check-in
         - POST /bookings/{booking_id}/usage/end
-
   BookingFacilityManagementFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -229,13 +449,131 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        GetPendingApprovals:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /approvals/pending
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        DecideApproval:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /approvals/{booking_id}/decision
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        GetFacilityAdminRooms:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /admin/rooms
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        GetRoomClosures:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /room-closures
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        SetRoomAvailability:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_id}/availability
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        UpdateRoomPolicies:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /room-policies
+            Method: PUT
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        GetFacilityScheduleRules:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /facility-schedule-rules
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        CreateFacilityScheduleRule:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /facility-schedule-rules
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        CreateFacilityScheduleException:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /facility-schedule-rules/{schedule_id}/exceptions
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        GetFacilitySchedules:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /facility-schedules
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        CreateFacilitySchedule:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /facility-schedules
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        UpdateFacilitySchedule:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /facility-schedules/{schedule_id}
+            Method: PATCH
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        CancelFacilitySchedule:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /facility-schedules/{schedule_id}/cancel
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
     Metadata:
       Owner: booking-lifecycle
       Authorizer: cstu-jwt-authorizer
@@ -253,7 +591,6 @@ Resources:
         - POST /facility-schedules
         - PATCH /facility-schedules/{schedule_id}
         - POST /facility-schedules/{schedule_id}/cancel
-
   BookingNoShowFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -266,7 +603,7 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
@@ -286,7 +623,6 @@ Resources:
     Metadata:
       Owner: booking-lifecycle
       Trigger: EventBridge Scheduler rate(1 minute)
-
   ManageRoomFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -297,19 +633,37 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        UpdateRoom:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_id}
+            Method: PATCH
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        UpdateRoomStatus:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_id}/status
+            Method: PATCH
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
     Metadata:
       Owner: room-management
       ApiRoutes:
         - PATCH /rooms/{room_id}
         - PATCH /rooms/{room_id}/status
-
   RoomConfigurationFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -320,19 +674,33 @@ Resources:
         - !Ref PyMySqlLayer
       Environment:
         Variables:
-          DB_PASSWORD: !Ref DBPassword
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'
       VpcConfig:
         SecurityGroupIds: !Ref VpcSecurityGroupIds
         SubnetIds: !Ref VpcSubnetIds
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        GetRoomTypes:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /room-types
+            Method: GET
+            PayloadFormatVersion: '2.0'
+        GetRoomConnections:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_number}/connections
+            Method: GET
+            PayloadFormatVersion: '2.0'
     Metadata:
       Owner: room-management
       ApiRoutes:
         - GET /room-types
         - GET /rooms/{room_number}/connections
-
   RoomImageUploadFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -349,36 +717,63 @@ Resources:
               Action:
                 - s3:PutObject
               Resource: !Sub 'arn:${AWS::Partition}:s3:::${ImageBucketName}/*'
+      Events:
+        CreateRoomImageUpload:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_id}/image-upload
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
     Metadata:
       Owner: room-management
       ApiRoutes:
         - POST /rooms/{room_id}/image-upload
-
 Outputs:
+  UserAuthFunctionArn:
+    Description: User authentication Lambda ARN
+    Value: !GetAtt UserAuthFunction.Arn
+  JwtAuthorizerFunctionArn:
+    Description: JWT authorizer Lambda ARN
+    Value: !GetAtt JwtAuthorizerFunction.Arn
+  CstuRoomPermissionFunctionArn:
+    Description: Room permission Lambda ARN
+    Value: !GetAtt CstuRoomPermissionFunction.Arn
+  JwtAuthorizerUri:
+    Description: API Gateway invocation URI for JWT authorizer
+    Value: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JwtAuthorizerFunction.Arn}/invocations'
+  RoomPermissionAuthorizerUri:
+    Description: API Gateway invocation URI for room permission authorizer
+    Value: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CstuRoomPermissionFunction.Arn}/invocations'
+  JwtPrivateKeySecretArn:
+    Description: JWT private key secret ARN
+    Value: !Ref JwtPrivateKeySecret
+  TuApiKeySecretArn:
+    Description: TU API key secret ARN
+    Value: !Ref TuApiKeySecret
+  ApiBaseUrl:
+    Description: HTTP API base URL
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'
   DatabaseHost:
     Description: RDS MySQL endpoint
     Value: !Ref DBHost
-
   DatabaseName:
     Description: Database name
     Value: !Ref DBName
-
   DatabasePort:
     Description: Database port
     Value: !Ref DBPort
-
   DeploymentEnvironment:
     Description: Deployment environment
     Value: !Ref Environment
-
   ManageRoomFunctionArn:
     Description: Manage room Lambda ARN
     Value: !GetAtt ManageRoomFunction.Arn
-
   RoomConfigurationFunctionArn:
     Description: Room configuration Lambda ARN
     Value: !GetAtt RoomConfigurationFunction.Arn
-
   RoomImageUploadFunctionArn:
     Description: Room image upload Lambda ARN
     Value: !GetAtt RoomImageUploadFunction.Arn

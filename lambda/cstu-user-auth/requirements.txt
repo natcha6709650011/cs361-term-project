@@ -1,2 +1,4 @@
-PyJWT
+PyJWT==2.15.1
 PyMySQL
+cryptography
+boto3

@@ -9,7 +9,7 @@ import jwt
 
 PUBLIC_KEY_PATH = "/var/task/public.pem"
 
-EXPECTED_KID = "d47c0efedabc6b33"
+EXPECTED_KID = "b25d13db6b9a87bf"
 
 
 def lambda_handler(event, context):

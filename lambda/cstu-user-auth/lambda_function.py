@@ -1,5 +1,6 @@
 ﻿import json
 import os
+import boto3
 import time
 import urllib.request
 import urllib.error
@@ -11,9 +12,12 @@ import jwt
 # JWT CONFIGURATION
 # =========================================================
 
-KID = "d47c0efedabc6b33"
-PRIVATE_KEY_PATH = "/var/task/private.pem"
+KID = "b25d13db6b9a87bf"
 
+# AWS Secrets Manager
+_secrets_client = boto3.client("secretsmanager")
+_private_key_cache = None
+_tu_api_key_cache = None
 
 # =========================================================
 # MOCK USERS
@@ -247,7 +251,7 @@ def get_mock_user(username, password):
 
 def get_tu_user(username, password):
     url = os.environ.get("TU_API_URL", "")
-    tu_api_key = os.environ.get("TU_API_KEY", "")
+    tu_api_key = get_tu_api_key()
 
     if not url:
         raise Exception("TU_API_URL is not configured")
@@ -454,14 +458,87 @@ def save_user_to_db(user):
 # CREATE JWT
 # =========================================================
 
+def get_private_key():
+    global _private_key_cache
+
+    # Reuse cached key during Lambda execution
+    if _private_key_cache is not None:
+        return _private_key_cache
+
+    secret_arn = os.environ.get("JWT_PRIVATE_KEY_SECRET_ARN")
+
+    if not secret_arn:
+        raise RuntimeError(
+            "JWT_PRIVATE_KEY_SECRET_ARN is not configured"
+        )
+
+    try:
+        result = _secrets_client.get_secret_value(
+            SecretId=secret_arn
+        )
+
+    except Exception as exc:
+        print(
+            "Unable to read JWT private key secret:",
+            type(exc).__name__
+        )
+        raise RuntimeError(
+            "Unable to load JWT signing key"
+        ) from exc
+
+    private_key = result.get("SecretString")
+
+    if (
+        not isinstance(private_key, str)
+        or "-----BEGIN PRIVATE KEY-----" not in private_key
+    ):
+        raise RuntimeError(
+            "JWT private key secret is empty or invalid"
+        )
+
+    _private_key_cache = private_key
+
+    return _private_key_cache
+
+def get_tu_api_key():
+    global _tu_api_key_cache
+
+    if _tu_api_key_cache is not None:
+        return _tu_api_key_cache
+
+    secret_arn = os.environ.get("TU_API_KEY_SECRET_ARN")
+
+    if not secret_arn:
+        raise RuntimeError(
+            "TU_API_KEY_SECRET_ARN is not configured"
+        )
+
+    try:
+        result = _secrets_client.get_secret_value(
+            SecretId=secret_arn
+        )
+
+    except Exception as exc:
+        print(
+            "Unable to read TU API key secret:",
+            type(exc).__name__
+        )
+        raise RuntimeError(
+            "Unable to load TU API key"
+        ) from exc
+
+    api_key = result.get("SecretString")
+
+    if not isinstance(api_key, str) or not api_key.strip():
+        raise RuntimeError("TU API key secret is empty")
+
+    _tu_api_key_cache = api_key.strip()
+
+    return _tu_api_key_cache
+
 def create_token(user):
 
-    with open(
-        PRIVATE_KEY_PATH,
-        "r"
-    ) as f:
-
-        private_key = f.read()
+    private_key = get_private_key()
 
     current_time = int(time.time())
 
@@ -612,10 +689,13 @@ def lambda_handler(event, context):
         # ตรวจสอบ MOCK USER
         # =================================================
 
-        mock_user = get_mock_user(
-            username,
-            password
-        )
+        mock_user = None
+
+        if os.environ.get("MOCK_LOGIN_ENABLED", "false").lower() == "true":
+            mock_user = get_mock_user(
+                username,
+                password
+            )
 
         if mock_user:
 

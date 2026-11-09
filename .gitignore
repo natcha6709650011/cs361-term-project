@@ -1,3 +1,17 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# Sensitive JWT Private Keys
+**/private.pem
+
+# Generated Authentication Deployment Packages
+/lambda/cstu-user-auth.zip
+/lambda/cstu-user-auth/*.zip
+/lambda/cstu-user-auth-package/*.zip
+
+# AWS SAM build artifacts
+.aws-sam/
+
+# Python test artifacts
+.pytest_cache/

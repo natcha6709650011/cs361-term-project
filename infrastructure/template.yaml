@@ -64,6 +64,27 @@ Parameters:
     Description: >
       State of the booking No-show / auto-complete schedule. Keep DISABLED while the
       V4 schedule still runs against the same database; set ENABLED at cut-over.
+  # NEW: Security Module
+  TuApiUrl:
+    Type: String
+    Description: TU authentication API endpoint
+
+  FrontendOrigin:
+    Type: String
+    Description: Frontend origin for credentialed CORS requests
+
+  MockLoginEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: Enable mock login for development testing only
+
+Conditions:
+  AllowMockLogin: !And
+    - !Equals [!Ref Environment, dev]
+    - !Equals [!Ref MockLoginEnabled, 'true']
 
 Resources:
   PyMySqlLayer:
@@ -243,6 +264,109 @@ Resources:
       Owner: booking-lifecycle
       Trigger: EventBridge Scheduler rate(1 minute)
 
+  # =====================================================
+  # MODULE 3: AUTHENTICATION & SECURITY
+  # =====================================================
+
+  JwtPrivateKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub '${AWS::StackName}/${Environment}/jwt-private-key'
+      Description: Private key used to sign JWT tokens (RS256)
+      Tags:
+        - Key: Project
+          Value: CSTU-RoomBooking-V5
+        - Key: Environment
+          Value: !Ref Environment
+
+  TuApiKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub '${AWS::StackName}/${Environment}/tu-api-key'
+      Description: API key used to authenticate with TU API
+      Tags:
+        - Key: Project
+          Value: CSTU-RoomBooking-V5
+        - Key: Environment
+          Value: !Ref Environment
+
+  # -----------------------------------------------------
+  # 1. User Authentication
+  # -----------------------------------------------------
+
+  CstuUserAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/cstu-user-auth/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+          TU_API_URL: !Ref TuApiUrl
+          TU_API_KEY_SECRET_ARN: !Ref TuApiKeySecret
+          JWT_PRIVATE_KEY_SECRET_ARN: !Ref JwtPrivateKeySecret
+          FRONTEND_ORIGIN: !Ref FrontendOrigin
+          MOCK_LOGIN_ENABLED: !If [AllowMockLogin, 'true', 'false']
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource:
+                - !Ref JwtPrivateKeySecret
+                - !Ref TuApiKeySecret
+    Metadata:
+      Owner: authentication-security
+      Purpose: Login and JWT signing
+
+  # -----------------------------------------------------
+  # 2. JWT Authorizer
+  # -----------------------------------------------------
+
+  CstuJwtAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/cstu-jwt-authorizer/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      MemorySize: 128
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: authentication-security
+      Purpose: JWT signature and expiration verification
+
+  # -----------------------------------------------------
+  # 3. Room Permission
+  # -----------------------------------------------------
+
+  CstuRoomPermissionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/cstu-room-permission/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          DB_PASSWORD: !Ref DBPassword
+      Policies:
+        - AWSLambdaBasicExecutionRole
+    Metadata:
+      Owner: authentication-security
+      Purpose: Room permission API and role authorization
+
 Outputs:
   DatabaseHost:
     Description: RDS MySQL endpoint
@@ -259,3 +383,33 @@ Outputs:
   DeploymentEnvironment:
     Description: Deployment environment
     Value: !Ref Environment
+
+  # Module 3 Outputs
+
+  CstuUserAuthFunctionArn:
+    Description: Lambda ARN for User Authentication
+    Value: !GetAtt CstuUserAuthFunction.Arn
+
+  CstuJwtAuthorizerFunctionArn:
+    Description: Lambda ARN for JWT Authorizer
+    Value: !GetAtt CstuJwtAuthorizerFunction.Arn
+
+  CstuRoomPermissionFunctionArn:
+    Description: Lambda ARN for Room Permission and Role Authorizer
+    Value: !GetAtt CstuRoomPermissionFunction.Arn
+
+  CstuJwtAuthorizerUri:
+    Description: API Gateway Lambda Authorizer URI for JWT verification
+    Value: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CstuJwtAuthorizerFunction.Arn}/invocations'
+
+  CstuRoomPermissionAuthorizerUri:
+    Description: API Gateway Lambda Authorizer URI for role authorization
+    Value: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CstuRoomPermissionFunction.Arn}/invocations'
+
+  JwtPrivateKeySecretArn:
+    Description: Secrets Manager ARN for JWT Private Key
+    Value: !Ref JwtPrivateKeySecret
+
+  TuApiKeySecretArn:
+    Description: Secrets Manager ARN for TU API Key
+    Value: !Ref TuApiKeySecret

@@ -201,6 +201,7 @@ Resources:
     Metadata:
       Owner: authentication-security
 
+  
   CstuRoomPermissionFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -220,8 +221,28 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaVPCAccessExecutionRole
+      Events:
+        GetMyPermissions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /me/permissions
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
+        GetRoomPermission:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rooms/{room_number}/permission
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: JwtRequestAuthorizer
     Metadata:
       Owner: authentication-security
+
 
   GetRoomsFunction:
     Type: AWS::Serverless::Function

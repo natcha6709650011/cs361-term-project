@@ -293,10 +293,9 @@ def handle_api_request(event, context):
         )
         return response(status, result)
 
-    except Exception:
-        print("Room permission request failed")
+    except Exception as e:
+        print("Room permission request failed:", type(e).__name__, str(e))
         return response(500, {"message": "Internal server error"})
-
     finally:
         if connection:
             connection.close()
@@ -339,7 +338,7 @@ def get_token(event):
     return None
 
 def verify_token(token):
-    import jwt  
+    import jwt
 
     unverified = jwt.get_unverified_header(token)
     if unverified.get("kid") != EXPECTED_KID or unverified.get("alg") != "RS256":

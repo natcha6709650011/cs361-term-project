@@ -21,3 +21,8 @@ __pycache__/
 
 # Python test artifacts
 .pytest_cache/
+jwt-private.pem
+permission-lambda.zip
+permission-test-event.json
+permission-direct-result.json
+permission-invoke-metadata.json

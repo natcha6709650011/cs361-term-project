@@ -6,4 +6,4 @@ region = "us-east-1"
 resolve_s3 = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-parameter_overrides = "Environment=dev DBHost=cstu-room-database.cefikyua88rq.us-east-1.rds.amazonaws.com DBName=cstu_room_db DBPort=3306 DBUser=admin ImageBucketName=cstu-room-images1"
+parameter_overrides = "Environment=dev DBHost=cstu-room-database.cefikyua88rq.us-east-1.rds.amazonaws.com DBName=cstu_room_db DBPort=3306 DBUser=admin VpcSecurityGroupIds=sg-0094f0fd6f030d7c3 VpcSubnetIds=subnet-0fa733b2a03abd4b0,subnet-08567a765615b987e ImageBucketName=cstu-room-images1 FrontendOrigin=https://main.dwpvz1uwnoah0.amplifyapp.com TuApiUrl=https://restapi.tu.ac.th/api/v1/auth/Ad/verify DBPasswordSecretArn=arn:aws:secretsmanager:us-east-1:810876576139:secret:cstu-room-booking-v5-dev-db-cBm8S1"

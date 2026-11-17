@@ -304,7 +304,7 @@ def handle_api_request(event, context):
 
 
 PUBLIC_KEY_PATH = "/var/task/public.pem"
-EXPECTED_KID = "d47c0efedabc6b33"
+EXPECTED_KID = "b25d13db6b9a87bf"
 
 APPROVER = ROLE_APPROVER
 FACILITY_ADMIN = ROLE_FACILITY_ADMIN

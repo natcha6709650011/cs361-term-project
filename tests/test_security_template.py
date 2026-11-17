@@ -14,7 +14,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 TEMPLATE_PATH = ROOT_DIR / "infrastructure" / "template.yaml"
 
 MODULE_FUNCTIONS = {
-    "CstuUserAuthFunction": {
+    "UserAuthFunction": {
         "code_uri": "../lambda/cstu-user-auth/",
         "timeout": 30,
         "memory": 256,
@@ -23,9 +23,9 @@ MODULE_FUNCTIONS = {
             "pyjwt", "pymysql", "cryptography", "boto3"
         },
     },
-    "CstuJwtAuthorizerFunction": {
+    "JwtAuthorizerFunction": {
         "code_uri": "../lambda/cstu-jwt-authorizer/",
-        "timeout": 15,
+        "timeout": 10,
         "memory": 128,
         "owner": "authentication-security",
         "requirements": {
@@ -44,15 +44,15 @@ MODULE_FUNCTIONS = {
 }
 
 REQUIRED_ENV = {
-    "CstuUserAuthFunction": [
-        "DB_PASSWORD: !Ref DBPassword",
+    "UserAuthFunction": [
+        "DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'",
         "TU_API_URL: !Ref TuApiUrl",
         "TU_API_KEY_SECRET_ARN: !Ref TuApiKeySecret",
         "JWT_PRIVATE_KEY_SECRET_ARN: !Ref JwtPrivateKeySecret",
         "FRONTEND_ORIGIN: !Ref FrontendOrigin",
     ],
     "CstuRoomPermissionFunction": [
-        "DB_PASSWORD: !Ref DBPassword",
+        "DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DBPasswordSecretArn}:SecretString:password}}'",
     ],
 }
 
@@ -62,11 +62,11 @@ REQUIRED_SECRETS = [
 ]
 
 REQUIRED_OUTPUTS = [
-    "CstuUserAuthFunctionArn",
-    "CstuJwtAuthorizerFunctionArn",
+    "UserAuthFunctionArn",
+    "JwtAuthorizerFunctionArn",
     "CstuRoomPermissionFunctionArn",
-    "CstuJwtAuthorizerUri",
-    "CstuRoomPermissionAuthorizerUri",
+    "JwtAuthorizerUri",
+    "RoomPermissionAuthorizerUri",
     "JwtPrivateKeySecretArn",
     "TuApiKeySecretArn",
 ]
@@ -255,8 +255,8 @@ class SecurityTemplateTests(unittest.TestCase):
         expected = {}
 
         patterns = {
-            "CstuUserAuthFunction": r'KID\s*=\s*["\']([^"\']+)["\']',
-            "CstuJwtAuthorizerFunction":
+            "UserAuthFunction": r'KID\s*=\s*["\']([^"\']+)["\']',
+            "JwtAuthorizerFunction":
                 r'EXPECTED_KID\s*=\s*["\']([^"\']+)["\']',
             "CstuRoomPermissionFunction":
                 r'EXPECTED_KID\s*=\s*["\']([^"\']+)["\']',
@@ -284,7 +284,7 @@ class SecurityTemplateTests(unittest.TestCase):
         )
 
         self.assertRegex(
-            expected["CstuUserAuthFunction"],
+            expected["UserAuthFunction"],
             r"^[a-f0-9]{16}$"
         )
 
@@ -304,16 +304,16 @@ class SecurityTemplateTests(unittest.TestCase):
                 )
 
     def test_auth_environment_variables(self):
-        body = self.resource_body("CstuUserAuthFunction")
+        body = self.resource_body("UserAuthFunction")
 
-        for variable in REQUIRED_ENV["CstuUserAuthFunction"]:
+        for variable in REQUIRED_ENV["UserAuthFunction"]:
             with self.subTest(variable=variable):
                 self.assertIn(variable, body)
 
     def test_mock_login_disabled_by_default_and_dev_only(self):
         parameters = self.section_body("Parameters")
         conditions = self.section_body("Conditions")
-        auth_body = self.resource_body("CstuUserAuthFunction")
+        auth_body = self.resource_body("UserAuthFunction")
 
         self.assertIn("MockLoginEnabled:", parameters)
         self.assertIn("Default: 'false'", parameters)
@@ -365,7 +365,7 @@ class SecurityTemplateTests(unittest.TestCase):
                 self.assertIn(variable, globals_body)
 
     def test_auth_iam_is_least_privilege(self):
-        body = self.resource_body("CstuUserAuthFunction")
+        body = self.resource_body("UserAuthFunction")
 
         self.assertIn(
             "AWSLambdaBasicExecutionRole",
@@ -395,7 +395,7 @@ class SecurityTemplateTests(unittest.TestCase):
 
     def test_other_lambdas_do_not_receive_secret_access(self):
         for name in [
-            "CstuJwtAuthorizerFunction",
+            "JwtAuthorizerFunction",
             "CstuRoomPermissionFunction",
         ]:
             with self.subTest(resource=name):
@@ -423,11 +423,21 @@ class SecurityTemplateTests(unittest.TestCase):
             f"Private Key found in Lambda source: {private_keys}"
         )
 
+    
+    
+   
     def test_database_password_is_not_hardcoded(self):
-        body = self.resource_body("DBPassword")
+        parameters = self.section_body("Parameters")
+        match = re.search(
+            r"(?ms)^  DBPasswordSecretArn:\n(?P<body>.*?)(?=^  [A-Za-z][A-Za-z0-9]*:\s*$|\Z)",
+            parameters
+        )
+        self.assertIsNotNone(match, "Missing DBPasswordSecretArn parameter")
+        self.assertIn("Type: String", match.group("body"))
+        self.assertNotIn("Default:", match.group("body"))
 
-        self.assertIn("NoEcho: true", body)
-        self.assertNotIn("Default:", body)
+
+
 
     def test_outputs_exist(self):
         outputs = self.section_body("Outputs")

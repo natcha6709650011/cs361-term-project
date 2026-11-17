@@ -1,0 +1,136 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  CSTU Room Booking V5 - Room Management Module
+  Person 4: Manage rooms, configure rooms, and upload room images.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  DBHost:
+    Type: String
+    Default: cstu-room-database.cefikyua88rq.us-east-1.rds.amazonaws.com
+
+  DBName:
+    Type: String
+    Default: cstu_room_db
+
+  DBPort:
+    Type: Number
+    Default: 3306
+
+  DBUser:
+    Type: String
+    Default: admin
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: RDS MySQL password. Do not commit this value.
+
+  ImageBucketName:
+    Type: String
+    Default: cstu-room-images1
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+    Timeout: 15
+    MemorySize: 128
+
+Resources:
+  ManageRoomFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub cstu-v5-manage-room-${Environment}
+      CodeUri: ../../lambda/manage_room/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          DB_HOST: !Ref DBHost
+          DB_NAME: !Ref DBName
+          DB_PORT: !Ref DBPort
+          DB_USER: !Ref DBUser
+          DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-07bbfe69921bf522b
+        SubnetIds:
+          - subnet-089b9d28eaf352d8b
+          - subnet-0fccb724bebd3081a
+          - subnet-0d8487dc29aa0a0de
+          - subnet-0e31c80e3ed16057a
+          - subnet-0fa733b2a03abd4b0
+          - subnet-014ada63684a48c9a
+          - subnet-08567a765615b987e
+          - subnet-0a4138a1f2100a82b
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+
+  RoomConfigurationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub cstu-v5-room-configuration-${Environment}
+      CodeUri: ../../lambda/room_configuration/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          DB_HOST: !Ref DBHost
+          DB_NAME: !Ref DBName
+          DB_PORT: !Ref DBPort
+          DB_USER: !Ref DBUser
+          DB_PASSWORD: !Ref DBPassword
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-07bbfe69921bf522b
+        SubnetIds:
+          - subnet-089b9d28eaf352d8b
+          - subnet-0fccb724bebd3081a
+          - subnet-0d8487dc29aa0a0de
+          - subnet-0e31c80e3ed16057a
+          - subnet-0fa733b2a03abd4b0
+          - subnet-014ada63684a48c9a
+          - subnet-08567a765615b987e
+          - subnet-0a4138a1f2100a82b
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+
+  RoomImageUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub cstu-v5-room-image-upload-${Environment}
+      CodeUri: ../../lambda/room_image_upload/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          IMAGE_BUCKET: !Ref ImageBucketName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${ImageBucketName}/*
+
+Outputs:
+  ManageRoomFunctionArn:
+    Description: Manage room Lambda ARN
+    Value: !GetAtt ManageRoomFunction.Arn
+
+  RoomConfigurationFunctionArn:
+    Description: Room configuration Lambda ARN
+    Value: !GetAtt RoomConfigurationFunction.Arn
+
+  RoomImageUploadFunctionArn:
+    Description: Room image upload Lambda ARN
+    Value: !GetAtt RoomImageUploadFunction.Arn

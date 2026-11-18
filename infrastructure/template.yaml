@@ -94,20 +94,18 @@ Resources:
     Properties:
       Description: TU API key for CSTU authentication
 
+
   PyMySqlLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
       LayerName: !Sub '${AWS::StackName}-pymysql'
       Description: Shared PyMySQL dependency for RDS-backed Lambda functions
-      ContentUri: ../pymysql-layer/python/
+      ContentUri: ../pymysql-layer/
       CompatibleRuntimes:
         - python3.13
       CompatibleArchitectures:
         - x86_64
       RetentionPolicy: Retain
-    Metadata:
-      BuildMethod: python3.13
-      BuildArchitecture: x86_64
 
   HttpApi:
     Type: AWS::Serverless::HttpApi
@@ -175,14 +173,14 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /login
+            Path: /auth/login
             Method: POST
             PayloadFormatVersion: '2.0'
         Logout:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /logout
+            Path: /auth/logout
             Method: POST
             PayloadFormatVersion: '2.0'
     Metadata:
